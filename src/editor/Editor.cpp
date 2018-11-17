@@ -1,9 +1,7 @@
 #include "Editor.h"
 
-namespace sm {
-namespace editor {
+using namespace sm::editor;
 
-
-
+Editor::Editor() {
 }
-}
+

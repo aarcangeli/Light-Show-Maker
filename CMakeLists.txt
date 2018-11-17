@@ -6,4 +6,5 @@ set(ROOT_DIRECTORY ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${ROOT_DIRECTORY}/cmake")
 include(Variables)
 
+add_subdirectory(libs/glad)
 add_subdirectory(src)

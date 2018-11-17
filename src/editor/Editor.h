@@ -5,7 +5,8 @@ namespace sm {
 namespace editor {
 
 class Editor {
-
+public:
+    Editor();
 };
 
 }
