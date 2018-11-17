@@ -4,7 +4,7 @@ An arduino based christmas light show maker
 ### Modules
  * core:
    - classes and services shared with all the project
- * project:
+ * model:
    - project structure
    - serialization/deserialization
    - undo/redo managment
