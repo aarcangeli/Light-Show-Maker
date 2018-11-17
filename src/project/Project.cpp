@@ -1,8 +1,6 @@
 #include "Project.h"
 
-namespace sm {
-namespace project {
+using namespace sm::project;
 
+Project::Project() : canvas(this) {}
 
-}
-}

@@ -1,2 +1,2 @@
 file(GLOB_RECURSE SOURCES *.cpp)
-add_library(sm-editor ${SOURCES})
+add_library(editor ${SOURCES})
