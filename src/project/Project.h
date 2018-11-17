@@ -5,6 +5,8 @@ namespace sm {
 namespace project {
 
 class Project {
+private:
+
 };
 
 }
