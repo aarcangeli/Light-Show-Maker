@@ -11,6 +11,13 @@ public:
     Editor();
 
     void editorOf(project::Project *project);
+
+private:
+    void editorComponent(project::Canvas &canvas);
+    void editorComponent(const char *label, time_unit &time);
+
+    void parseTime(const char *buf, time_unit &time);
+    inline void skipWhitespace(std::string &buf);
 };
 
 }

@@ -1,3 +1,5 @@
+#include <utility>
+
 #include <memory>
 
 #include "Application.h"
@@ -8,8 +10,8 @@
 using namespace sm;
 using namespace sm::editor;
 
-Application::Application() {
-    proj = std::make_shared<project::Project>();
+Application::Application() : projectWindow(this) {
+    open(std::make_shared<project::Project>());
 }
 
 bool Application::init() {
@@ -63,7 +65,6 @@ bool Application::init() {
 }
 
 void Application::applyTheme() const {
-    printf("APPLY\n");
     switch (theme) {
         case 0:
             ImGui::StyleColorsClassic();
@@ -88,20 +89,21 @@ int Application::runLoop() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        int viewportWidth, viewportHeight;
+        glfwGetFramebufferSize(mainWindow, &viewportWidth, &viewportHeight);
+
         // gui palette purpose
         //ImGui::ShowDemoWindow();
 
         windowMenu();
 
         // show frame
-        myEditor.editorOf(proj.get());
+        projectWindow.resize(viewportWidth, viewportHeight);
+        projectWindow.showFrame();
 
         // Rendering
         ImGui::Render();
 
-        int viewportWidth, viewportHeight;
-        glfwMakeContextCurrent(mainWindow);
-        glfwGetFramebufferSize(mainWindow, &viewportWidth, &viewportHeight);
         glViewport(0, 0, viewportWidth, viewportHeight);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -110,6 +112,15 @@ int Application::runLoop() {
         if (!showMaximized) {
             windowWidth = viewportWidth;
             windowHeight = viewportHeight;
+        }
+
+        if (closeProject) {
+            if (proj) {
+                // some close behavior, for example save confirm
+                proj.reset();
+            }
+            projectWindow.close();
+            closeProject = false;
         }
 
         glfwSwapBuffers(mainWindow);
@@ -133,66 +144,12 @@ void Application::cleanUp() {
     glfwTerminate();
 }
 
-void Application::windowMenu() {
-    if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("New", "Ctrl+N")) {
-                open(std::make_shared<project::Project>());
-            }
-            if (ImGui::MenuItem("Open", "Ctrl+O")) {
-                // todo
-            }
-            if (ImGui::MenuItem("Save", "Ctrl+S")) {
-                // todo
-            }
-            if (ImGui::MenuItem("Save As..", "Ctrl+Shift+S")) {
-                // todo
-            }
-            ImGui::Separator();
-            if (ImGui::MenuItem("Quit")) {
-                close();
-                if (!proj) {
-                    exit = true;
-                }
-            }
-            ImGui::EndMenu();
-        }
-        if (ImGui::BeginMenu("Edit")) {
-            if (ImGui::MenuItem("Undo", "CTRL+Z")) {
-                // todo
-            }
-            if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {
-                // todo
-            }
-            ImGui::Separator();
-            if (ImGui::MenuItem("Cut", "CTRL+X")) {
-                // todo
-            }
-            if (ImGui::MenuItem("Copy", "CTRL+C")) {
-                // todo
-            }
-            if (ImGui::MenuItem("Paste", "CTRL+V")) {
-                // todo
-            }
-            ImGui::Separator();
-            if (ImGui::BeginMenu("Options")) {
-                if (ImGui::Combo("Theme", &theme, "Classic\0Dark\0Light\0\0")) applyTheme();
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenu();
-        }
-        ImGui::EndMainMenuBar();
-    }
-}
-
 void Application::open(std::shared_ptr<project::Project> _proj) {
-    close();
     if (proj) return;
-    proj = _proj;
+    proj = std::move(_proj);
+    projectWindow.open(proj);
 }
 
 void Application::close() {
-    if (!proj) return;
-    // some close behavior, for example save confirm
-    proj = nullptr;
+    closeProject = true;
 }

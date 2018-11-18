@@ -16,9 +16,6 @@ class Project {
 public:
     Project();
 
-    const std::string &getName() const { return name; }
-
-private:
     std::string name;
     Canvas canvas;
     Settings settings;

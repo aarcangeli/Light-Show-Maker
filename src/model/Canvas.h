@@ -17,11 +17,14 @@ class Canvas {
 public:
     explicit Canvas(Project *parent);
 
-private:
-    Project *project;
-    time_unit duration;
+    Project *getProject() { return project; }
+
+    time_unit duration = 0;
     std::list<Decoration> decorations;
     std::list<LightGroup> groups;
+
+private:
+    Project *project;
 };
 
 }
