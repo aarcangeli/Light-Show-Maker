@@ -1,5 +1,0 @@
-set(IMGUI_HOME "${LIBS_DIRECTORY}/imgui")
-IF (NOT EXISTS "${IMGUI_HOME}/imgui.h")
-    message(FATAL_ERROR "oops. Missing imgui. had you cloned with --recursive?")
-endif ()
-set(IMGUI_INCLUDE_DIR ${IMGUI_HOME} "${IMGUI_HOME}/examples")

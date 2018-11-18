@@ -9,6 +9,8 @@ const int WINDOW_HEIGHT = 720;
 class Application {
 public:
     int runLoop();
+
+    int demoWindow();
 };
 
 }
