@@ -5,6 +5,9 @@ endif ()
 IF (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.h")
     message(FATAL_ERROR "oops. Missing imgui. had you cloned with --recursive?")
 endif ()
+IF (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/nativefiledialog/CMakeLists.txt")
+    message(FATAL_ERROR "oops. Missing nativefiledialog. had you cloned with --recursive?")
+endif ()
 
 # configure glfw
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -30,3 +33,4 @@ target_compile_definitions(imgui PRIVATE -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 target_link_libraries(imgui glad glfw ${GLFW_LIBRARIES})
 
 add_subdirectory(glad)
+add_subdirectory(nativefiledialog)
