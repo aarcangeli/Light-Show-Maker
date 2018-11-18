@@ -2,6 +2,7 @@
 #define PROJECT_H
 
 #include "vector"
+#include "string"
 #include "Canvas.h"
 #include "Settings.h"
 
@@ -15,7 +16,10 @@ class Project {
 public:
     Project();
 
+    const std::string &getName() const { return name; }
+
 private:
+    std::string name;
     Canvas canvas;
     Settings settings;
 
