@@ -6,6 +6,8 @@
 #include "configLoader.h"
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include "dpi.h"
+#include "res_fonts.h"
 
 using namespace sm;
 using namespace sm::editor;
@@ -23,6 +25,8 @@ bool Application::init() {
     ImGuiIO &io = ImGui::GetIO();
     io.IniFilename = "showmaker.ini";
     ImGui::LoadIniSettingsFromDisk(io.IniFilename);
+    if (windowWidth <= 100) windowWidth = 1280;
+    if (windowHeight <= 100) windowHeight = 720;
 
     // Initialize glfw
     if (!glfwInit()) {
@@ -64,22 +68,45 @@ bool Application::init() {
     return true;
 }
 
-void Application::applyTheme() const {
+void Application::applyTheme() {
+    ImGuiStyle &style = ImGui::GetStyle();
+    style = ImGuiStyle();
     switch (theme) {
         case 0:
             ImGui::StyleColorsClassic();
             break;
         case 1:
             ImGui::StyleColorsDark();
+            style.Colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.80f, 1.00f);
+            style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
             break;
         case 2:
             ImGui::StyleColorsLight();
             break;
     }
+    style.FramePadding = {6, 4};
+    style.WindowRounding = 3;
+    style.ScrollbarRounding = 3;
+    ImGuiIO &io = ImGui::GetIO();
+    style.ScaleAllSizes(dpi);
+    io.Fonts->Clear();
+    io.FontDefault = loadFont(fonts::Roboto_Medium, fonts::Roboto_Medium_end, FONT_BASE * dpi);
+    dirtyStyle = false;
+    ImGui_ImplOpenGL3_DestroyFontsTexture();
+    //ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
 }
 
 int Application::runLoop() {
+
     while (!exit && !glfwWindowShouldClose(mainWindow)) {
+        // manage dpi change
+        float currentDpi = getDpiForWindow(mainWindow);
+        if (dpi != currentDpi) {
+            dpi = currentDpi;
+            dirtyStyle = true;
+        }
+        if (dirtyStyle) applyTheme();
+
         // process events
         glfwPollEvents();
         glfwMakeContextCurrent(mainWindow);
@@ -93,9 +120,7 @@ int Application::runLoop() {
         glfwGetFramebufferSize(mainWindow, &viewportWidth, &viewportHeight);
 
         // gui palette purpose
-        //ImGui::ShowDemoWindow();
-
-        windowMenu();
+        ImGui::ShowDemoWindow();
 
         // show frame
         projectWindow.resize(viewportWidth, viewportHeight);
@@ -152,4 +177,13 @@ void Application::open(std::shared_ptr<project::Project> _proj) {
 
 void Application::close() {
     closeProject = true;
+}
+
+ImFont *Application::loadFont(const char *start, const char *end, float size) const {
+    ImFontConfig config;
+    config.FontDataOwnedByAtlas = false;
+    return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+            (void *) start,
+            (int) (end - start),
+            size, &config);
 }

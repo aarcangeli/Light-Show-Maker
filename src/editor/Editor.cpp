@@ -12,6 +12,7 @@ using namespace ImGui;
 Editor::Editor() = default;
 
 void Editor::editorOf(Project *project) {
+    return;
     static int test = 0;
 
 //    {
@@ -42,7 +43,7 @@ void Editor::editorOf(Project *project) {
 
 
     ImGui::Columns(2);
-    //SetColumnWidth(0, 100);
+    if (firstShow) SetColumnWidth(0, 300);
     ImGui::Separator();
 
     ImGui::Text("Header1");
@@ -88,6 +89,7 @@ void Editor::editorOf(Project *project) {
 
     Columns(1);
     Separator();
+    firstShow = false;
 }
 
 void Editor::editorComponent(Canvas &canvas) {
@@ -180,7 +182,7 @@ void Editor::parseTime(const char *_buf, sm::time_unit &time) {
     }
 }
 
-void Editor::skipWhitespace(std::string &buf) {
+inline void Editor::skipWhitespace(std::string &buf) {
     size_t pos = 0;
     while (ImCharIsBlankA(buf[pos]))
         pos++;

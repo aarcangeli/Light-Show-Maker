@@ -13,6 +13,7 @@ public:
     void editorOf(project::Project *project);
 
 private:
+    bool firstShow = true;
     void editorComponent(project::Canvas &canvas);
     void editorComponent(const char *label, time_unit &time);
 

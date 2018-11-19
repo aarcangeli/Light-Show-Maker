@@ -13,6 +13,7 @@
 namespace sm {
 
 class Application {
+    const float FONT_BASE = 15;
 public:
     Application();
 
@@ -26,19 +27,34 @@ public:
     bool showMaximized = false;
     int windowWidth = 1280;
     int windowHeight = 720;
-    int theme = 1;
 
-    void applyTheme() const;
+    int getTheme() const {
+        return theme;
+    }
+
+    void setTheme(int theme) {
+        if (theme >= 0 && theme < 3) {
+            Application::theme = theme;
+            dirtyStyle = true;
+        }
+    }
 
 private:
+    int theme = 1;
+
     GLFWwindow *mainWindow = nullptr;
     ImGuiContext *ctx = nullptr;
     bool exit = false;
     bool closeProject = false;
+    float dpi = 1;
+    bool dirtyStyle = false;
 
     std::shared_ptr<project::Project> proj;
     ProjectWindow projectWindow;
 
+    ImFont *loadFont(const char *start, const char *end, float size) const;
+
+    void applyTheme();
 };
 
 }

@@ -19,7 +19,7 @@ public:
 
     Project *getProject() { return project; }
 
-    time_unit duration = 0;
+    time_unit duration = 210 * TIME_UNITS;
     std::list<Decoration> decorations;
     std::list<LightGroup> groups;
 
