@@ -3,11 +3,15 @@
 #include "TimelineEditor.h"
 #include <algorithm>
 #include <imgui_internal.h>
+#include <nfd.h>
+#include <Application.h>
 
+using namespace sm;
 using namespace sm::editor;
 using namespace ImGui;
 
-TimelineEditor::TimelineEditor() {
+TimelineEditor::TimelineEditor(Application *app) : app(app) {
+    assert(app);
     reset();
 }
 
@@ -85,22 +89,59 @@ void TimelineEditor::editorOf(project::Canvas canvas) {
     }
 
     SetCursorScreenPos(canvas_pos + ImVec2(0, canvas_size.y - headerBottom));
+
+    bool openAudioFile = false;
     if (Button("Add", ImVec2(50, headerBottom))) {
-        OpenPopup("add-layer");
+        OpenPopup(POPUP_ADD_LAYER);
     }
     if (Button("Add", ImVec2(50, headerBottom))) {
-        OpenPopup("add-layer");
+        OpenPopup(POPUP_ADD_LAYER);
     }
-    if (BeginPopup("add-layer")) {
+    if (BeginPopup(POPUP_ADD_LAYER)) {
         Selectable("Light Group..");
-        Selectable("Audio File..");
+        if (Selectable("Audio File..")) {
+            nfdchar_t *outPath = nullptr;
+            const nfdchar_t *defaultPath = app->lastDirectory.c_str();
+            nfdresult_t result = NFD_OpenDialog("mp3,wav", defaultPath, &outPath);
+            if (result == NFD_OKAY) {
+                openAudioFile = true;
+                loader.startDecoding(std::string(outPath));
+                // remove last /
+                int lastSlash = -1;
+                for (int i = 0; outPath[i]; i++) if (outPath[i] == '/') lastSlash = i;
+                if (lastSlash >= 0) {
+                    outPath[lastSlash] = '\0';
+                    app->lastDirectory = outPath;
+                }
+                free(outPath);
+            }
+        }
         Selectable("Video File..");
         EndPopup();
     }
+
+    if (openAudioFile) OpenPopup(MODAL_ADD_AUDIO);
+    addAudioModal();
+
+    // todo: scrollbars
+    // window->DrawList->AddRectFilled(grab_rect.Min, grab_rect.Max, grab_col, style.ScrollbarRounding);
 
     EndGroup();
 }
 
 ImU32 TimelineEditor::setAlpha(ImU32 color, double alpha) {
     return (color & 0xffffff) + (((uint32_t) (alpha * 0xff) & 0xff) << 27);
+}
+
+void TimelineEditor::addAudioModal() {
+    if (ImGui::BeginPopupModal(MODAL_ADD_AUDIO, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("All those beautiful files will be deleted.\nThis operation cannot be undone!\n\n");
+        ImGui::Separator();
+
+        if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+        ImGui::SetItemDefaultFocus();
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+        ImGui::EndPopup();
+    }
 }

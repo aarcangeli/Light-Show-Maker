@@ -5,6 +5,7 @@
 #include <imgui_internal.h>
 #include <stdexcept>
 
+using namespace sm;
 using namespace sm::editor;
 using namespace sm::project;
 using namespace ImGui;

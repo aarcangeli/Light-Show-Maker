@@ -33,4 +33,5 @@ target_compile_definitions(imgui PRIVATE -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 target_link_libraries(imgui glad glfw ${GLFW_LIBRARIES})
 
 add_subdirectory(glad)
+add_subdirectory(ffmpeg)
 add_subdirectory(nativefiledialog)

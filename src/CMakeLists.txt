@@ -1,4 +1,5 @@
 add_subdirectory(core)
+add_subdirectory(media)
 add_subdirectory(model)
 add_subdirectory(editor)
 add_subdirectory(showmaker)

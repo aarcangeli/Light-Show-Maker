@@ -25,6 +25,7 @@ public:
     void cleanUp();
 
     bool showMaximized = false;
+    std::string lastDirectory = "";
     int windowWidth = 1280;
     int windowHeight = 720;
 
