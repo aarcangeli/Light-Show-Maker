@@ -5,9 +5,11 @@
 #include <imgui_internal.h>
 #include <nfd.h>
 #include <Application.h>
+#include <IconsFontAwesome4.h>
 
 using namespace sm;
 using namespace sm::editor;
+using namespace sm::media;
 using namespace ImGui;
 
 TimelineEditor::TimelineEditor(Application *app) : app(app) {
@@ -22,11 +24,11 @@ void TimelineEditor::reset() {
 
 void TimelineEditor::editorOf(project::Canvas canvas) {
     ImGuiStyle &style = GetStyle();
-    ImDrawList *draw_list = ImGui::GetWindowDrawList();
+    ImDrawList *draw_list = GetWindowDrawList();
     ImGuiIO &io = GetIO();
     int cx = (int) (io.MousePos.x);
     int cy = (int) (io.MousePos.y);
-    ImFont *font = io.FontDefault;
+    ImFont *font = GetDefaultFont();
     float fontSize = font->FontSize;
 
     bool isHovered = IsWindowHovered();
@@ -44,10 +46,10 @@ void TimelineEditor::editorOf(project::Canvas canvas) {
 
     time_unit duration = canvas.duration;
 
-    ImGui::BeginGroup();
+    BeginGroup();
 
     ImVec2 canvas_pos = GetCursorScreenPos();
-    ImVec2 canvas_size = ImGui::GetContentRegionAvail();
+    ImVec2 canvas_size = GetContentRegionAvail();
 
     ImRect regionRect(canvas_pos, canvas_pos + canvas_size);
     if (isHovered && regionRect.Contains(io.MousePos)) {
@@ -64,7 +66,8 @@ void TimelineEditor::editorOf(project::Canvas canvas) {
                              ImVec2(canvas_pos.x + leftSideWidth, regionRect.Max.y - headerBottom),
                              setAlpha(background, 0.03), 0);
 
-    draw_list->AddRectFilled(canvas_pos, ImVec2(canvas_size.x + canvas_pos.x, canvas_pos.y + headerHeight), setAlpha(background, 0.04), 0);
+    draw_list->AddRectFilled(canvas_pos, ImVec2(canvas_size.x + canvas_pos.x, canvas_pos.y + headerHeight),
+                             setAlpha(background, 0.04), 0);
 
     // header times
     int step = 1;
@@ -91,6 +94,7 @@ void TimelineEditor::editorOf(project::Canvas canvas) {
     SetCursorScreenPos(canvas_pos + ImVec2(0, canvas_size.y - headerBottom));
 
     bool openAudioFile = false;
+    bool openErrorBox = false;
     if (Button("Add", ImVec2(50, headerBottom))) {
         OpenPopup(POPUP_ADD_LAYER);
     }
@@ -101,27 +105,26 @@ void TimelineEditor::editorOf(project::Canvas canvas) {
         Selectable("Light Group..");
         if (Selectable("Audio File..")) {
             nfdchar_t *outPath = nullptr;
-            const nfdchar_t *defaultPath = app->lastDirectory.c_str();
-            nfdresult_t result = NFD_OpenDialog("mp3,wav", defaultPath, &outPath);
+            nfdresult_t result = NFD_OpenDialog("mp3,wav,mp4,avi", app->lastDirectory.c_str(), &outPath);
             if (result == NFD_OKAY) {
-                openAudioFile = true;
-                loader.startDecoding(std::string(outPath));
-                // remove last /
-                int lastSlash = -1;
-                for (int i = 0; outPath[i]; i++) if (outPath[i] == '/') lastSlash = i;
-                if (lastSlash >= 0) {
-                    outPath[lastSlash] = '\0';
-                    app->lastDirectory = outPath;
+                loader.open(std::string(outPath));
+                if (!loader.isOpen()) {
+                    lastError = "Cannot open '" + std::string(outPath) + "'";
+                    openErrorBox = true;
+                } else {
+                    openAudioFile = true;
+                    saveLastDirectory(outPath);
                 }
                 free(outPath);
             }
         }
-        Selectable("Video File..");
         EndPopup();
     }
 
     if (openAudioFile) OpenPopup(MODAL_ADD_AUDIO);
+    if (openErrorBox) OpenPopup(MODAL_ERROR);
     addAudioModal();
+    errorBox();
 
     // todo: scrollbars
     // window->DrawList->AddRectFilled(grab_rect.Min, grab_rect.Max, grab_col, style.ScrollbarRounding);
@@ -129,19 +132,52 @@ void TimelineEditor::editorOf(project::Canvas canvas) {
     EndGroup();
 }
 
+void TimelineEditor::saveLastDirectory(const nfdchar_t *outPath) const {
+    // remove last /
+    std::string path = outPath;
+    int lastSlash = -1;
+    for (int i = 0; path[i]; i++) if (path[i] == '/') lastSlash = i;
+    if (lastSlash >= 0) {
+        path[lastSlash] = '\0';
+        app->lastDirectory = path;
+    }
+}
+
 ImU32 TimelineEditor::setAlpha(ImU32 color, double alpha) {
     return (color & 0xffffff) + (((uint32_t) (alpha * 0xff) & 0xff) << 27);
 }
 
 void TimelineEditor::addAudioModal() {
-    if (ImGui::BeginPopupModal(MODAL_ADD_AUDIO, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        ImGui::Text("All those beautiful files will be deleted.\nThis operation cannot be undone!\n\n");
-        ImGui::Separator();
+    if (BeginPopupModal(MODAL_ADD_AUDIO, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        Indent();
+        for (auto &stream : loader.streams) {
+            switch (stream.type) {
+                case StreamType::AUDIO:
+                    Button(ICON_FA_HEADPHONES);
+                    break;
+                case StreamType::VIDEO:
+                    Button(ICON_FA_VIDEO_CAMERA);
+                    break;
+                default:
+                    Button(ICON_FA_QUESTION);
+            }
+        }
+        Unindent();
+        Separator();
+        if (Button("OK", ImVec2(120, 0))) { CloseCurrentPopup(); }
+        SetItemDefaultFocus();
+        SameLine();
+        if (Button("Cancel", ImVec2(120, 0))) { CloseCurrentPopup(); }
+        EndPopup();
+    }
+}
 
-        if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-        ImGui::SetItemDefaultFocus();
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-        ImGui::EndPopup();
+void TimelineEditor::errorBox() {
+    if (BeginPopupModal(MODAL_ERROR, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        Text("Error: %s", lastError.c_str());
+        SetCursorScreenPos(GetCursorScreenPos() + ImVec2((GetContentRegionAvail().x - 120) / 2, 0));
+        if (Button("OK", ImVec2(120, 0))) { CloseCurrentPopup(); }
+        SetItemDefaultFocus();
+        EndPopup();
     }
 }

@@ -9,6 +9,7 @@
 #include <functional>
 #include <imgui.h>
 #include "ProjectWindow.h"
+#include "AudioDevice.h"
 
 namespace sm {
 
@@ -52,8 +53,9 @@ private:
 
     std::shared_ptr<project::Project> proj;
     ProjectWindow projectWindow;
+    media::AudioDevice device;
 
-    ImFont *loadFont(const char *start, const char *end, float size) const;
+    ImFont *loadFont(const char *start, const char *end, float size, bool fontAwesome) const;
 
     void applyTheme();
 };

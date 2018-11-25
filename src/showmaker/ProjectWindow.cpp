@@ -3,6 +3,7 @@
 #include "ProjectWindow.h"
 
 #include "Application.h"
+#include <IconsFontAwesome4.h>
 
 using namespace sm;
 using namespace ImGui;
@@ -78,7 +79,7 @@ void ProjectWindow::timelineWindow() {
 
 void ProjectWindow::showMenu() {
     if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("File")) {
+        if (ImGui::BeginMenu("File " ICON_FA_GITHUB_SQUARE )) {
             if (ImGui::MenuItem("New", "Ctrl+N")) {
                 app->open(std::make_shared<project::Project>());
             }

@@ -20,6 +20,11 @@ struct time_unwrapped {
     uint64_t hours;
 };
 
+// PushFont(GetIO().Fonts->Fonts[FONT_BIG]);
+// PopFont();
+#define FONT_NORMAL 0
+#define FONT_BIG 1
+
 time_unwrapped time_unwrap(time_unit in);
 time_unit time_wrap(const time_unwrapped &in);
 

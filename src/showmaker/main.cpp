@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "dpi.h"
 #include <cstdio>
+#define SDL_MAIN_HANDLED
 
 using namespace sm;
 

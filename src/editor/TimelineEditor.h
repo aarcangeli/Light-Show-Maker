@@ -13,7 +13,8 @@ namespace editor {
 
 class TimelineEditor {
     const char *POPUP_ADD_LAYER = "POPUP_ADD_LAYER";
-    const char *MODAL_ADD_AUDIO = "Add Audio Track";
+    const char *MODAL_ADD_AUDIO = "Audio Track";
+    const char *MODAL_ERROR = "Error!";
 
     const int POPUP_SETTINGS = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings;
 
@@ -32,8 +33,14 @@ private:
     media::AudioLoader loader;
     sm::Application *app;
 
+    std::string lastError;
+
     ImU32 setAlpha(ImU32 color, double alpha);
     void addAudioModal();
+
+    void saveLastDirectory(const char *outPath) const;
+
+    void errorBox();
 };
 
 }

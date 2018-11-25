@@ -8,6 +8,7 @@
 #include <imgui_impl_opengl3.h>
 #include "dpi.h"
 #include "res_fonts.h"
+#include "IconsFontAwesome4.h"
 
 using namespace sm;
 using namespace sm::editor;
@@ -65,6 +66,8 @@ bool Application::init() {
     glClearColor(0.3, 0.3, 0.3, 1);
     glClearDepth(1);
 
+    device.open();
+
     return true;
 }
 
@@ -90,10 +93,14 @@ void Application::applyTheme() {
     ImGuiIO &io = ImGui::GetIO();
     style.ScaleAllSizes(dpi);
     io.Fonts->Clear();
-    io.FontDefault = loadFont(fonts::Roboto_Medium, fonts::Roboto_Medium_end, FONT_BASE * dpi);
+    // FONT_NORMAL
+    io.FontDefault = loadFont(fonts::Roboto_Medium, fonts::Roboto_Medium_end, FONT_BASE * dpi, false);
+    loadFont(fonts::fontawesome_webfont, fonts::fontawesome_webfont_end, FONT_BASE * dpi, true);
+    // FONT_BIG
+    loadFont(fonts::Roboto_Medium, fonts::Roboto_Medium_end, FONT_BASE * dpi * 2, false);
+    loadFont(fonts::fontawesome_webfont, fonts::fontawesome_webfont_end, FONT_BASE * dpi * 2, true);
     dirtyStyle = false;
     ImGui_ImplOpenGL3_DestroyFontsTexture();
-    //ImGuiFreeType::BuildFontAtlas(io.Fonts, 0);
 }
 
 int Application::runLoop() {
@@ -179,11 +186,18 @@ void Application::close() {
     closeProject = true;
 }
 
-ImFont *Application::loadFont(const char *start, const char *end, float size) const {
+ImFont *Application::loadFont(const char *start, const char *end, float size, bool fontAwesome) const {
     ImFontConfig config;
     config.FontDataOwnedByAtlas = false;
+    const ImWchar *ranges = nullptr;
+    if (fontAwesome) {
+        config.MergeMode = true;
+        config.GlyphMinAdvanceX = size;
+        static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
+        ranges = icon_ranges;
+    }
     return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
             (void *) start,
             (int) (end - start),
-            size, &config);
+            size, &config, ranges);
 }
