@@ -2,9 +2,13 @@
 
 using namespace sm::media;
 
-AudioLoader::AudioLoader() = default;
+AudioLoader::AudioLoader() {
+    frame = av_frame_alloc();
+};
 
-AudioLoader::~AudioLoader() = default;
+AudioLoader::~AudioLoader() {
+    av_frame_free(&frame);
+};
 
 void AudioLoader::open(std::string filename) {
     close();
@@ -27,12 +31,32 @@ void AudioLoader::open(std::string filename) {
 
     for (int i = 0; i < fmt_ctx->nb_streams; i++) {
         AVStream *stream = fmt_ctx->streams[i];
-        StreamInfo info;
+        StreamInfo info{};
         info.number = i;
         info.type = (StreamType) stream->codecpar->codec_type;
         float duration = (float) stream->duration * stream->time_base.num / stream->time_base.den * sm::TIME_UNITS;
         info.duration = static_cast<time_unit>(duration);
+        info.sampleRate = stream->codecpar->sample_rate;
         streams.push_back(info);
+    }
+
+
+    for (auto &stream : streams) {
+        if (stream.type != AUDIO) continue;
+        AVCodecContext *dec_ctx;
+        dec_ctx = avcodec_alloc_context3(dec);
+        if (!dec_ctx) {
+            printf("Cannot allocate AVCodecContext\n");
+            return;
+        }
+        avcodec_parameters_to_context(dec_ctx, fmt_ctx->streams[stream.number]->codecpar);
+        if (avcodec_open2(dec_ctx, dec, nullptr) < 0) {
+            printf("Cannot open decoder for stream %i in '%s'\n", stream.number, filename.c_str());
+            avcodec_free_context(&dec_ctx);
+            continue;
+        }
+        stream.dec_ctx = dec_ctx;
+        break;
     }
 
     mIsOpen = true;
@@ -45,4 +69,49 @@ void AudioLoader::close() {
 }
 
 void AudioLoader::process() {
+    if (!mIsOpen) return;
+
+    // todo: time based process
+    while (mIsOpen) loop();
 }
+
+void AudioLoader::loop() {
+    int ret;
+    AVPacket packet;
+
+    if (av_read_frame(fmt_ctx, &packet) < 0) {
+        close();
+        return;
+    }
+
+    StreamInfo stream = streams[packet.stream_index];
+    if (!stream.dec_ctx) {
+        return;
+    }
+
+    ret = avcodec_send_packet(stream.dec_ctx, &packet);
+    if (ret < 0) {
+        printf("ERROR: Error while sending a packet to the decoder of stream %i\n", stream.number);
+        close();
+        return;
+    }
+
+    while (ret >= 0) {
+        ret = avcodec_receive_frame(stream.dec_ctx, frame);
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+            break;
+        }
+        if (ret < 0) {
+            printf("ERROR: Error while receiving a frame from the decoder of stream %i\n", stream.number);
+            close();
+            return;
+        }
+
+        printf("%i\n", frame->nb_samples);
+        av_frame_unref(frame);
+    }
+
+    av_packet_unref(&packet);
+}
+
+bool AudioLoader::isOpen() { return mIsOpen; }

@@ -41,9 +41,12 @@ void ScrollablePane::scrollPaneBegin(const ImRect &bounds, const ImVec2 &content
     zoom = ImLerp(zoom, zoomTarget, 0.33f);
     scrollX = (scrollX + center) * (zoom.x / oldZoom) - center;
 
-    float maxValue = content.x;
-    if (scrollX > maxValue) scrollX = maxValue;
+    float maxValueX = content.x - (bounds.Max.x - bounds.Min.x);
+    if (scrollX > maxValueX) scrollX = maxValueX;
     if (scrollX < 0) scrollX = 0;
+    float maxValueY = content.y - (bounds.Max.y - bounds.Min.y);
+    if (scrollY > maxValueY) scrollY = maxValueY;
+    if (scrollY < 0) scrollY = 0;
 
     SetScrollX(scrollX);
     SetScrollY(scrollY);

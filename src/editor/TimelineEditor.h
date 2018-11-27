@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <AudioLoader.h>
 #include <ScrollablePane.h>
+#include <AudioDevice.h>
 
 namespace sm {
 class Application;
@@ -35,7 +36,7 @@ class TimelineEditor {
 public:
     explicit TimelineEditor(Application *app);
     void reset();
-    void editorOf(const project::Canvas &canvas);
+    void editorOf(project::Canvas &canvas);
 
     float dpi;
 
@@ -74,6 +75,8 @@ private:
     float getTimePos(time_unit time);
     void printTimeline(const project::Canvas &canvas, ImRect rect);
     std::string timeLabel(time_unit time) const;
+
+    sm::media::AudioDevice device;
 };
 
 }

@@ -36,7 +36,7 @@ void TimelineEditor::reset() {
  *    +-------------------+----------------------------------------------+      *
  *
  */
-void TimelineEditor::editorOf(const project::Canvas &canvas) {
+void TimelineEditor::editorOf(project::Canvas &canvas) {
     ImGuiStyle &style = GetStyle();
     ImDrawList *drawList = GetWindowDrawList();
     ImGuiIO &io = GetIO();
@@ -67,7 +67,7 @@ void TimelineEditor::editorOf(const project::Canvas &canvas) {
     leftSideWidth = fontSize * 20;
     layerHeight = ImFloor(fontSize * 3);
     lineDim = ImFloor(dpi);
-    delim1 = ImFloor(fontSize * 0.7);
+    delim1 = ImFloor(fontSize * 0.7f);
 
     // all region
     ImRect regionRect(widgetPos, widgetPos + widgetSize);
@@ -97,7 +97,9 @@ void TimelineEditor::editorOf(const project::Canvas &canvas) {
         OpenPopup(POPUP_ADD_LAYER);
     }
     if (BeginPopup(POPUP_ADD_LAYER)) {
-        Selectable("Light Group..");
+        if (Selectable("Light Group..")) {
+            canvas.makeGroup();
+        }
         if (Selectable("Audio File..")) {
             nfdchar_t *outPath = nullptr;
             nfdresult_t result = NFD_OpenDialog("mp3,wav,mp4,avi", app->lastDirectory.c_str(), &outPath);
@@ -128,7 +130,7 @@ void TimelineEditor::saveLastDirectory(const nfdchar_t *outPath) const {
     // remove last /
     std::string path = outPath;
     int lastSlash = -1;
-    for (int i = 0; path[i]; i++) if (path[i] == '/') lastSlash = i;
+    for (int i = 0; path[i]; i++) if (path[i] == '/' || path[i] == '\\') lastSlash = i;
     if (lastSlash >= 0) {
         path[lastSlash] = '\0';
         app->lastDirectory = path;
@@ -146,12 +148,17 @@ void TimelineEditor::addAudioModal() {
             switch (stream.type) {
                 case StreamType::AUDIO:
                     Button(ICON_FA_HEADPHONES);
+                    SameLine();
+                    Text("Audio #%i", stream.number);
                     break;
                 case StreamType::VIDEO:
                     Button(ICON_FA_VIDEO_CAMERA);
+                    SameLine();
+                    Text("Video #%i", stream.number);
                     break;
                 default:
                     Button(ICON_FA_QUESTION);
+                    Text("Unknown #%i", stream.number);
             }
         }
         Unindent();
@@ -161,6 +168,8 @@ void TimelineEditor::addAudioModal() {
         SameLine();
         if (Button("Cancel", ImVec2(120, 0))) { CloseCurrentPopup(); }
         EndPopup();
+
+        loader.process();
     }
 }
 
@@ -287,9 +296,6 @@ void TimelineEditor::printLayer(project::LightGroup *group, ImRect rect) {
     drawList->AddRectFilled(rect.Min, rect.Max, COLOR_LAYER, 0);
 
     TextColored(COLOR_TEXT, "%s", group->name.c_str());
-    //std::string text = group->name;
-    //drawList->AddText(rect.Min, COLOR_TEXT, text.c_str(), text.c_str() + text.size());
-    //drawList->AddImage(rect.Min, COLOR_TEXT, text.c_str(), text.c_str() + text.size());
 
     EndChild();
     SetCursorPos(oldPos);

@@ -17,9 +17,6 @@ using namespace sm::editor;
 
 Application::Application() : projectWindow(this) {
     open(std::make_shared<project::Project>());
-    for (int i = 0; i < 10; i++) {
-        proj->canvas.makeGroup();
-    }
 }
 
 bool Application::init() {
@@ -93,7 +90,8 @@ void Application::applyTheme() {
             break;
     }
     style.FramePadding = {6, 4};
-    style.WindowRounding = 3;
+    style.WindowRounding = 0;
+    style.WindowBorderSize = 0;
     style.ScrollbarRounding = 3;
     ImGuiIO &io = ImGui::GetIO();
     style.ScaleAllSizes(dpi);

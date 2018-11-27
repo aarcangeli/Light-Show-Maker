@@ -22,7 +22,13 @@ enum StreamType {
 struct StreamInfo {
     int number;
     StreamType type;
+    int sampleRate;
     sm::time_unit duration;
+
+private:
+    AVCodecContext *dec_ctx = nullptr;
+
+    friend class AudioLoader;
 };
 
 class AudioLoader {
@@ -32,7 +38,7 @@ public:
 
     void open(std::string filename);
     void close();
-    bool isOpen() { return mIsOpen; }
+    bool isOpen();
     void process();
 
     std::vector<StreamInfo> streams;
@@ -43,6 +49,8 @@ private:
     bool mIsOpen = true;
     AVFormatContext *fmt_ctx = nullptr;
     AVCodec *dec;
+    AVFrame *frame;
+    void loop();
 };
 
 }
