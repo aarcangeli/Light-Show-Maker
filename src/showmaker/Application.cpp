@@ -68,8 +68,6 @@ bool Application::init() {
     glClearColor(0.3, 0.3, 0.3, 1);
     glClearDepth(1);
 
-    device.open();
-
     return true;
 }
 

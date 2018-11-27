@@ -7,3 +7,6 @@
 [submodule "libs/nativefiledialog"]
 	path = libs/nativefiledialog
 	url = https://github.com/aarcangeli/nativefiledialog-cmake
+[submodule "libs/libao"]
+	path = libs/libao
+	url = https://github.com/aarcangeli/libao-cmake.git
