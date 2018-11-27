@@ -185,7 +185,8 @@ void TimelineEditor::printContent(const project::Canvas &canvas, const ImRect &r
 
     scroll.scrollPaneBegin(
             rect,
-            ImVec2(duration * TIME_WIDTH / TIME_UNITS + (rect.Max.x - rect.Min.x) * 0.5f, groupSize * layerHeight + headerBotHeight)
+            ImVec2(duration * TIME_WIDTH / TIME_UNITS * scale.x + (rect.Max.x - rect.Min.x) * 0.5f,
+                   groupSize * layerHeight + headerBotHeight)
     );
 
     ImDrawList *drawList = GetWindowDrawList();
@@ -195,9 +196,13 @@ void TimelineEditor::printContent(const project::Canvas &canvas, const ImRect &r
     float fontSize = font->FontSize;
 
     // calculate step
-    timeStep = TIME_UNITS;
-    while (timeStep * TIME_WIDTH * scale.x / TIME_UNITS * dpi < 8 * dpi) {
-        timeStep *= 2;
+    static time_unit steps[] = {1, 5, 10, 30, 60, 2 * 60, 5 * 60, 0};
+    timeStep = steps[0] * TIME_UNITS;
+    int count = 1;
+    while (timeStep * TIME_WIDTH * scale.x / TIME_UNITS * dpi < 40 * dpi) {
+        time_unit num = steps[count++];
+        if (!num) break;
+        timeStep = num * TIME_UNITS;
     }
 
     firstIndex = ImMax(0, (int) ImFloor(offset.y / layerHeight - headerTopHeight));
@@ -208,33 +213,10 @@ void TimelineEditor::printContent(const project::Canvas &canvas, const ImRect &r
         drawList->AddRectFilled(pos, ImVec2(rect.Max.x, pos.y + layerHeight), OVERLAY_WHITE, 0);
     }
 
-    for (time_unit i = 0; i < duration; i += timeStep * 10) {
+    for (time_unit i = 0; i < duration; i += timeStep) {
         float pos = rect.Min.x + getTimePos(i);
         drawList->AddLine(ImVec2(pos, rect.Min.y), ImVec2(pos, rect.Max.y), COLOR_LINE);
     }
-
-    float zoom = scale.x;
-
-//    int step = 1;
-//    while (step * TIME_WIDTH * zoom < 3) {
-//        step *= 10;
-//    }
-//    int stepMini = std::max(step / 10, 1);
-//    ImVec2 pos{widgetPos.x + leftSideWidth, widgetPos.y};
-//    for (int i = 0; i < 100; i += step) {
-//        ImVec2 firstPos = ImFloor(pos + ImVec2(offset.x + i * TIME_WIDTH * zoom * fontSize, 0));
-//        drawList->AddText(firstPos + ImVec2(fontSize * 0.2f, 0), textColor, std::to_string(i).c_str());
-//    }
-//
-//    for (int i = 0; i < 100; i += step) {
-//        ImVec2 firstPos = ImFloor(pos + ImVec2(offset.x + i * TIME_WIDTH * zoom * fontSize, 0));
-//        drawList->AddLine(firstPos, firstPos + ImVec2(0, widgetSize.y), colorLines);
-//    }
-//
-//    for (int i = 0; i < 100; i += stepMini) {
-//        ImVec2 firstPos = ImFloor(pos + ImVec2(offset.x + i * TIME_WIDTH * zoom * fontSize, 0));
-//        drawList->AddLine(firstPos + ImVec2(0, headerTopHeight) * 0.7, firstPos + ImVec2(0, headerTopHeight), colorLines);
-//    }
 
     scroll.scrollPaneEnd();
 }
@@ -253,7 +235,7 @@ void TimelineEditor::printTimeline(const project::Canvas &canvas, ImRect rect) {
         drawList->AddLine(ImVec2(pos, (rect.Min.y + rect.Max.y) / 2), ImVec2(pos, rect.Max.y), COLOR_LINE);
     }
 
-    for (time_unit i = 0; i < duration; i += timeStep * 10) {
+    for (time_unit i = 0; i < duration; i += timeStep) {
         float pos = rect.Min.x + getTimePos(i);
         drawList->AddText(ImVec2(pos, rect.Min.y), textColor, timeLabel(i).c_str());
     }
@@ -266,9 +248,9 @@ std::string TimelineEditor::timeLabel(time_unit time) const {
     time_unwrapped unwrapped = time_unwrap(time);
     char buffer[500];
     if (unwrapped.hours) {
-        ImFormatString(buffer, sizeof(buffer), "%02llu:%02llu:%02llu:%03llu", unwrapped.hours, unwrapped.minutes, unwrapped.seconds, unwrapped.mills);
+        ImFormatString(buffer, sizeof(buffer), "%02llu:%02llu:%02llu", unwrapped.hours, unwrapped.minutes, unwrapped.seconds);
     } else {
-        ImFormatString(buffer, sizeof(buffer), "%02llu:%02llu:%03llu", unwrapped.minutes, unwrapped.seconds, unwrapped.mills);
+        ImFormatString(buffer, sizeof(buffer), "%02llu:%02llu", unwrapped.minutes, unwrapped.seconds);
     }
     return buffer;
 }

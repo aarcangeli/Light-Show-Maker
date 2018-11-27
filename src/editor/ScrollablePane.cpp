@@ -30,13 +30,23 @@ void ScrollablePane::scrollPaneBegin(const ImRect &bounds, const ImVec2 &content
             zoomTarget.x *= factor;
             zoomTarget.x = ImClamp(zoomTarget.x, 0.076278f, 49.785397f);
         } else if (io.KeyShift) {
-            SetScrollX(GetScrollX() - io.MouseWheel * scrollAmount);
+            scrollX -= io.MouseWheel * scrollAmount;
         } else {
-            SetScrollY(GetScrollY() - io.MouseWheel * scrollAmount);
+            scrollY -= io.MouseWheel * scrollAmount;
         }
     }
 
+    float center = io.MousePos.x - bounds.Min.x;
+    float oldZoom = zoom.x;
     zoom = ImLerp(zoom, zoomTarget, 0.33f);
+    scrollX = (scrollX + center) * (zoom.x / oldZoom) - center;
+
+    float maxValue = content.x;
+    if (scrollX > maxValue) scrollX = maxValue;
+    if (scrollX < 0) scrollX = 0;
+
+    SetScrollX(scrollX);
+    SetScrollY(scrollY);
 }
 
 void ScrollablePane::scrollPaneEnd() {
