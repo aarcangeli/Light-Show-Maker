@@ -26,6 +26,8 @@ public:
 
     void showFrame();
 
+    float dpi;
+
 private:
     Application *app;
     std::shared_ptr<project::Project> proj;

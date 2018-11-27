@@ -1,6 +1,8 @@
 #ifndef CANVAS_H
 #define CANVAS_H
 
+#include "vector"
+#include "memory"
 #include "core.h"
 #include "list"
 #include "LightGroup.h"
@@ -21,7 +23,9 @@ public:
 
     time_unit duration = 210 * TIME_UNITS;
     std::list<Decoration> decorations;
-    std::list<LightGroup> groups;
+    std::vector<std::shared_ptr<LightGroup>> groups;
+
+    std::shared_ptr<LightGroup> makeGroup();
 
 private:
     Project *project;

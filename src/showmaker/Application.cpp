@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include <unistd.h>
+#include <string>
 #include "Application.h"
 #include "configLoader.h"
 #include <imgui_impl_glfw.h>
@@ -15,6 +17,9 @@ using namespace sm::editor;
 
 Application::Application() : projectWindow(this) {
     open(std::make_shared<project::Project>());
+    for (int i = 0; i < 10; i++) {
+        proj->canvas.makeGroup();
+    }
 }
 
 bool Application::init() {
@@ -131,6 +136,7 @@ int Application::runLoop() {
 
         // show frame
         projectWindow.resize(viewportWidth, viewportHeight);
+        projectWindow.dpi = dpi;
         projectWindow.showFrame();
 
         // Rendering
@@ -156,6 +162,7 @@ int Application::runLoop() {
         }
 
         glfwSwapBuffers(mainWindow);
+        //usleep(500 * 1000);
     }
 
 

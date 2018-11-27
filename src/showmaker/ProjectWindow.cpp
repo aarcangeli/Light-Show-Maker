@@ -13,6 +13,8 @@ ProjectWindow::ProjectWindow(Application *app) : app(app), timelineEditor(app) {
 void ProjectWindow::showFrame() {
     if (viewportWidth <= 0 || viewportHeight <= 0 || !proj) return;
 
+    timelineEditor.dpi = dpi;
+
     mainFrame();
 
     outputWindow();

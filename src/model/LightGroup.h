@@ -2,6 +2,7 @@
 #define LIGHTGROUP_H
 
 #include <list>
+#include <string>
 #include "Decoration.h"
 #include "core.h"
 #include "KeyPoint.h"
@@ -14,10 +15,12 @@ class LightGroup {
 public:
     explicit LightGroup(Canvas *canvas);
 
-private:
-    Canvas *canvas;
+    std::string name;
     std::list<Decoration> decorations;
     std::list<KeyPoint> pins;
+
+private:
+    Canvas *canvas;
 };
 
 }
