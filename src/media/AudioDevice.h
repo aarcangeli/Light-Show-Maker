@@ -17,7 +17,9 @@ public:
     AudioDevice();
     ~AudioDevice();
 
-    void open(int sampleRate, int channels);
+    void open(int sampleRate, int channels, int bits);
+
+    void play(void *data, int size);
 
 private:
     static int numberOfInstances;

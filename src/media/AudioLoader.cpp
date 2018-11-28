@@ -107,7 +107,6 @@ void AudioLoader::loop() {
             return;
         }
 
-        printf("%i\n", frame->nb_samples);
         av_frame_unref(frame);
     }
 

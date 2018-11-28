@@ -28,5 +28,5 @@ CHECK_CXX_SOURCE_RUNS("
 " WITH_THREAD)
 
 if (NOT WITH_THREAD)
-    message(FATAL_ERROR "This compiler doesn't support C++11 std::thread")
+    message(FATAL_ERROR "Unable to compile: this compiler doesn't support C++11 std::thread")
 endif ()
