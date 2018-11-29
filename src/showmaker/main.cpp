@@ -1,7 +1,6 @@
 #include "Application.h"
 #include "dpi.h"
 #include <cstdio>
-#define SDL_MAIN_HANDLED
 
 using namespace sm;
 
@@ -12,6 +11,8 @@ int main(int argc, char **argv) {
     setupDpi();
 
     Application app{};
+
+    app.setAppHome(argv[0]);
 
     // todo: parse command line
 

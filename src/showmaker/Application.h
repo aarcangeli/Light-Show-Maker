@@ -44,6 +44,8 @@ public:
     void layerSelected(std::shared_ptr<project::LightGroup> layer);
     void command(const std::string &name, const std::function<void()> &fn);
 
+    void setAppHome(std::string home);
+
 private:
     int theme = 1;
 
@@ -70,6 +72,13 @@ private:
     void applyTheme();
 
     std::shared_ptr<project::LightGroup> selected;
+    std::string home;
+    std::string iniPath;
+    std::string autosavePath;
+
+    void save(std::string filename);
+
+    void load(std::string filename);
 };
 
 }

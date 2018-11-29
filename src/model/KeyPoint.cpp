@@ -2,5 +2,4 @@
 
 using namespace sm::project;
 
-KeyPoint::KeyPoint(LightGroup *group) : group(group) {
-}
+KeyPoint::KeyPoint() = default;

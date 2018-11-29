@@ -5,6 +5,7 @@
 #include "string"
 #include "Canvas.h"
 #include "Settings.h"
+#include "Serialization.h"
 
 namespace sm {
 namespace project {
@@ -20,6 +21,11 @@ public:
     Canvas canvas;
     Settings settings;
 
+    SERIALIZATION_START {
+        ser.serialize("name", name);
+        ser.serialize("canvas", canvas);
+        ser.serialize("settings", settings);
+    }
 };
 
 }

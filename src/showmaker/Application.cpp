@@ -9,15 +9,15 @@
 #include "dpi.h"
 #include "res_fonts.h"
 #include "IconsFontAwesome4.h"
+#include "json/json.h"
+#include <algorithm>
+#include <fstream>
+#include <streambuf>
 
 using namespace sm;
 using namespace sm::editor;
 
 Application::Application() : projectWindow(this) {
-    open(std::make_shared<project::Project>());
-    proj->canvas.makeGroup();
-    proj->canvas.makeGroup();
-    proj->canvas.makeGroup();
 }
 
 bool Application::init() {
@@ -27,7 +27,7 @@ bool Application::init() {
     ctx = ImGui::CreateContext();
     loader::installConfigLoader(ctx, this);
     ImGuiIO &io = ImGui::GetIO();
-    io.IniFilename = "showmaker.ini";
+    io.IniFilename = iniPath.c_str();
     ImGui::LoadIniSettingsFromDisk(io.IniFilename);
     if (windowWidth <= 100) windowWidth = 1280;
     if (windowHeight <= 100) windowHeight = 720;
@@ -68,6 +68,15 @@ bool Application::init() {
     // some gl parameters
     glClearColor(0.3, 0.3, 0.3, 1);
     glClearDepth(1);
+
+    // restore previous project
+    load(autosavePath);
+    if (!proj) {
+        open(std::make_shared<project::Project>());
+        proj->canvas.makeGroup()->addKey(0, 100);
+        proj->canvas.makeGroup();
+        proj->canvas.makeGroup();
+    }
 
     return true;
 }
@@ -168,6 +177,7 @@ int Application::runLoop() {
         commands.resize(0);
     }
 
+    save(autosavePath);
 
     return 0;
 }
@@ -218,4 +228,34 @@ void Application::layerSelected(std::shared_ptr<project::LightGroup> layer) {
 
 void Application::command(const std::string &name, const std::function<void()> &fn) {
     commands.push_back(AppCommand{name, fn});
+}
+
+void Application::setAppHome(std::string path) {
+    std::replace(path.begin(), path.end(), '\\', '/');
+    size_t posDot = path.rfind('.');
+    size_t posSlash = path.rfind('/');
+    if (posSlash > 0 && posDot > posSlash) path.resize(posDot);
+
+    home = std::move(path);
+    iniPath = home + ".ini";
+    autosavePath = home + "-autosave.json";
+}
+
+void Application::save(std::string filename) {
+    Serializer<SER_JSON> serializer;
+    proj->serialize(serializer);
+    std::string data = serializer.toString();
+    std::ofstream file(filename);
+    file << data;
+}
+
+void Application::load(std::string filename) {
+    std::ifstream file(filename);
+    if (!file.good()) return;
+    std::string data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    Serializer<DESER_JSON> serializer(data);
+
+    std::shared_ptr<project::Project> proj = std::make_shared<project::Project>();
+    proj->serialize(serializer);
+    open(proj);
 }

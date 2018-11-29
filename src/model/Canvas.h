@@ -7,6 +7,7 @@
 #include "list"
 #include "LightGroup.h"
 #include "Decoration.h"
+#include "Serialization.h"
 
 namespace sm {
 namespace project {
@@ -22,12 +23,17 @@ public:
     Project *getProject() { return project; }
 
     time_unit duration = 210 * TIME_UNITS;
-    std::list<Decoration> decorations;
+    std::vector<std::shared_ptr<Decoration>> decorations;
     std::vector<std::shared_ptr<LightGroup>> groups;
 
     std::shared_ptr<LightGroup> makeGroup();
 
     void deleteGroup(const std::shared_ptr<LightGroup> &group);
+
+    SERIALIZATION_START {
+        ser.serialize("decorations", decorations);
+        ser.serialize("groups", groups);
+    }
 
 private:
     Project *project;

@@ -32,6 +32,13 @@ target_include_directories(imgui PUBLIC imgui imgui/examples ${OPENGL_INCLUDE_DI
 target_compile_definitions(imgui PRIVATE -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 target_link_libraries(imgui glad glfw ${GLFW_LIBRARIES})
 
+set(JSONCPP_WITH_TESTS OFF CACHE BOOL "" FORCE)
+set(JSONCPP_WITH_POST_BUILD_UNITTEST OFF CACHE BOOL "" FORCE)
+set(JSONCPP_WITH_WARNING_AS_ERROR OFF CACHE BOOL "" FORCE)
+set(JSONCPP_WITH_STRICT_ISO OFF CACHE BOOL "" FORCE)
+set(JSONCPP_WITH_CMAKE_PACKAGE OFF CACHE BOOL "" FORCE)
+add_subdirectory(jsoncpp)
+
 add_subdirectory(glad)
 add_subdirectory(ffmpeg)
 add_subdirectory(nativefiledialog)

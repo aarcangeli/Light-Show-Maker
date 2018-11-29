@@ -10,3 +10,6 @@
 [submodule "libs/libao"]
 	path = libs/libao
 	url = https://github.com/aarcangeli/libao-cmake.git
+[submodule "libs/jsoncpp"]
+	path = libs/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp.git

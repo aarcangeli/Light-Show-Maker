@@ -4,8 +4,7 @@
 using namespace sm;
 using namespace sm::project;
 
-LightGroup::LightGroup(Canvas *canvas) : canvas(canvas) {
-}
+LightGroup::LightGroup() = default;
 
 LightGroup::~LightGroup() {
     int t = 0;
@@ -13,7 +12,7 @@ LightGroup::~LightGroup() {
 
 std::shared_ptr<KeyPoint> LightGroup::addKey(sm::time_unit start, sm::time_unit duration) {
     assert(sanityCheck());
-    auto ret = std::make_shared<KeyPoint>(this);
+    auto ret = std::make_shared<KeyPoint>();
     ret->start = start;
     ret->duration = duration;
     keys.insert(keys.begin() + findIndex(start), ret);
