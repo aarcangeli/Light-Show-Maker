@@ -41,8 +41,18 @@ public:
         }
     }
 
+    void layerSelected(std::shared_ptr<project::LightGroup> layer);
+    void command(const std::string &name, const std::function<void()> &fn);
+
 private:
     int theme = 1;
+
+    struct AppCommand {
+        std::string name;
+        std::function<void()> fn;
+    };
+
+    std::vector<AppCommand> commands;
 
     GLFWwindow *mainWindow = nullptr;
     ImGuiContext *ctx = nullptr;
@@ -58,6 +68,8 @@ private:
     ImFont *loadFont(const char *start, const char *end, float size, bool fontAwesome) const;
 
     void applyTheme();
+
+    std::shared_ptr<project::LightGroup> selected;
 };
 
 }

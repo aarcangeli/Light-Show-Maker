@@ -7,6 +7,7 @@ AudioLoader::AudioLoader() {
 };
 
 AudioLoader::~AudioLoader() {
+    close();
     av_frame_free(&frame);
 };
 
@@ -40,7 +41,6 @@ void AudioLoader::open(std::string filename) {
         streams.push_back(info);
     }
 
-
     for (auto &stream : streams) {
         if (stream.type != AUDIO) continue;
         AVCodecContext *dec_ctx;
@@ -56,7 +56,6 @@ void AudioLoader::open(std::string filename) {
             continue;
         }
         stream.dec_ctx = dec_ctx;
-        break;
     }
 
     mIsOpen = true;

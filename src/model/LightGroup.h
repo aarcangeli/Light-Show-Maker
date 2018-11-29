@@ -14,10 +14,11 @@ class Canvas;
 class LightGroup {
 public:
     explicit LightGroup(Canvas *canvas);
+    ~LightGroup();
 
     std::string name;
     std::list<Decoration> decorations;
-    std::list<KeyPoint> pins;
+    std::list<KeyPoint> keys;
 
 private:
     Canvas *canvas;

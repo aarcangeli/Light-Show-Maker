@@ -7,6 +7,7 @@
 #include <Application.h>
 #include <IconsFontAwesome4.h>
 
+using namespace std;
 using namespace sm;
 using namespace sm::editor;
 using namespace sm::media;
@@ -37,6 +38,7 @@ void TimelineEditor::reset() {
  *
  */
 void TimelineEditor::editorOf(project::Canvas &canvas) {
+    this->canvas = &canvas;
     ImGuiStyle &style = GetStyle();
     ImDrawList *drawList = GetWindowDrawList();
     ImGuiIO &io = GetIO();
@@ -49,9 +51,8 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
     int groupSize = (int) groups.size();
     time_unit duration = canvas.duration;
 
-    bool isHovered = IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
-//    printf("isHovered: %i\n", isHovered);
-
+    btnActive = ColorConvertFloat4ToU32(style.Colors[ImGuiCol_ButtonActive]);
+    btnHover = ColorConvertFloat4ToU32(style.Colors[ImGuiCol_ButtonHovered]);
     const ImU32 background = ColorConvertFloat4ToU32(style.Colors[ImGuiCol_Text]);
     const ImU32 inactive_color = ColorConvertFloat4ToU32(style.Colors[ImGuiCol_Button]);
     const ImU32 active_color = ColorConvertFloat4ToU32(style.Colors[ImGuiCol_ButtonHovered]);
@@ -104,9 +105,9 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
             nfdchar_t *outPath = nullptr;
             nfdresult_t result = NFD_OpenDialog("mp3,wav,mp4,avi", app->lastDirectory.c_str(), &outPath);
             if (result == NFD_OKAY) {
-                loader.open(std::string(outPath));
+                loader.open(string(outPath));
                 if (!loader.isOpen()) {
-                    lastError = "Cannot open '" + std::string(outPath) + "'";
+                    lastError = "Cannot open '" + string(outPath) + "'";
                     openErrorBox = true;
                 } else {
                     openAudioFile = true;
@@ -124,11 +125,12 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
     errorBox();
 
     EndGroup();
+    this->canvas = nullptr;
 }
 
 void TimelineEditor::saveLastDirectory(const nfdchar_t *outPath) const {
     // remove last /
-    std::string path = outPath;
+    string path = outPath;
     int lastSlash = -1;
     for (int i = 0; path[i]; i++) if (path[i] == '/' || path[i] == '\\') lastSlash = i;
     if (lastSlash >= 0) {
@@ -168,8 +170,6 @@ void TimelineEditor::addAudioModal() {
         SameLine();
         if (Button("Cancel", ImVec2(120, 0))) { CloseCurrentPopup(); }
         EndPopup();
-
-        loader.process();
     }
 }
 
@@ -187,7 +187,7 @@ float TimelineEditor::getTimePos(time_unit time) {
     return time * TIME_WIDTH / TIME_UNITS * scale.x * dpi - offset.x;
 }
 
-void TimelineEditor::printContent(const project::Canvas &canvas, const ImRect &rect) {
+void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
     auto &groups = canvas.groups;
     int groupSize = (int) groups.size();
     time_unit duration = canvas.duration;
@@ -202,7 +202,6 @@ void TimelineEditor::printContent(const project::Canvas &canvas, const ImRect &r
     offset = scroll.getOffset();
     scale = scroll.getScale();
     ImFont *font = GetDefaultFont();
-    float fontSize = font->FontSize;
 
     // calculate step
     static time_unit steps[] = {1, 5, 10, 30, 60, 2 * 60, 5 * 60, 0};
@@ -253,7 +252,7 @@ void TimelineEditor::printTimeline(const project::Canvas &canvas, ImRect rect) {
     SetCursorPos(oldPos);
 }
 
-std::string TimelineEditor::timeLabel(time_unit time) const {
+string TimelineEditor::timeLabel(time_unit time) {
     time_unwrapped unwrapped = time_unwrap(time);
     char buffer[500];
     if (unwrapped.hours) {
@@ -271,34 +270,69 @@ void TimelineEditor::printLayerList(const project::Canvas &canvas, ImRect rect) 
     SetCursorScreenPos(rect.Min);
 
     BeginChild("LayerList", rect.Max - rect.Min, false, ImGuiWindowFlags_NoScrollbar);
+    isLayerListFocused = IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
+
     ImDrawList *drawList = GetWindowDrawList();
 
-    drawList->AddRectFilled(ImVec2(rect.Max.x - delim1, rect.Min.y), ImVec2(rect.Max.x, rect.Min.y + indexMax * layerHeight - offset.y),
+    drawList->AddRectFilled(ImVec2(rect.Max.x - delim1, rect.Min.y),
+                            ImVec2(rect.Max.x, rect.Min.y + indexMax * layerHeight - offset.y),
                             COLOR_BG2);
 
     for (int i = firstIndex; i < indexMax; i++) {
         ImVec2 pos = rect.Min + ImVec2(0, i * layerHeight - offset.y);
         ImRect labelRect = {pos, ImVec2(rect.Max.x - delim1, pos.y + layerHeight - lineDim)};
-        printLayer(groups[i].get(), labelRect);
+        printLayer(groups[i], labelRect);
     }
 
     EndChild();
     SetCursorPos(oldPos);
 }
 
-void TimelineEditor::printLayer(project::LightGroup *group, ImRect rect) {
+void TimelineEditor::printLayer(shared_ptr<project::LightGroup> group, ImRect rect) {
+    ImGuiIO &io = GetIO();
     ImVec2 oldPos = GetCursorScreenPos();
     SetCursorScreenPos(rect.Min);
 
-    BeginChild(GetCurrentWindow()->GetID(group), rect.Max - rect.Min, false, ImGuiWindowFlags_NoScrollbar);
+    BeginChild(GetCurrentWindow()->GetID(group.get()), rect.Max - rect.Min, false, ImGuiWindowFlags_NoScrollbar);
+    bool isHovered = IsWindowHovered(0);
+    bool isSelected = selection == group;
     ImDrawList *drawList = GetWindowDrawList();
 
-    drawList->AddRectFilled(rect.Min, rect.Max, COLOR_LAYER, 0);
+    if (isHovered && io.MouseClicked[0]) {
+        selection = group;
+        isSelected = true;
+        app->layerSelected(group);
+    }
 
+    ImU32 color = isSelected ? btnActive : isHovered ? btnHover : COLOR_LAYER;
+
+    drawList->AddRectFilled(rect.Min, rect.Max, color, 0);
+    if (isSelected && !isLayerListFocused) {
+        drawList->AddRectFilled(rect.Min, rect.Max, COLOR_SEL_UNFOCUS, 0);
+    }
+
+    float size = GetFontSize();
+    SetCursorScreenPos(rect.Min + ImVec2(10, ((rect.Max.y - rect.Min.y) - size) / 2));
+    PushTextWrapPos(rect.Max.x - rect.Min.x - 50);
     TextColored(COLOR_TEXT, "%s", group->name.c_str());
+    PopTextWrapPos();
 
     EndChild();
     SetCursorPos(oldPos);
+
+    if (isLayerListFocused && isSelected && IsKeyPressed(GLFW_KEY_DELETE, false)) {
+        deleteTrack(group);
+    }
+}
+
+void TimelineEditor::deleteTrack(const shared_ptr<project::LightGroup> &group) {
+    project::Canvas *canvas = this->canvas;
+    Application *app = this->app;
+    app->command(string("Delete ") + group->name, [canvas, group, app, this]() {
+        canvas->deleteGroup(group);
+        app->layerSelected(nullptr);
+        selection.reset();
+    });
 }
 
 // misc

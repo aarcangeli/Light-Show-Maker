@@ -12,8 +12,7 @@ enum FADE_TYPE {
 };
 
 class Fade {
-
-private:
+public:
     FADE_TYPE type;
     time_unit duration;
 };

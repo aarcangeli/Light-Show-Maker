@@ -12,11 +12,12 @@ class KeyPoint {
 public:
     explicit KeyPoint(LightGroup *group);
 
-private:
-    LightGroup *group;
     time_unit start;
     time_unit length;
-    Fade fadeStart;
+    Fade fadeStart, fadeEnd;
+
+private:
+    LightGroup *group;
 };
 
 

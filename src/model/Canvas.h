@@ -27,6 +27,8 @@ public:
 
     std::shared_ptr<LightGroup> makeGroup();
 
+    void deleteGroup(const std::shared_ptr<LightGroup> &group);
+
 private:
     Project *project;
 };

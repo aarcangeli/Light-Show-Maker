@@ -4,10 +4,12 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #include "Canvas.h"
+#include "map"
 #include <imgui.h>
 #include <AudioLoader.h>
 #include <ScrollablePane.h>
 #include <AudioDevice.h>
+#include <LightGroup.h>
 
 namespace sm {
 class Application;
@@ -18,10 +20,10 @@ class TimelineEditor {
     const char *MODAL_ADD_AUDIO = "Audio Track";
     const char *MODAL_ERROR = "Error!";
 
-    const ImU32 COLOR_BG = IM_COL32(51, 51, 51, 255); // 333333
-    const ImU32 COLOR_BG2 = IM_COL32(38, 38, 38, 255); // 262626
-    const ImU32 COLOR_LAYER = IM_COL32(83, 83, 83, 255); // 535353
-    const ImU32 COLOR_LAYER_SEL = IM_COL32(205, 209, 209, 255); // cdd1d1
+    const ImU32 COLOR_BG = IM_COL32(51, 51, 51, 255); // #333333
+    const ImU32 COLOR_BG2 = IM_COL32(38, 38, 38, 255); // #262626
+    const ImU32 COLOR_LAYER = IM_COL32(83, 83, 83, 255); // #535353
+    const ImU32 COLOR_SEL_UNFOCUS = IM_COL32(0, 0, 0, 255 * 0.2);
     const ImU32 OVERLAY_WHITE = IM_COL32(255, 255, 255, 255 * 0.05);
     const ImU32 COLOR_LINE = IM_COL32(127, 127, 127, 255 * 0.4);
 
@@ -46,12 +48,12 @@ private:
     ScrollablePane scroll;
 
     std::string lastError;
+    project::Canvas *canvas;
 
     ImU32 setAlpha(ImU32 color, double alpha);
     void addAudioModal();
 
     void saveLastDirectory(const char *outPath) const;
-
     void errorBox();
 
     float headerTopHeight;
@@ -61,6 +63,10 @@ private:
     float lineDim;
     float delim1;
 
+    ImU32 btnActive, btnHover;
+
+    bool isLayerListFocused;
+
     // visible layers [firstIndex, indexMax)
     int firstIndex, indexMax;
 
@@ -69,14 +75,17 @@ private:
     // scale and offset
     ImVec2 offset, scale;
 
-    void printContent(const project::Canvas &canvas, const ImRect &rect);
+    void printContent(project::Canvas &canvas, const ImRect &rect);
     void printLayerList(const project::Canvas &canvas, ImRect rect);
-    void printLayer(project::LightGroup *group, ImRect rect);
+    void printLayer(std::shared_ptr<project::LightGroup> group, ImRect rect);
     float getTimePos(time_unit time);
     void printTimeline(const project::Canvas &canvas, ImRect rect);
-    std::string timeLabel(time_unit time) const;
+    std::string timeLabel(time_unit time);
 
     sm::media::AudioDevice device;
+    std::shared_ptr<project::LightGroup> selection;
+
+    void deleteTrack(const std::shared_ptr<project::LightGroup> &group);
 };
 
 }

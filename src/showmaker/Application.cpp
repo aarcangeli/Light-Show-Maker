@@ -1,7 +1,5 @@
 #include <utility>
-
 #include <memory>
-
 #include <unistd.h>
 #include <string>
 #include "Application.h"
@@ -17,6 +15,9 @@ using namespace sm::editor;
 
 Application::Application() : projectWindow(this) {
     open(std::make_shared<project::Project>());
+    proj->canvas.makeGroup();
+    proj->canvas.makeGroup();
+    proj->canvas.makeGroup();
 }
 
 bool Application::init() {
@@ -159,6 +160,12 @@ int Application::runLoop() {
 
         glfwSwapBuffers(mainWindow);
         //usleep(500 * 1000);
+
+        // run commands
+        for (auto &cmd : commands) {
+            cmd.fn();
+        }
+        commands.resize(0);
     }
 
 
@@ -203,4 +210,12 @@ ImFont *Application::loadFont(const char *start, const char *end, float size, bo
             (void *) start,
             (int) (end - start),
             size, &config, ranges);
+}
+
+void Application::layerSelected(std::shared_ptr<project::LightGroup> layer) {
+    selected = std::move(layer);
+}
+
+void Application::command(const std::string &name, const std::function<void()> &fn) {
+    commands.push_back(AppCommand{name, fn});
 }
