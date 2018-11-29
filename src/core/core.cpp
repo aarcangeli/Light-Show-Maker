@@ -5,13 +5,13 @@ using namespace sm;
 time_unwrapped sm::time_unwrap(time_unit time) {
     static_assert(TIME_UNITS == 1000, "edit this code");
     time_unwrapped ret{};
-    ret.mills = time % 1000;
+    ret.mills = static_cast<int32_t>(time % 1000);
     time /= 1000;
-    ret.seconds = time % 60;
+    ret.seconds = static_cast<int32_t>(time % 60);
     time /= 60;
-    ret.minutes = time % 60;
+    ret.minutes = static_cast<int32_t>(time % 60);
     time /= 60;
-    ret.hours = time % 60;
+    ret.hours = static_cast<int32_t>(time % 60);
     return ret;
 }
 

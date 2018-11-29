@@ -43,7 +43,7 @@ public:
 
     void layerSelected(std::shared_ptr<project::LightGroup> layer);
 
-    void beginCommand(const std::string &name, bool mergeable);
+    void beginCommand(const std::string &name, bool mergeable = false);
     void endCommand();
     void stopMerging();
     void asyncCommand(const std::string &name, bool mergeable, const std::function<void()> &fn);

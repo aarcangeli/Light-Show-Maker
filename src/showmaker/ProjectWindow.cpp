@@ -8,7 +8,7 @@
 using namespace sm;
 using namespace ImGui;
 
-ProjectWindow::ProjectWindow(Application *app) : app(app), timelineEditor(app) {}
+ProjectWindow::ProjectWindow(Application *app) : app(app), timelineEditor() {}
 
 void ProjectWindow::showFrame() {
     if (viewportWidth <= 0 || viewportHeight <= 0 || !proj) return;

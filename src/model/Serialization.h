@@ -128,9 +128,7 @@ public:
         Json::Value array(Json::arrayValue);
         uint64_t size = value.size();
         if (size) {
-            if (size > std::numeric_limits<uint32_t>::max()) {
-                throw "BIG NUMBER";
-            }
+            if ((uint32_t) size != size) throw "BIG NUMBER";
             array.resize(static_cast<uint32_t>(size));
             uint32_t i = 0;
             for (auto &it : value) {

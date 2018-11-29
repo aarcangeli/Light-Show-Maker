@@ -22,9 +22,14 @@ public:
     std::vector<std::shared_ptr<KeyPoint>> keys;
 
     std::shared_ptr<KeyPoint> addKey(time_unit start, time_unit duration);
+    void addKey(const std::shared_ptr<KeyPoint> &key);
+    void removeKey(const std::shared_ptr<KeyPoint> &key);
+    bool hasKey(const std::shared_ptr<KeyPoint> &key);
 
     // returns first index that starts at 'time' or after, if missing returns keys.size()
     size_t findIndex(time_unit time);
+
+    int32_t findIndex(const std::shared_ptr<KeyPoint> &key);
 
     void sortKeys();
 
@@ -34,9 +39,9 @@ public:
         ser.serialize("keys", keys);
     }
 
-private:
     bool sanityCheck();
 
+private:
     size_t findIndexIt(time_unit time, size_t min, size_t max);
 };
 

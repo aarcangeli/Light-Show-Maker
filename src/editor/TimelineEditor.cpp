@@ -11,10 +11,10 @@ using namespace std;
 using namespace sm;
 using namespace sm::editor;
 using namespace sm::media;
+using namespace sm::project;
 using namespace ImGui;
 
-TimelineEditor::TimelineEditor(Application *app) : app(app) {
-    assert(app);
+TimelineEditor::TimelineEditor() : dragger(this) {
     reset();
 }
 
@@ -89,21 +89,7 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
     drawList->AddRectFilled(widgetPos, ImVec2(widgetSize.x + widgetPos.x, widgetPos.y + headerTopHeight),
                             setAlpha(background, 0.04), 0);
 
-    if (draggingPoint) {
-        float mult = getTimeScaleX();
-        float mouseDelta = io.MouseDelta.x;
-        if (mouseDelta != 0) {
-            int64_t diff = static_cast<int64_t>(mouseDelta / mult);
-            app->beginCommand("Move key point", true);
-            draggingPoint->start += diff;
-            draggingPointOwner->sortKeys();
-            app->endCommand();
-        }
-        if (!IsMouseDown(0)) {
-            draggingPoint.reset();
-            app->stopMerging();
-        }
-    }
+    dragger.update();
 
     printContent(canvas, contentRect);
     printLayerList(canvas, layersRect);
@@ -125,7 +111,7 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
         }
         if (Selectable("Audio File..")) {
             nfdchar_t *outPath = nullptr;
-            nfdresult_t result = NFD_OpenDialog("mp3,wav,mp4,avi", app->lastDirectory.c_str(), &outPath);
+            nfdresult_t result = NFD_OpenDialog("mp3,wav,mp4,avi", gApp->lastDirectory.c_str(), &outPath);
             if (result == NFD_OKAY) {
                 loader.open(string(outPath));
                 if (!loader.isOpen()) {
@@ -157,7 +143,7 @@ void TimelineEditor::saveLastDirectory(const nfdchar_t *outPath) const {
     for (int i = 0; path[i]; i++) if (path[i] == '/' || path[i] == '\\') lastSlash = i;
     if (lastSlash >= 0) {
         path[lastSlash] = '\0';
-        app->lastDirectory = path;
+        gApp->lastDirectory = path;
     }
 }
 
@@ -211,7 +197,10 @@ float TimelineEditor::getTimePosScreenPos(time_unit time) {
     return off + time * mult;
 }
 
-void TimelineEditor::lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx) {
+bool TimelineEditor::lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx) {
+    if (!contentRect.Contains(pos)) {
+        return false;
+    }
     if (time) {
         float off = contentRect.Min.x - offset.x;
         float mult = getTimeScaleX();
@@ -224,16 +213,23 @@ void TimelineEditor::lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx) {
         float mult = layerHeight;
         float layerIdxOut = (pos.y - off) / mult;
         *layerIdx = static_cast<int>(layerIdxOut);
+        if (*layerIdx < 0 || *layerIdx >= canvas->groups.size()) {
+            return false;
+        }
     }
+    return true;
 }
 
 float TimelineEditor::getTimeScaleX() const { return TIME_WIDTH / TIME_UNITS * scale.x * dpi; }
 
-void TimelineEditor::lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx) {
-    lookUpAtPos(pos, time, layerIdx);
-    if (time && (snapCursor != GetIO().KeyCtrl)) {
-        *time = static_cast<time_unit>(round((float) *time / snapTime) * snapTime);
+bool TimelineEditor::lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx) {
+    if (lookUpAtPos(pos, time, layerIdx)) {
+        if (time && (snapCursor != GetIO().KeyCtrl)) {
+            *time = static_cast<time_unit>(round((float) *time / snapTime) * snapTime);
+        }
+        return true;
     }
+    return false;
 }
 
 void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
@@ -282,6 +278,13 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
     ImVec2 mousePos = GetIO().MousePos;
 
     bool foundKey = false;
+
+    std::shared_ptr<project::KeyPoint> hoverElement;
+    if (dragger.isDragging()) {
+        hoverElement = dragger.getElement();
+        foundKey = true;
+    }
+
     for (int i = firstIndex; i < indexMax; i++) {
         auto &group = canvas.groups[i];
         float screenPosY = rect.Min.y + i * layerHeight - offset.y;
@@ -289,14 +292,18 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
         if (screenPosY > rect.Max.y) continue;
 
         // find hover element
-        std::shared_ptr<project::KeyPoint> hoverElement;
-        if (mousePos.y >= screenPosY && mousePos.y < screenPosY + layerHeight) {
+        float minHandle = COLOR_RESIZE_HANDLE_DIM * dpi / 2;
+        if (!foundKey && mousePos.y >= screenPosY && mousePos.y < screenPosY + layerHeight) {
             auto &keys = group->keys;
             for(auto it = keys.rbegin(); it != keys.rend(); it++) {
                 auto &k = *it;
                 float startOffset = getTimePosScreenPos(k->start);
                 float endOffset = getTimePosScreenPos(k->start + k->duration);
-                if (mousePos.x >= startOffset && mousePos.x < endOffset) {
+                float dim = 0;
+                if (k->duration < minHandle) {
+                    dim = minHandle;
+                }
+                if (mousePos.x >= startOffset - dim && mousePos.x < endOffset + dim) {
                     hoverElement = k;
                     foundKey = true;
                     break;
@@ -311,34 +318,54 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
             float endOffset = getTimePosScreenPos(k->start + k->duration);
             const ImRect &keyRect = ImRect(startOffset, screenPosY, endOffset, screenPosY + layerHeight);
             bool isKeyHover = hoverElement == k;
-            drawKey(k, keyRect, isKeyHover);
-            if (isKeyHover && IsMouseClicked(0)) {
-                draggingPoint = k;
-                draggingPointOwner = group;
-            }
+            drawKey(group, k, keyRect, isKeyHover);
         }
     }
 
     if (isHover && io.MouseClicked[0] && !IsKeyDown(GLFW_KEY_SPACE) && !foundKey) {
-        int layer = 0;
-        time_unit time;
-        lookMousePos(io.MouseClickedPos[0], &time, &layer);
-        if (layer >= 0 && layer < canvas.groups.size()) {
+        time_unit start;
+        time_unit duration = TIME_UNITS;
+        int32_t layer;
+        if (findPlacableKeyPos(GetIO().MouseClickedPos[0], start, duration, layer)) {
             auto &group = canvas.groups[layer];
-            group->addKey(time, TIME_UNITS);
+            gApp->beginCommand("Move/Resize key point");
+            group->addKey(start, duration);
+            gApp->endCommand();
         }
     }
 
     scroll.scrollPaneEnd();
 }
 
-void TimelineEditor::drawKey(shared_ptr<project::KeyPoint> &key, const ImRect &rect, bool isHover) {
+void
+TimelineEditor::drawKey(shared_ptr<LightGroup> group, shared_ptr<KeyPoint> &key, const ImRect &rect, bool isHover) {
     const ImVec2 &min = rect.Min;
     const ImVec2 &max = rect.Max;
     ImDrawList *drawList = GetWindowDrawList();
+    ImVec2 mousePos = GetIO().MousePos;
 
     drawList->AddRectFilled(min, max, isHover ? COLOR_KEY_HOV : COLOR_KEY, COLOR_KEY_RADIUS * dpi);
     drawList->AddRect(min, max, COLOR_KEY_OUTLINE, COLOR_KEY_RADIUS * dpi, ImDrawCornerFlags_All, dpi * 2);
+
+    if (isHover) {
+        auto type = KeypointDragger::MOVE;
+        float handleDim = COLOR_RESIZE_HANDLE_DIM * dpi;
+        if ((!dragger.isDragging() && mousePos.x < min.x + handleDim) ||
+            dragger.getType() == KeypointDragger::RESIZE_BEGIN) {
+            drawList->AddRectFilled(min, ImVec2(min.x + handleDim, max.y), COLOR_KEY_RESIZE);
+            SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+            type = KeypointDragger::RESIZE_BEGIN;
+        }
+        if ((!dragger.isDragging() && mousePos.x > max.x - handleDim) ||
+            dragger.getType() == KeypointDragger::RESIZE_END) {
+            drawList->AddRectFilled(ImVec2(max.x - handleDim, min.y), max, COLOR_KEY_RESIZE);
+            SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+            type = KeypointDragger::RESIZE_END;
+        }
+        if (IsMouseClicked(0)) {
+            dragger.startDragging(key, group, type, getTimeScaleX());
+        }
+    }
 }
 
 void TimelineEditor::printTimeline(const project::Canvas &canvas, ImRect rect) {
@@ -414,7 +441,7 @@ void TimelineEditor::printLayer(shared_ptr<project::LightGroup> group, ImRect re
     if (isHovered && io.MouseClicked[0]) {
         selection = group;
         isSelected = true;
-        app->layerSelected(group);
+        gApp->layerSelected(group);
     }
 
     ImU32 color = isSelected ? btnActive : isHovered ? btnHover : COLOR_LAYER;
@@ -440,12 +467,39 @@ void TimelineEditor::printLayer(shared_ptr<project::LightGroup> group, ImRect re
 
 void TimelineEditor::deleteTrack(const shared_ptr<project::LightGroup> &group) {
     project::Canvas *canvas = this->canvas;
-    Application *app = this->app;
-    app->asyncCommand(string("Delete ") + group->name, false, [canvas, group, app, this]() {
+    gApp->asyncCommand(string("Delete ") + group->name, false, [canvas, group, this]() {
         canvas->deleteGroup(group);
-        app->layerSelected(nullptr);
+        gApp->layerSelected(nullptr);
         selection.reset();
     });
+}
+
+bool TimelineEditor::findPlacableKeyPos(ImVec2 &pos, time_unit &start, time_unit duration, int32_t &layerIdx) {
+    if (lookUpAtPos(pos, &start, &layerIdx)) {
+        shared_ptr<LightGroup> &layer = canvas->groups[layerIdx];
+        size_t idx = layer->findIndex(start);
+        if (idx > 0) {
+            shared_ptr<KeyPoint> &key = layer->keys[idx - 1];
+            if (start < key->start + key->duration / 2) {
+                idx--;
+            }
+        }
+        time_unit min = min_time;
+        time_unit max = max_time;
+        if (idx > 0) {
+            shared_ptr<KeyPoint> &key = layer->keys[idx - 1];
+            min = key->start + key->duration;
+        }
+        if (idx < layer->keys.size()) {
+            max = layer->keys[idx]->start;
+        }
+        if (max - min >= duration) {
+            if (start < min) start = min;
+            if (start + duration > max) start = max - duration;
+            return true;
+        }
+    }
+    return false;
 }
 
 // misc

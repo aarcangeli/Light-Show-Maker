@@ -17,7 +17,12 @@
 using namespace sm;
 using namespace sm::editor;
 
+namespace sm {
+Application *gApp;
+}
+
 Application::Application() : projectWindow(this) {
+    gApp = this;
 }
 
 bool Application::init() {

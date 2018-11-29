@@ -16,22 +16,42 @@ std::shared_ptr<KeyPoint> LightGroup::addKey(sm::time_unit start, sm::time_unit 
     auto ret = std::make_shared<KeyPoint>();
     ret->start = start;
     ret->duration = duration;
-    keys.insert(keys.begin() + findIndex(start), ret);
-    assert(sanityCheck());
+    addKey(ret);
     return ret;
 }
 
+void LightGroup::addKey(const std::shared_ptr<sm::project::KeyPoint> &key) {
+    assert(!hasKey(key));
+    keys.insert(keys.begin() + findIndex(key->start), key);
+    assert(sanityCheck());
+}
+
+void LightGroup::removeKey(const std::shared_ptr<KeyPoint> &key) {
+    int32_t idx = findIndex(key);
+    assert(idx >= 0);
+    keys.erase(keys.begin() + idx);
+}
+
+bool LightGroup::hasKey(const std::shared_ptr<sm::project::KeyPoint> &key) {
+    assert(sanityCheck());
+    return findIndex(key) >= 0;
+}
+
 bool LightGroup::sanityCheck() {
-    time_unit last = 0;
-    for (auto &it : keys) {
-        assert(last <= it->start);
-        assert(it->duration > 0);
-        last = it->start;
+    if (!keys.empty()) {
+        time_unit last = keys[0]->start;
+        for (auto &it : keys) {
+            if (last > it->start) {
+                return false;
+            }
+            last = it->start;
+        }
     }
     return true;
 }
 
 size_t LightGroup::findIndex(time_unit time) {
+    assert(sanityCheck());
     return findIndexIt(time, 0, keys.size());
 }
 
@@ -48,4 +68,12 @@ void LightGroup::sortKeys() {
         return a->start < b->start;
     });
     assert(sanityCheck());
+}
+
+int32_t LightGroup::findIndex(const std::shared_ptr<KeyPoint> &key) {
+    size_t ret = findIndex(key->start);
+    if (ret < keys.size() && keys[ret] == key && (int32_t) ret == ret) {
+        return (int32_t) ret;
+    }
+    return -1;
 }

@@ -3,19 +3,19 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 
+#include "core.h"
 #include "Canvas.h"
 #include "map"
-#include <imgui.h>
+#include "KeypointDragger.h"
 #include <AudioLoader.h>
 #include <ScrollablePane.h>
 #include <AudioDevice.h>
-#include <LightGroup.h>
 
 namespace sm {
-class Application;
 namespace editor {
 
-class TimelineEditor {
+    class TimelineEditor {
+
     const char *POPUP_ADD_LAYER = "POPUP_ADD_LAYER";
     const char *MODAL_ADD_AUDIO = "Audio Track";
     const char *MODAL_ERROR = "Error!";
@@ -29,7 +29,10 @@ class TimelineEditor {
     const ImU32 COLOR_KEY = IM_COL32(127, 127, 127, 255 * 0.4);
     const ImU32 COLOR_KEY_HOV = IM_COL32(127, 127, 127, 255 * 0.7);
     const ImU32 COLOR_KEY_OUTLINE = IM_COL32(0, 0, 0, 255 * 0.4);
+    const ImU32 COLOR_KEY_RESIZE = IM_COL32(255, 0, 0, 255 * 0.8);
+
     const float COLOR_KEY_RADIUS = 3;
+    const float COLOR_RESIZE_HANDLE_DIM = 4;
 
     const ImVec4 COLOR_TEXT = {1, 1, 1, 0.7f};
 
@@ -40,7 +43,7 @@ class TimelineEditor {
     const float TIME_WIDTH = 10;
 
 public:
-    explicit TimelineEditor(Application *app);
+    explicit TimelineEditor();
     void reset();
     void editorOf(project::Canvas &canvas);
 
@@ -48,7 +51,6 @@ public:
 
 private:
     media::AudioLoader loader;
-    sm::Application *app;
     ScrollablePane scroll;
 
     std::string lastError;
@@ -78,14 +80,14 @@ private:
 
     time_unit timeStep;
 
-    std::shared_ptr<project::KeyPoint> draggingPoint;
-    std::shared_ptr<project::LightGroup> draggingPointOwner;
+    KeypointDragger dragger;
 
     // scale and offset of timeline
     ImVec2 offset, scale;
 
     void printContent(project::Canvas &canvas, const ImRect &rect);
     void printLayerList(const project::Canvas &canvas, ImRect rect);
+
     void printLayer(std::shared_ptr<project::LightGroup> group, ImRect rect);
     float getTimePosScreenPos(time_unit time);
     void printTimeline(const project::Canvas &canvas, ImRect rect);
@@ -96,16 +98,27 @@ private:
 
     void deleteTrack(const std::shared_ptr<project::LightGroup> &group);
 
-    void lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
-    void lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
+    bool lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
+    bool lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
 
     // editor settings
     bool snapCursor = true;
     time_unit snapTime = TIME_UNITS;
 
-    void drawKey(std::shared_ptr<project::KeyPoint> &key, const ImRect &rect, bool isHover);
+    void drawKey(std::shared_ptr<project::LightGroup> group,
+                 std::shared_ptr<project::KeyPoint> &key,
+                 const ImRect &rect,
+                 bool isHover);
 
     float getTimeScaleX() const;
+
+public:
+    bool findPlacableKeyPos(ImVec2 &pos, time_unit &start, time_unit duration, int32_t &layerIdx);
+
+    project::Canvas *getCanvas() {
+        assert(canvas);
+        return canvas;
+    }
 };
 
 }

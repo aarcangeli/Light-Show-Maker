@@ -5,19 +5,25 @@
 
 namespace sm {
 
+class Application;
+
+extern Application *gApp;
+
 /// unit inside a second
 const int TIME_UNITS = 1000;
 
 /// a time in units
-using time_unit = uint64_t;
+using time_unit = int64_t;
+
+const time_unit min_time = 0;
 
 const time_unit max_time = 100 * 60 * 60 * TIME_UNITS;
 
 struct time_unwrapped {
-    uint64_t mills;
-    uint64_t seconds;
-    uint64_t minutes;
-    uint64_t hours;
+    int32_t mills;
+    int32_t seconds;
+    int32_t minutes;
+    int32_t hours;
 };
 
 // PushFont(GetIO().Fonts->Fonts[FONT_BIG]);
