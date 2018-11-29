@@ -26,6 +26,10 @@ class TimelineEditor {
     const ImU32 COLOR_SEL_UNFOCUS = IM_COL32(0, 0, 0, 255 * 0.2);
     const ImU32 OVERLAY_WHITE = IM_COL32(255, 255, 255, 255 * 0.05);
     const ImU32 COLOR_LINE = IM_COL32(127, 127, 127, 255 * 0.4);
+    const ImU32 COLOR_KEY = IM_COL32(127, 127, 127, 255 * 0.4);
+    const ImU32 COLOR_KEY_HOV = IM_COL32(127, 127, 127, 255 * 0.7);
+    const ImU32 COLOR_KEY_OUTLINE = IM_COL32(0, 0, 0, 255 * 0.4);
+    const float COLOR_KEY_RADIUS = 3;
 
     const ImVec4 COLOR_TEXT = {1, 1, 1, 0.7f};
 
@@ -74,6 +78,8 @@ private:
 
     time_unit timeStep;
 
+    std::shared_ptr<project::KeyPoint> draggingPoint;
+
     // scale and offset of timeline
     ImVec2 offset, scale;
 
@@ -95,6 +101,10 @@ private:
     // editor settings
     bool snapCursor = true;
     time_unit snapTime = TIME_UNITS;
+
+    void drawKey(std::shared_ptr<project::KeyPoint> &key, const ImRect &rect, bool isHover);
+
+    float getTimeScaleX() const;
 };
 
 }

@@ -42,7 +42,11 @@ public:
     }
 
     void layerSelected(std::shared_ptr<project::LightGroup> layer);
-    void command(const std::string &name, const std::function<void()> &fn);
+
+    void beginCommand(const std::string &name, bool mergeable);
+    void endCommand();
+    void stopMerging();
+    void asyncCommand(const std::string &name, bool mergeable, const std::function<void()> &fn);
 
     void setAppHome(std::string home);
 
@@ -51,6 +55,7 @@ private:
 
     struct AppCommand {
         std::string name;
+        bool mergeable;
         std::function<void()> fn;
     };
 

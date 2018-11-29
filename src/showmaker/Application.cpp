@@ -226,8 +226,17 @@ void Application::layerSelected(std::shared_ptr<project::LightGroup> layer) {
     selected = std::move(layer);
 }
 
-void Application::command(const std::string &name, const std::function<void()> &fn) {
-    commands.push_back(AppCommand{name, fn});
+void Application::beginCommand(const std::string &name, bool mergeable) {
+}
+
+void Application::endCommand() {
+}
+
+void Application::stopMerging() {
+}
+
+void Application::asyncCommand(const std::string &name, bool mergeable, const std::function<void()> &fn) {
+    commands.push_back(AppCommand{name, mergeable, fn});
 }
 
 void Application::setAppHome(std::string path) {

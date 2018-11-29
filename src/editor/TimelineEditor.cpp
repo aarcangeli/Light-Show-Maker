@@ -89,6 +89,21 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
     drawList->AddRectFilled(widgetPos, ImVec2(widgetSize.x + widgetPos.x, widgetPos.y + headerTopHeight),
                             setAlpha(background, 0.04), 0);
 
+    if (draggingPoint) {
+        float mult = getTimeScaleX();
+        float mouseDelta = io.MouseDelta.x;
+        if (mouseDelta != 0) {
+            int64_t diff = static_cast<int64_t>(mouseDelta / mult);
+            app->beginCommand("Move key point", true);
+            draggingPoint->start += diff;
+            app->endCommand();
+        }
+        if (!IsMouseDown(0)) {
+            draggingPoint.reset();
+            app->stopMerging();
+        }
+    }
+
     printContent(canvas, contentRect);
     printLayerList(canvas, layersRect);
     printTimeline(canvas, timelineRect);
@@ -191,14 +206,14 @@ void TimelineEditor::errorBox() {
 
 float TimelineEditor::getTimePosScreenPos(time_unit time) {
     float off = contentRect.Min.x - offset.x;
-    float mult = TIME_WIDTH / TIME_UNITS * scale.x * dpi;
+    float mult = getTimeScaleX();
     return off + time * mult;
 }
 
 void TimelineEditor::lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx) {
     if (time) {
         float off = contentRect.Min.x - offset.x;
-        float mult = TIME_WIDTH / TIME_UNITS * scale.x * dpi;
+        float mult = getTimeScaleX();
         float timeOut = (pos.x - off) / mult;
         *time = static_cast<time_unit>(timeOut);
     }
@@ -210,6 +225,8 @@ void TimelineEditor::lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx) {
         *layerIdx = static_cast<int>(layerIdxOut);
     }
 }
+
+float TimelineEditor::getTimeScaleX() const { return TIME_WIDTH / TIME_UNITS * scale.x * dpi; }
 
 void TimelineEditor::lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx) {
     lookUpAtPos(pos, time, layerIdx);
@@ -258,31 +275,48 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
         drawList->AddLine(ImVec2(pos, rect.Min.y), ImVec2(pos, rect.Max.y), COLOR_LINE);
     }
 
-    if (isHover && io.MouseClicked[0] && !IsKeyDown(GLFW_KEY_SPACE)) {
-        int layer = 0;
-        time_unit time;
-        lookMousePos(io.MouseClickedPos[0], &time, &layer);
-        if (layer >= 0 && layer < canvas.groups.size()) {
-            printf("%llu\n", time);
-            auto &group = canvas.groups[layer];
-            group->addKey(time, TIME_UNITS);
-        }
-        //drawList->AddRectFilled(io.MouseClickedPos[0], ImVec2(1000, 1000), 0xff0000ff, 0);
-    }
-
+    bool foundKey = false;
     for (int i = firstIndex; i < indexMax; i++) {
         auto &group = canvas.groups[i];
         float screenPosY = rect.Min.y + i * layerHeight - offset.y;
         for (auto &k : group->keys) {
             float startOffset = getTimePosScreenPos(k->start);
             float endOffset = getTimePosScreenPos(k->start + k->duration);
-            drawList->AddRectFilled(ImVec2(startOffset, screenPosY),
-                                    ImVec2(endOffset, screenPosY + layerHeight),
-                                    COLOR_LINE);
+            const ImRect &keyRect = ImRect(startOffset, screenPosY, endOffset, screenPosY + layerHeight);
+            bool isKeyHover = false;
+            if (!foundKey && keyRect.Contains(GetIO().MousePos)) {
+                foundKey = true;
+                isKeyHover = true;
+            }
+            drawKey(k, keyRect, isKeyHover);
+        }
+    }
+
+    if (isHover && io.MouseClicked[0] && !IsKeyDown(GLFW_KEY_SPACE) && !foundKey) {
+        int layer = 0;
+        time_unit time;
+        lookMousePos(io.MouseClickedPos[0], &time, &layer);
+        if (layer >= 0 && layer < canvas.groups.size()) {
+            auto &group = canvas.groups[layer];
+            group->addKey(time, TIME_UNITS);
         }
     }
 
     scroll.scrollPaneEnd();
+}
+
+void TimelineEditor::drawKey(shared_ptr<project::KeyPoint> &key, const ImRect &rect, bool isHover) {
+    const ImVec2 &min = rect.Min;
+    const ImVec2 &max = rect.Max;
+    ImDrawList *drawList = GetWindowDrawList();
+
+    drawList->AddRectFilled(min, max, isHover ? COLOR_KEY_HOV : COLOR_KEY, COLOR_KEY_RADIUS * dpi);
+    drawList->AddRect(min, max, COLOR_KEY_OUTLINE, COLOR_KEY_RADIUS * dpi, ImDrawCornerFlags_All, dpi * 2);
+
+    if (isHover && IsMouseClicked(0)) {
+        draggingPoint = key;
+        //drawList->AddLine(min, ImVec2(min.x, max.y), COLOR_RED, 4 * dpi);
+    }
 }
 
 void TimelineEditor::printTimeline(const project::Canvas &canvas, ImRect rect) {
@@ -385,7 +419,7 @@ void TimelineEditor::printLayer(shared_ptr<project::LightGroup> group, ImRect re
 void TimelineEditor::deleteTrack(const shared_ptr<project::LightGroup> &group) {
     project::Canvas *canvas = this->canvas;
     Application *app = this->app;
-    app->command(string("Delete ") + group->name, [canvas, group, app, this]() {
+    app->asyncCommand(string("Delete ") + group->name, false, [canvas, group, app, this]() {
         canvas->deleteGroup(group);
         app->layerSelected(nullptr);
         selection.reset();
