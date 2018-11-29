@@ -20,6 +20,7 @@ public:
 private:
     ImVec2 oldPos;
     float scrollX, scrollY;
+    bool isDragging = false;
 
     ImVec2 zoom = {1, 1};
     ImVec2 zoomTarget = {1, 1};

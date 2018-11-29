@@ -1,6 +1,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #include "ScrollablePane.h"
+#include "GLFW/glfw3.h"
 
 using namespace sm;
 using namespace sm::editor;
@@ -19,6 +20,7 @@ void ScrollablePane::scrollPaneBegin(const ImRect &bounds, const ImVec2 &content
     bool isHovered = IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
     BeginChild(window->GetID(this), bounds.Max - bounds.Min, false,
                ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    bool isContentHovered = IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
     scrollX = GetScrollX();
     scrollY = GetScrollY();
     Dummy(content);
@@ -34,6 +36,19 @@ void ScrollablePane::scrollPaneBegin(const ImRect &bounds, const ImVec2 &content
         } else {
             scrollY -= io.MouseWheel * scrollAmount;
         }
+    }
+    if (isDragging) {
+        ImVec2 delta = io.MouseDelta;
+        if (delta.x != 0 || delta.y != 0) {
+            scrollX -= delta.x;
+            scrollY -= delta.y;
+        }
+    }
+    if (isContentHovered && IsKeyDown(GLFW_KEY_SPACE) && IsMouseDragging(0, 0)) {
+        isDragging = true;
+    }
+    if (isDragging && !IsMouseDragging(0, 0)) {
+        isDragging = false;
     }
 
     float center = io.MousePos.x - bounds.Min.x;

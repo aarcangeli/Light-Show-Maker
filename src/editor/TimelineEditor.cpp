@@ -258,7 +258,7 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
         drawList->AddLine(ImVec2(pos, rect.Min.y), ImVec2(pos, rect.Max.y), COLOR_LINE);
     }
 
-    if (isHover && io.MouseClicked[0]) {
+    if (isHover && io.MouseClicked[0] && !IsKeyDown(GLFW_KEY_SPACE)) {
         int layer = 0;
         time_unit time;
         lookMousePos(io.MouseClickedPos[0], &time, &layer);
