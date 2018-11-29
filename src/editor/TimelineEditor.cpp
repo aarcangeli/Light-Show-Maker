@@ -71,19 +71,25 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
     delim1 = ImFloor(fontSize * 0.7f);
 
     // all region
-    ImRect regionRect(widgetPos, widgetPos + widgetSize);
-    ImRect mediaControlsRect = ImRect(widgetPos, widgetPos + ImVec2(leftSideWidth, headerTopHeight));
-    ImRect timelineRect = ImRect(widgetPos + ImVec2(leftSideWidth, 0), widgetPos + ImVec2(widgetSize.x, headerTopHeight));
-    ImRect layersRect = ImRect(widgetPos + ImVec2(0, headerTopHeight), widgetPos + ImVec2(leftSideWidth, widgetSize.y - headerBotHeight));
-    ImRect keysRect = ImRect(widgetPos + ImVec2(leftSideWidth, headerTopHeight), widgetPos + ImVec2(widgetSize.x, widgetSize.y));
+    ImRect regionRect(widgetPos,
+                      widgetPos + widgetSize);
+    ImRect mediaControlsRect = ImRect(widgetPos,
+                                      widgetPos + ImVec2(leftSideWidth, headerTopHeight));
+    ImRect timelineRect = ImRect(widgetPos + ImVec2(leftSideWidth, 0),
+                                 widgetPos + ImVec2(widgetSize.x, headerTopHeight));
+    ImRect layersRect = ImRect(widgetPos + ImVec2(0, headerTopHeight),
+                               widgetPos + ImVec2(leftSideWidth, widgetSize.y - headerBotHeight));
+    contentRect = ImRect(widgetPos + ImVec2(leftSideWidth, headerTopHeight),
+                         widgetPos + ImVec2(widgetSize.x, widgetSize.y));
 
     BeginGroup();
 
     drawList->AddRectFilled(regionRect.Min, regionRect.Max, COLOR_BG, 0);
 
-    drawList->AddRectFilled(widgetPos, ImVec2(widgetSize.x + widgetPos.x, widgetPos.y + headerTopHeight), setAlpha(background, 0.04), 0);
+    drawList->AddRectFilled(widgetPos, ImVec2(widgetSize.x + widgetPos.x, widgetPos.y + headerTopHeight),
+                            setAlpha(background, 0.04), 0);
 
-    printContent(canvas, keysRect);
+    printContent(canvas, contentRect);
     printLayerList(canvas, layersRect);
     printTimeline(canvas, timelineRect);
 
@@ -183,25 +189,51 @@ void TimelineEditor::errorBox() {
     }
 }
 
-float TimelineEditor::getTimePos(time_unit time) {
-    return time * TIME_WIDTH / TIME_UNITS * scale.x * dpi - offset.x;
+float TimelineEditor::getTimePosScreenPos(time_unit time) {
+    float off = contentRect.Min.x - offset.x;
+    float mult = TIME_WIDTH / TIME_UNITS * scale.x * dpi;
+    return off + time * mult;
+}
+
+void TimelineEditor::lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx) {
+    if (time) {
+        float off = contentRect.Min.x - offset.x;
+        float mult = TIME_WIDTH / TIME_UNITS * scale.x * dpi;
+        float timeOut = (pos.x - off) / mult;
+        *time = static_cast<time_unit>(timeOut);
+    }
+    if (layerIdx) {
+        // ImVec2 pos = contentRect.Min + ImVec2(0, i * layerHeight - offset.y);
+        float off = contentRect.Min.y - offset.y;
+        float mult = layerHeight;
+        float layerIdxOut = (pos.y - off) / mult;
+        *layerIdx = static_cast<int>(layerIdxOut);
+    }
+}
+
+void TimelineEditor::lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx) {
+    lookUpAtPos(pos, time, layerIdx);
+    if (time && (snapCursor != GetIO().KeyCtrl)) {
+        *time = static_cast<time_unit>(round((float) *time / snapTime) * snapTime);
+    }
 }
 
 void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
     auto &groups = canvas.groups;
     int groupSize = (int) groups.size();
     time_unit duration = canvas.duration;
+    ImGuiIO &io = GetIO();
 
     scroll.scrollPaneBegin(
             rect,
             ImVec2(duration * TIME_WIDTH / TIME_UNITS * scale.x + (rect.Max.x - rect.Min.x) * 0.5f,
                    groupSize * layerHeight + headerBotHeight)
     );
+    bool isHover = IsWindowHovered();
 
     ImDrawList *drawList = GetWindowDrawList();
     offset = scroll.getOffset();
     scale = scroll.getScale();
-    ImFont *font = GetDefaultFont();
 
     // calculate step
     static time_unit steps[] = {1, 5, 10, 30, 60, 2 * 60, 5 * 60, 0};
@@ -222,8 +254,32 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
     }
 
     for (time_unit i = 0; i < duration; i += timeStep) {
-        float pos = rect.Min.x + getTimePos(i);
+        float pos = getTimePosScreenPos(i);
         drawList->AddLine(ImVec2(pos, rect.Min.y), ImVec2(pos, rect.Max.y), COLOR_LINE);
+    }
+
+    if (isHover && io.MouseClicked[0]) {
+        int layer = 0;
+        time_unit time;
+        lookMousePos(io.MouseClickedPos[0], &time, &layer);
+        if (layer >= 0 && layer < canvas.groups.size()) {
+            printf("%llu\n", time);
+            auto &group = canvas.groups[layer];
+            group->addKey(time, TIME_UNITS);
+        }
+        //drawList->AddRectFilled(io.MouseClickedPos[0], ImVec2(1000, 1000), 0xff0000ff, 0);
+    }
+
+    for (int i = firstIndex; i < indexMax; i++) {
+        auto &group = canvas.groups[i];
+        float screenPosY = rect.Min.y + i * layerHeight - offset.y;
+        for (auto &k : group->keys) {
+            float startOffset = getTimePosScreenPos(k->start);
+            float endOffset = getTimePosScreenPos(k->start + k->duration);
+            drawList->AddRectFilled(ImVec2(startOffset, screenPosY),
+                                    ImVec2(endOffset, screenPosY + layerHeight),
+                                    COLOR_LINE);
+        }
     }
 
     scroll.scrollPaneEnd();
@@ -239,12 +295,12 @@ void TimelineEditor::printTimeline(const project::Canvas &canvas, ImRect rect) {
     ImDrawList *drawList = GetWindowDrawList();
 
     for (time_unit i = 0; i < duration; i += timeStep) {
-        float pos = rect.Min.x + getTimePos(i);
+        float pos = getTimePosScreenPos(i);
         drawList->AddLine(ImVec2(pos, (rect.Min.y + rect.Max.y) / 2), ImVec2(pos, rect.Max.y), COLOR_LINE);
     }
 
     for (time_unit i = 0; i < duration; i += timeStep) {
-        float pos = rect.Min.x + getTimePos(i);
+        float pos = getTimePosScreenPos(i);
         drawList->AddText(ImVec2(pos, rect.Min.y), textColor, timeLabel(i).c_str());
     }
 
@@ -256,7 +312,8 @@ string TimelineEditor::timeLabel(time_unit time) {
     time_unwrapped unwrapped = time_unwrap(time);
     char buffer[500];
     if (unwrapped.hours) {
-        ImFormatString(buffer, sizeof(buffer), "%02llu:%02llu:%02llu", unwrapped.hours, unwrapped.minutes, unwrapped.seconds);
+        ImFormatString(buffer, sizeof(buffer), "%02llu:%02llu:%02llu", unwrapped.hours, unwrapped.minutes,
+                       unwrapped.seconds);
     } else {
         ImFormatString(buffer, sizeof(buffer), "%02llu:%02llu", unwrapped.minutes, unwrapped.seconds);
     }

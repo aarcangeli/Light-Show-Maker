@@ -13,7 +13,7 @@ public:
     explicit KeyPoint(LightGroup *group);
 
     time_unit start;
-    time_unit length;
+    time_unit duration;
     Fade fadeStart, fadeEnd;
 
 private:

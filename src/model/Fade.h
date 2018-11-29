@@ -13,8 +13,8 @@ enum FADE_TYPE {
 
 class Fade {
 public:
-    FADE_TYPE type;
-    time_unit duration;
+    FADE_TYPE type = EXPONENTIAL;
+    time_unit duration = static_cast<time_unit>(TIME_UNITS * 0.2);
 };
 
 }

@@ -56,6 +56,8 @@ private:
     void saveLastDirectory(const char *outPath) const;
     void errorBox();
 
+    ImRect contentRect;
+
     float headerTopHeight;
     float headerBotHeight;
     float leftSideWidth;
@@ -72,13 +74,13 @@ private:
 
     time_unit timeStep;
 
-    // scale and offset
+    // scale and offset of timeline
     ImVec2 offset, scale;
 
     void printContent(project::Canvas &canvas, const ImRect &rect);
     void printLayerList(const project::Canvas &canvas, ImRect rect);
     void printLayer(std::shared_ptr<project::LightGroup> group, ImRect rect);
-    float getTimePos(time_unit time);
+    float getTimePosScreenPos(time_unit time);
     void printTimeline(const project::Canvas &canvas, ImRect rect);
     std::string timeLabel(time_unit time);
 
@@ -86,6 +88,13 @@ private:
     std::shared_ptr<project::LightGroup> selection;
 
     void deleteTrack(const std::shared_ptr<project::LightGroup> &group);
+
+    void lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx);
+    void lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx);
+
+    // editor settings
+    bool snapCursor = true;
+    time_unit snapTime = TIME_UNITS;
 };
 
 }
