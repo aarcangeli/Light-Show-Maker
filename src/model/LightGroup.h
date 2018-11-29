@@ -26,6 +26,8 @@ public:
     // returns first index that starts at 'time' or after, if missing returns keys.size()
     size_t findIndex(time_unit time);
 
+    void sortKeys();
+
     SERIALIZATION_START {
         ser.serialize("name", name);
         ser.serialize("decorations", decorations);

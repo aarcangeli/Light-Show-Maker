@@ -96,6 +96,7 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
             int64_t diff = static_cast<int64_t>(mouseDelta / mult);
             app->beginCommand("Move key point", true);
             draggingPoint->start += diff;
+            draggingPointOwner->sortKeys();
             app->endCommand();
         }
         if (!IsMouseDown(0)) {
@@ -275,20 +276,46 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
         drawList->AddLine(ImVec2(pos, rect.Min.y), ImVec2(pos, rect.Max.y), COLOR_LINE);
     }
 
+    time_unit minTime, maxTime;
+    lookUpAtPos(rect.Min, &minTime);
+    lookUpAtPos(rect.Max, &maxTime);
+    ImVec2 mousePos = GetIO().MousePos;
+
     bool foundKey = false;
     for (int i = firstIndex; i < indexMax; i++) {
         auto &group = canvas.groups[i];
         float screenPosY = rect.Min.y + i * layerHeight - offset.y;
+        if (screenPosY + layerHeight < rect.Min.y) continue;
+        if (screenPosY > rect.Max.y) continue;
+
+        // find hover element
+        std::shared_ptr<project::KeyPoint> hoverElement;
+        if (mousePos.y >= screenPosY && mousePos.y < screenPosY + layerHeight) {
+            auto &keys = group->keys;
+            for(auto it = keys.rbegin(); it != keys.rend(); it++) {
+                auto &k = *it;
+                float startOffset = getTimePosScreenPos(k->start);
+                float endOffset = getTimePosScreenPos(k->start + k->duration);
+                if (mousePos.x >= startOffset && mousePos.x < endOffset) {
+                    hoverElement = k;
+                    foundKey = true;
+                    break;
+                }
+            }
+        }
+
         for (auto &k : group->keys) {
+            if (k->start + k->duration < minTime) continue;
+            if (k->start > maxTime) continue;
             float startOffset = getTimePosScreenPos(k->start);
             float endOffset = getTimePosScreenPos(k->start + k->duration);
             const ImRect &keyRect = ImRect(startOffset, screenPosY, endOffset, screenPosY + layerHeight);
-            bool isKeyHover = false;
-            if (!foundKey && keyRect.Contains(GetIO().MousePos)) {
-                foundKey = true;
-                isKeyHover = true;
-            }
+            bool isKeyHover = hoverElement == k;
             drawKey(k, keyRect, isKeyHover);
+            if (isKeyHover && IsMouseClicked(0)) {
+                draggingPoint = k;
+                draggingPointOwner = group;
+            }
         }
     }
 
@@ -312,11 +339,6 @@ void TimelineEditor::drawKey(shared_ptr<project::KeyPoint> &key, const ImRect &r
 
     drawList->AddRectFilled(min, max, isHover ? COLOR_KEY_HOV : COLOR_KEY, COLOR_KEY_RADIUS * dpi);
     drawList->AddRect(min, max, COLOR_KEY_OUTLINE, COLOR_KEY_RADIUS * dpi, ImDrawCornerFlags_All, dpi * 2);
-
-    if (isHover && IsMouseClicked(0)) {
-        draggingPoint = key;
-        //drawList->AddLine(min, ImVec2(min.x, max.y), COLOR_RED, 4 * dpi);
-    }
 }
 
 void TimelineEditor::printTimeline(const project::Canvas &canvas, ImRect rect) {

@@ -79,6 +79,7 @@ private:
     time_unit timeStep;
 
     std::shared_ptr<project::KeyPoint> draggingPoint;
+    std::shared_ptr<project::LightGroup> draggingPointOwner;
 
     // scale and offset of timeline
     ImVec2 offset, scale;
@@ -95,8 +96,8 @@ private:
 
     void deleteTrack(const std::shared_ptr<project::LightGroup> &group);
 
-    void lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx);
-    void lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx);
+    void lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
+    void lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
 
     // editor settings
     bool snapCursor = true;

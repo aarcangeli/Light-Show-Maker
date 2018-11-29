@@ -1,4 +1,5 @@
 #include <cassert>
+#include <algorithm>
 #include "LightGroup.h"
 
 using namespace sm;
@@ -40,4 +41,11 @@ size_t LightGroup::findIndexIt(time_unit time, size_t min, size_t max) {
     auto &mid = keys[midIdx];
     if (time > mid->start) return findIndexIt(time, midIdx + 1, max);
     else return findIndexIt(time, min, midIdx);
+}
+
+void LightGroup::sortKeys() {
+    std::stable_sort(keys.begin(), keys.end(), [](std::shared_ptr<KeyPoint> a, std::shared_ptr<KeyPoint> b) -> bool {
+        return a->start < b->start;
+    });
+    assert(sanityCheck());
 }
