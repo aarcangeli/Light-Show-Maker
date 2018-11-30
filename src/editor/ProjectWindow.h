@@ -1,6 +1,7 @@
 #ifndef PROJECTWINDOW_H
 #define PROJECTWINDOW_H
 
+#include "core.h"
 #include "Editor.h"
 #include "memory"
 #include <imgui.h>
@@ -8,15 +9,16 @@
 #include "TimelineEditor.h"
 
 namespace sm {
-class Application;
+namespace editor {
 
 class ProjectWindow {
     const float TIMELINE_HEIGHT_RATIO = 0.4;
-    const float OUTPUT_ASPECT_RATIO = 16.f / 9;
-    const bool FIXED_LAYOUT = true;
+    const float TIMELINE_PANELS_WIDTH_RATIO = 0.15;
+
+    const int FLAGS = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse;
 
 public:
-    explicit ProjectWindow(Application *app);
+    explicit ProjectWindow();
 
     // invoked by Application
     void open(std::shared_ptr<project::Project> shared_ptr);
@@ -29,20 +31,26 @@ public:
     float dpi;
 
 private:
-    Application *app;
     std::shared_ptr<project::Project> proj;
     editor::Editor myEditor;
     editor::TimelineEditor timelineEditor;
     int viewportWidth = 0, viewportHeight = 0;
-    bool restoreDefaultLayout = true;
-    ImRect menuRect;
+
+    float menuHeight;
+    float centerHeight;
+    float timelineHeight;
+    float leftPanelWidth;
+    float rightPanelWidth;
+    float spacing;
 
     void showMenu();
-    void mainFrame();
     void outputWindow();
     void timelineWindow();
+    void leftPanelWindow();
+    void rightPanelWindow();
 };
 
+}
 }
 
 #endif //PROJECTWINDOW_H

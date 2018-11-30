@@ -21,7 +21,6 @@ void saveFn(ImGuiContext *ctx, ImGuiSettingsHandler *handler, ImGuiTextBuffer *o
     out_buf->appendf("WindowWidth=%i\n", app->windowWidth);
     out_buf->appendf("WindowHeight=%i\n", app->windowHeight);
     out_buf->appendf("Maximized=%i\n", app->showMaximized);
-    out_buf->appendf("Theme=%i\n", app->getTheme());
     out_buf->appendf("LastDirectory=%s\n", app->lastDirectory.c_str());
     out_buf->appendf("\n");
 }
@@ -36,7 +35,6 @@ void loadFn(ImGuiContext *ctx, ImGuiSettingsHandler *handler, void *entry, const
     if (sscanf(line, "WindowWidth=%i", &i) == 1) app->windowWidth = i;
     if (sscanf(line, "WindowHeight=%i", &i) == 1) app->windowHeight = i;
     if (sscanf(line, "Maximized=%i", &i) == 1) app->showMaximized = i != 0;
-    if (sscanf(line, "Theme=%i", &i) == 1) app->setTheme(i);
     if (sscanf(line, "LastDirectory=%c", &i) == 1) {
         app->lastDirectory = &line[14];
     }

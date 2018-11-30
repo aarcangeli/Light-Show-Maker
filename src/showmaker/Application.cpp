@@ -21,7 +21,7 @@ namespace sm {
 Application *gApp;
 }
 
-Application::Application() : projectWindow(this) {
+Application::Application() {
     gApp = this;
 }
 
@@ -89,19 +89,9 @@ bool Application::init() {
 void Application::applyTheme() {
     ImGuiStyle &style = ImGui::GetStyle();
     style = ImGuiStyle();
-    switch (theme) {
-        case 0:
-            ImGui::StyleColorsClassic();
-            break;
-        case 1:
-            ImGui::StyleColorsDark();
-            style.Colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.80f, 1.00f);
-            style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
-            break;
-        case 2:
-            ImGui::StyleColorsLight();
-            break;
-    }
+    ImGui::StyleColorsDark();
+    style.Colors[ImGuiCol_Text] = ImVec4(0.80f, 0.80f, 0.80f, 1.00f);
+    style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.40f, 0.40f, 1.00f);
     style.FramePadding = {6, 4};
     style.WindowRounding = 0;
     style.WindowBorderSize = 0;
@@ -143,7 +133,7 @@ int Application::runLoop() {
         glfwGetFramebufferSize(mainWindow, &viewportWidth, &viewportHeight);
 
         // gui palette purpose
-        ImGui::ShowDemoWindow();
+        //ImGui::ShowDemoWindow();
 
         // show frame
         projectWindow.resize(viewportWidth, viewportHeight);

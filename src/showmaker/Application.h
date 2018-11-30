@@ -30,17 +30,6 @@ public:
     int windowWidth = 1280;
     int windowHeight = 720;
 
-    int getTheme() const {
-        return theme;
-    }
-
-    void setTheme(int theme) {
-        if (theme >= 0 && theme < 3) {
-            Application::theme = theme;
-            dirtyStyle = true;
-        }
-    }
-
     void layerSelected(std::shared_ptr<project::LightGroup> layer);
 
     void beginCommand(const std::string &name, bool mergeable = false);
@@ -51,8 +40,6 @@ public:
     void setAppHome(std::string home);
 
 private:
-    int theme = 1;
-
     struct AppCommand {
         std::string name;
         bool mergeable;
@@ -69,7 +56,7 @@ private:
     bool dirtyStyle = false;
 
     std::shared_ptr<project::Project> proj;
-    ProjectWindow projectWindow;
+    editor::ProjectWindow projectWindow;
     media::AudioDevice device;
 
     ImFont *loadFont(const char *start, const char *end, float size, bool fontAwesome) const;
