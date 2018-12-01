@@ -4,7 +4,6 @@
 #include "memory"
 #include "core.h"
 #include "Project.h"
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <functional>
 #include <imgui.h>
@@ -31,7 +30,10 @@ public:
     int windowHeight = 720;
 
     void setLayerSelected(std::shared_ptr<project::LightGroup> layer);
-    std::shared_ptr<project::LightGroup> layerSelected() { return selected; }
+    std::shared_ptr<project::LightGroup> layerSelected() { return selectedGroup; }
+
+    void setDecorationSelected(std::shared_ptr<project::Decoration> decoration);
+    std::shared_ptr<project::Decoration> decorationSelected() { return selectedDecoration; }
 
     void beginCommand(const std::string &name, bool mergeable = false);
     void endCommand();
@@ -66,7 +68,8 @@ private:
 
     void applyTheme();
 
-    std::shared_ptr<project::LightGroup> selected;
+    std::shared_ptr<project::LightGroup> selectedGroup;
+    std::shared_ptr<project::Decoration> selectedDecoration;
     std::string home;
     std::string iniPath;
     std::string autosavePath;

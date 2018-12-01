@@ -1,7 +1,10 @@
 #include <utility>
+
+#include <utility>
 #include <memory>
 #include <unistd.h>
 #include <string>
+#include <use_glad.h>
 #include "Application.h"
 #include "configLoader.h"
 #include <imgui_impl_glfw.h>
@@ -220,8 +223,12 @@ ImFont *Application::loadFont(const char *start, const char *end, float size, bo
 }
 
 void Application::setLayerSelected(std::shared_ptr<project::LightGroup> layer) {
-    selected = std::move(layer);
+    selectedGroup = std::move(layer);
 }
+void Application::setDecorationSelected(std::shared_ptr<project::Decoration> decoration) {
+    selectedDecoration = std::move(decoration);
+}
+
 
 void Application::beginCommand(const std::string &name, bool mergeable) {
 }

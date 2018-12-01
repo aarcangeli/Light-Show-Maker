@@ -53,9 +53,15 @@ void ProjectWindow::outputWindow() {
 void ProjectWindow::leftPanelWindow() {
     SetNextWindowPos(ImVec2{0, menuHeight});
     SetNextWindowSize(ImVec2{leftPanelWidth - spacing, centerHeight});
-    Begin("Left", nullptr, FLAGS);
+    Begin("Project", nullptr, FLAGS);
 
-    Text("CIAO");
+    for (auto &c : proj->canvas.groups) {
+        if (TreeNode(c->name.c_str())) {
+            if (Selectable("test")) {
+            }
+            TreePop();
+        }
+    }
 
     End();
 }

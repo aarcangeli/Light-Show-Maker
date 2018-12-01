@@ -1,11 +1,12 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
+#include "use_glad.h"
 #include "OutputVideoEditor.h"
 #include "Application.h"
 #include "AudioLoader.h"
 #include "ImageLoader.h"
 #include "IconsFontAwesome4.h"
-#include "glad/glad.h"
+#include "imgui_internal.h"
 
 using namespace sm;
 using namespace sm::editor;
@@ -13,8 +14,18 @@ using namespace std;
 using namespace ImGui;
 
 void OutputVideoEditor::editorOf(shared_ptr<project::Project> proj) {
+    mouseClicked = IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseClicked(0);
+    windowFocused = IsWindowFocused(ImGuiHoveredFlags_ChildWindows);
+    mousePos = GetMousePos();
+    decorationHover.reset();
     drawContent(proj);
     topMenu(proj);
+    if (mouseClicked) {
+        dragger.startEditing(decorationHover);
+        gApp->setDecorationSelected(decorationHover);
+    }
+    lastDecorationHover = decorationHover;
+    dragger.update();
 }
 
 void OutputVideoEditor::drawContent(std::shared_ptr<project::Project> proj) {
@@ -34,7 +45,6 @@ void OutputVideoEditor::drawContent(std::shared_ptr<project::Project> proj) {
 
     GetWindowDrawList()->AddRect(canvasScreenPos, canvasScreenPos + canvasSize, COLOR_BORDER);
 
-    // draw content
     drawCanvas(proj->canvas);
 }
 
@@ -45,6 +55,16 @@ void OutputVideoEditor::topMenu(const shared_ptr<project::Project> &proj) const 
     BeginChild("TopBar", rect, false, ImGuiWindowFlags_NoScrollbar);
 
     if (Button(ICON_FA_FILE_IMAGE_O, ImVec2(height, height))) openImage(proj);
+    SameLine();
+    if (Button(ICON_FA_LIGHTBULB_O, ImVec2(height, height))) {
+        auto dec = make_shared<project::Decoration>();
+        dec->type = project::LIGHT;
+        dec->posX = logicalSize.x / 2;
+        dec->posY = logicalSize.y / 2;
+        dec->size = 30;
+        dec->color = 0xffffffff; // white
+        append(proj, dec);
+    }
 
     EndChild();
     SetCursorScreenPos(oldPos);
@@ -56,30 +76,43 @@ void OutputVideoEditor::openImage(const shared_ptr<project::Project> &proj) cons
         shared_ptr<media::Image> image = media::loadImage(outPath);
         if (image) {
             auto dec = make_shared<project::Decoration>();
+            dec->type = project::IMAGE;
             dec->width = image->width;
             dec->height = image->height;
             dec->posX = 0;
             dec->posY = 0;
-            dec->type = project::IMAGE;
-
             dec->image = image;
-            shared_ptr<project::LightGroup> selected = gApp->layerSelected();
-            (selected ? selected->decorations : proj->canvas.decorations).push_back(dec);
+            append(proj, dec);
         } else {
             gApp->error("Unable to open image '" + outPath + "'");
         }
     }
 }
 
-void OutputVideoEditor::drawCanvas(const project::Canvas &canvas) {
-    for (auto &dec : canvas.decorations) {
-        printDecoration(dec);
+void
+OutputVideoEditor::append(const shared_ptr<project::Project> &proj, const shared_ptr<project::Decoration> &dec) const {
+    shared_ptr<project::LightGroup> selected = gApp->layerSelected();
+    (selected ? selected->decorations : proj->canvas.decorations).push_back(dec);
+}
+
+void OutputVideoEditor::drawCanvas(project::Canvas &canvas) {
+    auto &vector = canvas.decorations;
+    auto it = vector.begin();
+    while (it != vector.end()) {
+        uint64_t size = vector.size();
+        shared_ptr<project::Decoration> &el = *it;
+        if (el == decorationToDelete) {
+            it = vector.erase(it);
+            continue;
+        }
+        printDecoration(el);
+        it++;
     }
 }
 
 void OutputVideoEditor::printDecoration(const std::shared_ptr<project::Decoration> &dec) {
-    ImVec2 pos = canvasScreenPos + ImVec2(dec->posX, dec->posY);
-    ImVec2 dim = ImVec2(dec->width, dec->height) * canvasSize / logicalSize;
+    ImVec2 pos = canvasScreenPos + ImVec2(dec->posX, dec->posY) * getLogicalScale();
+    ImRect region = getDecorationRegion(dec);
 
     ImDrawList *drawList = GetWindowDrawList();
     if (dec->type == project::IMAGE) {
@@ -98,6 +131,8 @@ void OutputVideoEditor::printDecoration(const std::shared_ptr<project::Decoratio
             id = (ImTextureID) (size_t) texture;
         }
 
+        ImVec2 dim = ImVec2(dec->width, dec->height) * getLogicalScale();
+        ImVec2 max = pos + dim;
         // coming
 //        draw_list->PushTextureID(tex_id);
 //        draw_list->PrimReserve(6, 4);
@@ -107,6 +142,33 @@ void OutputVideoEditor::printDecoration(const std::shared_ptr<project::Decoratio
     }
 
     if (dec->type == project::LIGHT) {
-        drawList->AddCircle(pos, dec->size, dec->color);
+        drawList->AddCircleFilled(pos, dec->size, dec->color);
     }
+
+    if (region.Contains(mousePos)) {
+        decorationHover = dec;
+    }
+
+    if (lastDecorationHover == dec) {
+        dragger.drawPlaceBox(region, true);
+    }
+}
+
+ImVec2 OutputVideoEditor::getLogicalScale() const { return canvasSize / logicalSize; }
+
+ImRect OutputVideoEditor::getDecorationRegion(const std::shared_ptr<project::Decoration> &dec) {
+    ImVec2 pos = canvasScreenPos + ImVec2(dec->posX, dec->posY) * getLogicalScale();
+    ImVec2 dim;
+    if (dec->type == project::IMAGE) {
+        dim = ImVec2(dec->width, dec->height) * getLogicalScale();
+    }
+    if (dec->type == project::LIGHT) {
+        dim = ImVec2(dec->size, dec->size) * 2;
+        pos -= dim / 2;
+    }
+    return {pos, pos + dim};
+}
+
+void OutputVideoEditor::deleteDecoration(shared_ptr<project::Decoration> dec) {
+    decorationToDelete = dec;
 }

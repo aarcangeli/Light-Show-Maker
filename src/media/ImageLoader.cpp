@@ -108,8 +108,8 @@ shared_ptr<Image> ImageLoader::decodeImage(const vector<uint8_t> &vector) {
 
     shared_ptr<Image> ptr = readFromCtx();
 
-    av_free(btc);
-    av_free(buffer);
+    //av_free(btc);
+    //av_free(buffer);
 
     return ptr;
 }
