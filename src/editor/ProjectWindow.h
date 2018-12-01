@@ -1,3 +1,5 @@
+#include <utility>
+
 #ifndef PROJECTWINDOW_H
 #define PROJECTWINDOW_H
 
@@ -13,6 +15,7 @@ namespace sm {
 namespace editor {
 
 class ProjectWindow {
+    const char *MODAL_ERROR = "Error!";
     const float TIMELINE_HEIGHT_RATIO = 0.4;
     const float TIMELINE_PANELS_WIDTH_RATIO = 0.15;
 
@@ -25,11 +28,14 @@ public:
     void open(std::shared_ptr<project::Project> shared_ptr);
     void close();
 
+    void showError(std::string errorMsg) {
+        lastError = std::move(errorMsg);
+        openErrorBox = true;
+    }
+
     void resize(int width, int height);
 
     void showFrame();
-
-    float dpi;
 
 private:
     std::shared_ptr<project::Project> proj;
@@ -37,6 +43,10 @@ private:
     TimelineEditor timelineEditor;
     OutputVideoEditor outputPreview;
     int viewportWidth = 0, viewportHeight = 0;
+    bool openErrorBox = false;
+    std::string lastError;
+
+    void errorBox();
 
     float menuHeight;
     float centerHeight;

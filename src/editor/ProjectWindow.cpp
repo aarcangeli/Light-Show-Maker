@@ -1,7 +1,7 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
+
 #include <utility>
-
 #include "ProjectWindow.h"
-
 #include "Application.h"
 #include <IconsFontAwesome4.h>
 
@@ -28,16 +28,26 @@ void ProjectWindow::showFrame() {
     rightPanelWindow();
     outputWindow();
     timelineWindow();
+
+    if (openErrorBox) {
+        OpenPopup(MODAL_ERROR);
+        openErrorBox = false;
+    }
+    errorBox();
 }
 
 void ProjectWindow::outputWindow() {
     SetNextWindowPos(ImVec2{leftPanelWidth, menuHeight});
     SetNextWindowSize(ImVec2{viewportWidth - leftPanelWidth - rightPanelWidth, centerHeight});
-    Begin("Output", nullptr, FLAGS);
+    PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
+    PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
+    Begin("Output", nullptr, FLAGS | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    PopStyleVar(1);
 
     outputPreview.editorOf(proj);
 
     End();
+    PopStyleVar(1);
 }
 
 void ProjectWindow::leftPanelWindow() {
@@ -74,7 +84,7 @@ void ProjectWindow::timelineWindow() {
 
 void ProjectWindow::showMenu() {
     if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("File " ICON_FA_GITHUB_SQUARE)) {
+        if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New", "Ctrl+N")) {
                 gApp->open(std::make_shared<project::Project>());
             }
@@ -138,4 +148,14 @@ void ProjectWindow::open(std::shared_ptr<project::Project> _proj) {
 
 void ProjectWindow::close() {
     proj.reset();
+}
+
+void ProjectWindow::errorBox() {
+    if (BeginPopupModal(MODAL_ERROR, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+        Text("%s", lastError.c_str());
+        SetCursorScreenPos(GetCursorScreenPos() + ImVec2((GetContentRegionAvail().x - 120) / 2, 0));
+        if (Button("OK", ImVec2(120, 0))) { CloseCurrentPopup(); }
+        SetItemDefaultFocus();
+        EndPopup();
+    }
 }

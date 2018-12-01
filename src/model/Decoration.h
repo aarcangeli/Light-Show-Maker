@@ -8,29 +8,58 @@
 namespace sm {
 namespace project {
 
+enum DecorationType {
+    LIGHT,
+    IMAGE,
+};
+
 class Decoration {
 public:
     Decoration();
 
+    DecorationType type;
+
+    // box
+    float posX, posY;
+
+    // image
     std::shared_ptr<media::Image> image;
+    float width, height;
+
+    // light
+    uint32_t color;
+    float size;
+
+    // volatile - hold texture
+    void* textureId = nullptr;
 
     SERIALIZATION_START {
-        std::vector<uint8_t> bytes;
-        if (ser.SERIALIZING) {
-            if (!image) image = std::make_shared<media::Image>();
-            ser.serialize("width", image->width);
-            ser.serialize("height", image->height);
-            bytes = media::encodeImage(image);
-            if (bytes.empty()) {
-                throw "Cannot encode image";
+        ser.serializeEnum("type", type);
+        ser.serialize("posX", posX);
+        ser.serialize("posY", posY);
+        ser.serialize("width", width);
+        ser.serialize("height", height);
+
+        if (type == IMAGE) {
+            std::vector<uint8_t> bytes;
+            if (ser.SERIALIZING) {
+                if (!image) image = std::make_shared<media::Image>();
+                bytes = media::encodeImage(image);
+                if (bytes.empty()) {
+                    throw "Cannot encode image";
+                }
+            }
+            ser.serializeBinary("png", bytes);
+            if (ser.DESERIALIZING) {
+                image = media::decodeImage(bytes);
+                if (!image) {
+                    throw "Cannot decode image";
+                }
             }
         }
-        ser.serializeBinary("png", bytes);
-        if (ser.DESERIALIZING) {
-            image = media::decodeImage(bytes);
-            if (!image) {
-                throw "Cannot decode image";
-            }
+        if (type == LIGHT) {
+            ser.serialize("color", color);
+            ser.serialize("size", size);
         }
     }
 };

@@ -97,7 +97,6 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
     SetCursorScreenPos(widgetPos + ImVec2(0, widgetSize.y - headerBotHeight));
 
     bool openAudioFile = false;
-    bool openErrorBox = false;
     if (Button("Add", ImVec2(50, headerBotHeight))) {
         OpenPopup(POPUP_ADD_LAYER);
     }
@@ -113,8 +112,7 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
             if (!outPath.empty()) {
                 loader.open(string(outPath));
                 if (!loader.isOpen()) {
-                    lastError = "Cannot open '" + string(outPath) + "'";
-                    openErrorBox = true;
+                    gApp->error("Cannot open '" + string(outPath) + "'");
                 } else {
                     openAudioFile = true;
                     gApp->saveLastDirectory(outPath);
@@ -125,9 +123,7 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
     }
 
     if (openAudioFile) OpenPopup(MODAL_ADD_AUDIO);
-    if (openErrorBox) OpenPopup(MODAL_ERROR);
     addAudioModal();
-    errorBox();
 
     EndGroup();
     this->canvas = nullptr;
@@ -163,16 +159,6 @@ void TimelineEditor::addAudioModal() {
         SetItemDefaultFocus();
         SameLine();
         if (Button("Cancel", ImVec2(120, 0))) { CloseCurrentPopup(); }
-        EndPopup();
-    }
-}
-
-void TimelineEditor::errorBox() {
-    if (BeginPopupModal(MODAL_ERROR, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        Text("Error: %s", lastError.c_str());
-        SetCursorScreenPos(GetCursorScreenPos() + ImVec2((GetContentRegionAvail().x - 120) / 2, 0));
-        if (Button("OK", ImVec2(120, 0))) { CloseCurrentPopup(); }
-        SetItemDefaultFocus();
         EndPopup();
     }
 }

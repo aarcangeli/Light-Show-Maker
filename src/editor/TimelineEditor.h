@@ -18,7 +18,6 @@ namespace editor {
 
     const char *POPUP_ADD_LAYER = "POPUP_ADD_LAYER";
     const char *MODAL_ADD_AUDIO = "Audio Track";
-    const char *MODAL_ERROR = "Error!";
 
     const ImU32 COLOR_BG = IM_COL32(51, 51, 51, 255); // #333333
     const ImU32 COLOR_BG2 = IM_COL32(38, 38, 38, 255); // #262626
@@ -53,13 +52,10 @@ private:
     media::AudioLoader loader;
     ScrollablePane scroll;
 
-    std::string lastError;
     project::Canvas *canvas;
 
     ImU32 setAlpha(ImU32 color, double alpha);
     void addAudioModal();
-
-    void errorBox();
 
     ImRect contentRect;
 

@@ -56,7 +56,6 @@ private:
     ImGuiContext *ctx = nullptr;
     bool exit = false;
     bool closeProject = false;
-    float dpi = 1;
     bool dirtyStyle = false;
 
     std::shared_ptr<project::Project> proj;
@@ -75,6 +74,9 @@ private:
     void save(std::string filename);
 
     void load(std::string filename);
+
+public:
+    void error(std::string errorMsg) { projectWindow.showError(errorMsg); }
 };
 
 }

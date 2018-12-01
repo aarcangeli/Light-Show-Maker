@@ -6,6 +6,7 @@
 namespace sm {
 
 extern class Application *gApp;
+extern float dpi;
 
 /// unit inside a second
 const int TIME_UNITS = 1000;

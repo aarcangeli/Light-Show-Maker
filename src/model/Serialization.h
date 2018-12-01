@@ -127,6 +127,10 @@ public:
         jsonValue[name] = value;
     }
 
+    void serialize(const char *name, float &value) {
+        jsonValue[name] = value;
+    }
+
     template<typename C>
     void serialize(const char *name, std::vector<C> &value) {
         Json::Value array(Json::arrayValue);
@@ -245,6 +249,11 @@ public:
     void serialize(const char *name, int64_t &value) {
         if (!jsonValue.isMember(name)) return;
         value = jsonValue[name].asInt64();
+    }
+
+    void serialize(const char *name, float &value) {
+        if (!jsonValue.isMember(name)) return;
+        value = jsonValue[name].asFloat();
     }
 
     template<typename C>

@@ -20,6 +20,7 @@ using namespace sm::editor;
 
 namespace sm {
 Application *gApp;
+float dpi = 1;
 }
 
 Application::Application() {
@@ -116,6 +117,7 @@ int Application::runLoop() {
         // manage dpi change
         float currentDpi = getDpiForWindow(mainWindow);
         if (dpi != currentDpi) {
+            sm::dpi = currentDpi;
             dpi = currentDpi;
             dirtyStyle = true;
         }
@@ -133,13 +135,12 @@ int Application::runLoop() {
         int viewportWidth, viewportHeight;
         glfwGetFramebufferSize(mainWindow, &viewportWidth, &viewportHeight);
 
-        // gui palette purpose
-        //ImGui::ShowDemoWindow();
-
         // show frame
         projectWindow.resize(viewportWidth, viewportHeight);
-        projectWindow.dpi = dpi;
         projectWindow.showFrame();
+
+        // gui palette
+        //ImGui::ShowDemoWindow();
 
         // Rendering
         ImGui::Render();
