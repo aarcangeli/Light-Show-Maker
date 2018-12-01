@@ -348,7 +348,7 @@ TimelineEditor::drawKey(shared_ptr<LightGroup> group, shared_ptr<KeyPoint> &key,
             SetMouseCursor(ImGuiMouseCursor_ResizeEW);
             type = KeypointDragger::RESIZE_END;
         }
-        if (IsMouseClicked(0)) {
+        if (IsMouseClicked(0) && !IsKeyDown(GLFW_KEY_SPACE)) {
             dragger.startDragging(key, group, type, getTimeScaleX());
         }
     }
