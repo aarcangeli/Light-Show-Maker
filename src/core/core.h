@@ -5,9 +5,7 @@
 
 namespace sm {
 
-class Application;
-
-extern Application *gApp;
+extern class Application *gApp;
 
 /// unit inside a second
 const int TIME_UNITS = 1000;

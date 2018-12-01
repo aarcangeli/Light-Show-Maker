@@ -3,7 +3,6 @@
 #include "TimelineEditor.h"
 #include <algorithm>
 #include <imgui_internal.h>
-#include <nfd.h>
 #include <Application.h>
 #include <IconsFontAwesome4.h>
 
@@ -110,18 +109,16 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
             canvas.makeGroup();
         }
         if (Selectable("Audio File..")) {
-            nfdchar_t *outPath = nullptr;
-            nfdresult_t result = NFD_OpenDialog("mp3,wav,mp4,avi", gApp->lastDirectory.c_str(), &outPath);
-            if (result == NFD_OKAY) {
+            string outPath = gApp->getPath("mp3,wav,mp4,avi");
+            if (!outPath.empty()) {
                 loader.open(string(outPath));
                 if (!loader.isOpen()) {
                     lastError = "Cannot open '" + string(outPath) + "'";
                     openErrorBox = true;
                 } else {
                     openAudioFile = true;
-                    saveLastDirectory(outPath);
+                    gApp->saveLastDirectory(outPath);
                 }
-                free(outPath);
             }
         }
         EndPopup();
@@ -134,17 +131,6 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
 
     EndGroup();
     this->canvas = nullptr;
-}
-
-void TimelineEditor::saveLastDirectory(const nfdchar_t *outPath) const {
-    // remove last /
-    string path = outPath;
-    int lastSlash = -1;
-    for (int i = 0; path[i]; i++) if (path[i] == '/' || path[i] == '\\') lastSlash = i;
-    if (lastSlash >= 0) {
-        path[lastSlash] = '\0';
-        gApp->lastDirectory = path;
-    }
 }
 
 ImU32 TimelineEditor::setAlpha(ImU32 color, double alpha) {
@@ -441,7 +427,7 @@ void TimelineEditor::printLayer(shared_ptr<project::LightGroup> group, ImRect re
     if (isHovered && io.MouseClicked[0]) {
         selection = group;
         isSelected = true;
-        gApp->layerSelected(group);
+        gApp->setLayerSelected(group);
     }
 
     ImU32 color = isSelected ? btnActive : isHovered ? btnHover : COLOR_LAYER;
@@ -469,7 +455,7 @@ void TimelineEditor::deleteTrack(const shared_ptr<project::LightGroup> &group) {
     project::Canvas *canvas = this->canvas;
     gApp->asyncCommand(string("Delete ") + group->name, false, [canvas, group, this]() {
         canvas->deleteGroup(group);
-        gApp->layerSelected(nullptr);
+        gApp->setLayerSelected(nullptr);
         selection.reset();
     });
 }

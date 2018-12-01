@@ -9,6 +9,7 @@
 #include <sstream>
 #include "utility"
 #include "json/json.h"
+#include "base64.h"
 
 #define SERIALIZATION_START template<SERIALIZATION_TYPE __type> void serialize(sm::Serializer<__type> &ser)
 
@@ -69,6 +70,9 @@ class Serializer<SER_JSON> {
             jsonValue(type) {}
 
 public:
+    const bool SERIALIZING = true;
+    const bool DESERIALIZING = false;
+
     Serializer() {
         ctx = new SerializationContext();
         ownedCtx = true;
@@ -150,6 +154,11 @@ public:
         jsonValue[name] = value;
     }
 
+    void serializeBinary(const char *name, std::vector<uint8_t> &value) {
+        std::string string = base64_encode(value.data(), value.size());
+        serialize(name, string);
+    }
+
     // any other type
     template<typename C>
     void serialize(const char *name, C &value) {
@@ -173,6 +182,9 @@ class Serializer<DESER_JSON> {
             jsonValue(jsonValue) {}
 
 public:
+    const bool SERIALIZING = false;
+    const bool DESERIALIZING = true;
+
     Serializer(const std::string &data) {
         ctx = new SerializationContext();
         ownedCtx = true;
@@ -257,6 +269,14 @@ public:
         value = (C) jsonValue[name].asUInt();
     }
 
+    void serializeBinary(const char *name, std::vector<uint8_t> &value) {
+        std::string string;
+        serialize(name, string);
+        std::string decoded = base64_decode(string);
+        value.resize(decoded.size());
+        memcpy(value.data(), decoded.data(), decoded.size());
+    }
+
     // any other type
     template<typename C>
     void serialize(const char *name, C &value) {
@@ -264,7 +284,6 @@ public:
         Serializer<DESER_JSON> sub(ctx, jsonValue[name]);
         sub.deserializeHere(value);
     }
-
 };
 
 

@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 #include "TimelineEditor.h"
+#include "OutputVideoEditor.h"
 
 namespace sm {
 namespace editor {
@@ -32,8 +33,9 @@ public:
 
 private:
     std::shared_ptr<project::Project> proj;
-    editor::Editor myEditor;
-    editor::TimelineEditor timelineEditor;
+    Editor myEditor;
+    TimelineEditor timelineEditor;
+    OutputVideoEditor outputPreview;
     int viewportWidth = 0, viewportHeight = 0;
 
     float menuHeight;

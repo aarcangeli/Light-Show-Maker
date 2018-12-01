@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <fstream>
 #include <streambuf>
+#include <nfd.h>
 
 using namespace sm;
 using namespace sm::editor;
@@ -217,7 +218,7 @@ ImFont *Application::loadFont(const char *start, const char *end, float size, bo
             size, &config, ranges);
 }
 
-void Application::layerSelected(std::shared_ptr<project::LightGroup> layer) {
+void Application::setLayerSelected(std::shared_ptr<project::LightGroup> layer) {
     selected = std::move(layer);
 }
 
@@ -262,4 +263,25 @@ void Application::load(std::string filename) {
     std::shared_ptr<project::Project> proj = std::make_shared<project::Project>();
     proj->serialize(serializer);
     open(proj);
+}
+
+std::string Application::getPath(const std::string &pathes) {
+    std::string path;
+    nfdchar_t *outPath = nullptr;
+    nfdresult_t result = NFD_OpenDialog(pathes.c_str(), gApp->lastDirectory.c_str(), &outPath);
+    if (result == NFD_OKAY) {
+        path = outPath;
+        free(outPath);
+    }
+    return path;
+}
+
+void Application::saveLastDirectory(std::string path) {
+    // remove last /
+    int lastSlash = -1;
+    for (int i = 0; path[i]; i++) if (path[i] == '/' || path[i] == '\\') lastSlash = i;
+    if (lastSlash >= 0) {
+        path[lastSlash] = '\0';
+        lastDirectory = path;
+    }
 }

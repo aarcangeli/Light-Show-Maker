@@ -18,7 +18,7 @@ public:
     ~LightGroup();
 
     std::string name;
-    std::vector<Decoration> decorations;
+    std::vector<std::shared_ptr<Decoration>> decorations;
     std::vector<std::shared_ptr<KeyPoint>> keys;
 
     std::shared_ptr<KeyPoint> addKey(time_unit start, time_unit duration);

@@ -30,7 +30,8 @@ public:
     int windowWidth = 1280;
     int windowHeight = 720;
 
-    void layerSelected(std::shared_ptr<project::LightGroup> layer);
+    void setLayerSelected(std::shared_ptr<project::LightGroup> layer);
+    std::shared_ptr<project::LightGroup> layerSelected() { return selected; }
 
     void beginCommand(const std::string &name, bool mergeable = false);
     void endCommand();
@@ -38,6 +39,9 @@ public:
     void asyncCommand(const std::string &name, bool mergeable, const std::function<void()> &fn);
 
     void setAppHome(std::string home);
+
+    std::string getPath(const std::string &pathes);
+    void saveLastDirectory(std::string path);
 
 private:
     struct AppCommand {

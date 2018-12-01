@@ -59,7 +59,6 @@ private:
     ImU32 setAlpha(ImU32 color, double alpha);
     void addAudioModal();
 
-    void saveLastDirectory(const char *outPath) const;
     void errorBox();
 
     ImRect contentRect;

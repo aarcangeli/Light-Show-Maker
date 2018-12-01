@@ -35,7 +35,7 @@ void ProjectWindow::outputWindow() {
     SetNextWindowSize(ImVec2{viewportWidth - leftPanelWidth - rightPanelWidth, centerHeight});
     Begin("Output", nullptr, FLAGS);
 
-    Text("CIAO");
+    outputPreview.editorOf(proj);
 
     End();
 }
