@@ -9,6 +9,7 @@
 #include <imgui.h>
 #include "ProjectWindow.h"
 #include "AudioDevice.h"
+#include "Player.h"
 
 namespace sm {
 
@@ -30,9 +31,11 @@ public:
     int windowHeight = 720;
 
     void setLayerSelected(std::shared_ptr<project::LightGroup> layer);
+
     std::shared_ptr<project::LightGroup> layerSelected() { return selectedGroup; }
 
     void setDecorationSelected(std::shared_ptr<project::Decoration> decoration);
+
     std::shared_ptr<project::Decoration> decorationSelected() { return selectedDecoration; }
 
     void beginCommand(const std::string &name, bool mergeable = false);
@@ -63,6 +66,7 @@ private:
     std::shared_ptr<project::Project> proj;
     editor::ProjectWindow projectWindow;
     media::AudioDevice device;
+    Player player;
 
     ImFont *loadFont(const char *start, const char *end, float size, bool fontAwesome) const;
 
@@ -79,7 +83,9 @@ private:
     void load(std::string filename);
 
 public:
-    void error(std::string errorMsg) { projectWindow.showError(errorMsg); }
+    void error(const std::string &errorMsg) { projectWindow.showError(errorMsg); }
+
+    Player &getPlayer() { return player; };
 };
 
 }

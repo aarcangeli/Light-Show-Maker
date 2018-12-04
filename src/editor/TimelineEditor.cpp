@@ -90,6 +90,7 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
 
     dragger.update();
 
+    printMediaControls(mediaControlsRect);
     printContent(canvas, contentRect);
     printLayerList(canvas, layersRect);
     printTimeline(canvas, timelineRect);
@@ -124,6 +125,14 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
 
     if (openAudioFile) OpenPopup(MODAL_ADD_AUDIO);
     addAudioModal();
+
+    if (isDraggingPosition) {
+        float seek = (GetIO().MousePos.x - getTimeOffsetX()) / getTimeScaleX();
+        gApp->getPlayer().seek((time_unit) seek);
+        if (!IsMouseDown(0)) {
+            isDraggingPosition = false;
+        }
+    }
 
     EndGroup();
     this->canvas = nullptr;
@@ -164,10 +173,12 @@ void TimelineEditor::addAudioModal() {
 }
 
 float TimelineEditor::getTimePosScreenPos(time_unit time) {
-    float off = contentRect.Min.x - offset.x;
+    float off = getTimeOffsetX();
     float mult = getTimeScaleX();
     return off + time * mult;
 }
+
+float TimelineEditor::getTimeOffsetX() const { return contentRect.Min.x - offset.x; }
 
 bool TimelineEditor::lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx) {
     if (time) {
@@ -304,6 +315,9 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
         }
     }
 
+    float pos = getTimePosScreenPos(gApp->getPlayer().playerPosition());
+    drawList->AddLine(ImVec2(pos, rect.Min.y), ImVec2(pos, rect.Max.y), COLOR_CURSOR);
+
     scroll.scrollPaneEnd();
 }
 
@@ -383,7 +397,7 @@ void TimelineEditor::printTimeline(const project::Canvas &canvas, ImRect rect) {
     float offset = -1;
     for (time_unit i = 0; i < duration; i += timeStep) {
         float pos = getTimePosScreenPos(i);
-        const string &text = timeLabel(i);
+        const string &text = timeLabel(i, false);
         const ImVec2 &vec2 = CalcTextSize(text.c_str());
         if (offset < pos) {
             drawList->AddText(ImVec2(pos, rect.Min.y), textColor, text.c_str());
@@ -391,17 +405,30 @@ void TimelineEditor::printTimeline(const project::Canvas &canvas, ImRect rect) {
         }
     }
 
+    time_unit playerPosition = gApp->getPlayer().playerPosition();
+    float pos = getTimePosScreenPos(playerPosition);
+    float mid = (rect.Max.y - rect.Min.y) / 2;
+    drawList->AddLine(ImVec2(pos, rect.Min.y + mid), ImVec2(pos, rect.Max.y), COLOR_CURSOR);
+    drawList->AddText(ImVec2(pos, rect.Min.y + mid), COLOR_CURSOR, timeLabel(playerPosition, true).c_str());
+
+    if (IsMouseDown(0) && IsWindowHovered(ImGuiHoveredFlags_ChildWindows)) {
+        isDraggingPosition = true;
+    }
+
     EndChild();
     SetCursorPos(oldPos);
 }
 
-string TimelineEditor::timeLabel(time_unit time) {
+string TimelineEditor::timeLabel(time_unit time, bool withMills) {
     time_unwrapped unwrapped = time_unwrap(time);
     char buffer[500];
     if (unwrapped.hours) {
         ImFormatString(buffer, sizeof(buffer), "%02i:%02i:%02i", unwrapped.hours, unwrapped.minutes, unwrapped.seconds);
     } else {
         ImFormatString(buffer, sizeof(buffer), "%02i:%02i", unwrapped.minutes, unwrapped.seconds);
+    }
+    if (withMills) {
+        ImFormatString(buffer, sizeof(buffer), "%s:%03i", buffer, unwrapped.mills);
     }
     return buffer;
 }
@@ -503,6 +530,29 @@ bool TimelineEditor::findPlacableKeyPos(ImVec2 &pos, time_unit &start, time_unit
         }
     }
     return false;
+}
+
+void TimelineEditor::printMediaControls(ImRect rect) {
+    ImVec2 oldPos = GetCursorScreenPos();
+    SetCursorScreenPos(rect.Min);
+    BeginChild("MediaControls", rect.Max - rect.Min, false, ImGuiWindowFlags_NoScrollbar);
+
+    float rectMaxY = rect.Max.y - rect.Min.y;
+    ImVec2 size(rectMaxY, rectMaxY);
+
+    Player &player = gApp->getPlayer();
+    if (player.playing()) {
+        if (Button(ICON_FA_PAUSE, size)) {
+            player.pause();
+        }
+    } else {
+        if (Button(ICON_FA_PLAY, size)) {
+            player.play();
+        }
+    }
+
+    EndChild();
+    SetCursorScreenPos(oldPos);
 }
 
 // misc

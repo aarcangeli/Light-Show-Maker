@@ -175,6 +175,8 @@ int Application::runLoop() {
             cmd.fn();
         }
         commands.resize(0);
+
+        player.update();
     }
 
     save(autosavePath);

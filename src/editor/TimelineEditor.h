@@ -31,6 +31,8 @@ class TimelineEditor {
     const ImU32 COLOR_KEY_RESIZE = IM_COL32(255, 0, 0, 255 * 0.8);
     const ImU32 COLOR_KEY_GRAPH = IM_COL32(255, 0, 0, 255 * 0.6);
 
+    const ImU32 COLOR_CURSOR = IM_COL32(0, 255, 0, 255 * 0.8);
+
     const float COLOR_KEY_RADIUS = 2;
     const float COLOR_RESIZE_HANDLE_DIM = 4;
     const float CURVE_RESOLUTION = 2;
@@ -88,7 +90,7 @@ private:
     void printLayer(std::shared_ptr<project::LightGroup> group, ImRect rect);
     float getTimePosScreenPos(time_unit time);
     void printTimeline(const project::Canvas &canvas, ImRect rect);
-    std::string timeLabel(time_unit time);
+    std::string timeLabel(time_unit time, bool withMills);
 
     sm::media::AudioDevice device;
     std::shared_ptr<project::LightGroup> selection;
@@ -101,6 +103,8 @@ private:
     // editor settings
     bool snapCursor = true;
     time_unit snapTime = TIME_UNITS;
+
+    bool isDraggingPosition = false;
 
     void drawKey(std::shared_ptr<project::LightGroup> group,
                  std::shared_ptr<project::KeyPoint> &key,
@@ -118,6 +122,8 @@ public:
     }
 
     bool isInsideContent(const ImVec2 &pos) const;
+    void printMediaControls(ImRect rect);
+    float getTimeOffsetX() const;
 };
 
 }
