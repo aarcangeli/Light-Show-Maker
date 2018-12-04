@@ -48,7 +48,7 @@ void OutputVideoEditor::drawContent(std::shared_ptr<project::Project> proj) {
     drawCanvas(proj->canvas);
 }
 
-void OutputVideoEditor::topMenu(const shared_ptr<project::Project> &proj) const {
+void OutputVideoEditor::topMenu(const shared_ptr<project::Project> &proj) {
     ImVec2 oldPos = GetCursorScreenPos();
     float height = dpi * TOPBAR_HEIGHT;
     ImVec2 rect = ImVec2(ImFloor(GetContentRegionAvail().x), height);
@@ -64,6 +64,7 @@ void OutputVideoEditor::topMenu(const shared_ptr<project::Project> &proj) const 
         dec->size = 30;
         dec->color = 0xffffffff; // white
         append(proj, dec);
+        dragger.startEditing(dec);
     }
 
     EndChild();

@@ -10,6 +10,8 @@ namespace project {
 enum FADE_TYPE {
     LINEAR,
     EXPONENTIAL,
+    SIN,
+    SIN_DOUBLE,
 };
 
 class Fade {
@@ -20,6 +22,7 @@ public:
     SERIALIZATION_START {
         ser.serializeEnum("type", type);
         ser.serialize("duration", duration);
+        type = SIN;
     }
 };
 

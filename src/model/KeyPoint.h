@@ -17,12 +17,17 @@ public:
     time_unit duration;
     Fade fadeStart, fadeEnd;
 
+    float computeEasing(time_unit time);
+
     SERIALIZATION_START {
         ser.serialize("start", start);
         ser.serialize("duration", duration);
         ser.serialize("fadeStart", fadeStart);
         ser.serialize("fadeEnd", fadeEnd);
     }
+
+private:
+    float computeFade(bool isRight, const Fade &fade, time_unit time) const;
 
 };
 

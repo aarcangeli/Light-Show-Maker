@@ -31,7 +31,7 @@ public:
 
 private:
     void openImage(const std::shared_ptr<project::Project> &proj) const;
-    void topMenu(const std::shared_ptr<project::Project> &proj) const;
+    void topMenu(const std::shared_ptr<project::Project> &proj);
     void drawContent(std::shared_ptr<project::Project> ptr);
     void drawCanvas(project::Canvas &canvas);
     void printDecoration(const std::shared_ptr<project::Decoration> &shared_ptr);
@@ -40,8 +40,8 @@ private:
     ImVec2 canvasSize;
 
     DecorationDragger dragger;
-    bool mouseClicked;
-    bool windowFocused;
+    bool mouseClicked = false;
+    bool windowFocused = false;
     ImVec2 mousePos;
     std::shared_ptr<project::Decoration> decorationHover;
     std::shared_ptr<project::Decoration> lastDecorationHover;

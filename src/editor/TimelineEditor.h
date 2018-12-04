@@ -14,7 +14,7 @@
 namespace sm {
 namespace editor {
 
-    class TimelineEditor {
+class TimelineEditor {
 
     const char *POPUP_ADD_LAYER = "POPUP_ADD_LAYER";
     const char *MODAL_ADD_AUDIO = "Audio Track";
@@ -27,11 +27,13 @@ namespace editor {
     const ImU32 COLOR_LINE = IM_COL32(127, 127, 127, 255 * 0.4);
     const ImU32 COLOR_KEY = IM_COL32(127, 127, 127, 255 * 0.4);
     const ImU32 COLOR_KEY_HOV = IM_COL32(127, 127, 127, 255 * 0.7);
-    const ImU32 COLOR_KEY_OUTLINE = IM_COL32(0, 0, 0, 255 * 0.4);
+    const ImU32 COLOR_KEY_OUTLINE = IM_COL32(50, 50, 50, 255 * 0.8);
     const ImU32 COLOR_KEY_RESIZE = IM_COL32(255, 0, 0, 255 * 0.8);
+    const ImU32 COLOR_KEY_GRAPH = IM_COL32(255, 0, 0, 255 * 0.6);
 
-    const float COLOR_KEY_RADIUS = 3;
+    const float COLOR_KEY_RADIUS = 2;
     const float COLOR_RESIZE_HANDLE_DIM = 4;
+    const float CURVE_RESOLUTION = 2;
 
     const ImVec4 COLOR_TEXT = {1, 1, 1, 0.7f};
 
@@ -114,6 +116,8 @@ public:
         assert(canvas);
         return canvas;
     }
+
+    bool isInsideContent(const ImVec2 &pos) const;
 };
 
 }

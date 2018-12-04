@@ -170,9 +170,6 @@ float TimelineEditor::getTimePosScreenPos(time_unit time) {
 }
 
 bool TimelineEditor::lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx) {
-    if (!contentRect.Contains(pos)) {
-        return false;
-    }
     if (time) {
         float off = contentRect.Min.x - offset.x;
         float mult = getTimeScaleX();
@@ -185,12 +182,13 @@ bool TimelineEditor::lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx) {
         float mult = layerHeight;
         float layerIdxOut = (pos.y - off) / mult;
         *layerIdx = static_cast<int>(layerIdxOut);
-        if (*layerIdx < 0 || *layerIdx >= canvas->groups.size()) {
-            return false;
-        }
+        if (*layerIdx < 0) *layerIdx = 0;
+        if (*layerIdx >= canvas->groups.size()) *layerIdx = canvas->groups.size() - 1;
     }
     return true;
 }
+
+bool TimelineEditor::isInsideContent(const ImVec2 &pos) const { return contentRect.Contains(pos); }
 
 float TimelineEditor::getTimeScaleX() const { return TIME_WIDTH / TIME_UNITS * scale.x * dpi; }
 
@@ -267,7 +265,7 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
         float minHandle = COLOR_RESIZE_HANDLE_DIM * dpi / 2;
         if (!foundKey && mousePos.y >= screenPosY && mousePos.y < screenPosY + layerHeight) {
             auto &keys = group->keys;
-            for(auto it = keys.rbegin(); it != keys.rend(); it++) {
+            for (auto it = keys.rbegin(); it != keys.rend(); it++) {
                 auto &k = *it;
                 float startOffset = getTimePosScreenPos(k->start);
                 float endOffset = getTimePosScreenPos(k->start + k->duration);
@@ -309,14 +307,42 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
     scroll.scrollPaneEnd();
 }
 
-void
-TimelineEditor::drawKey(shared_ptr<LightGroup> group, shared_ptr<KeyPoint> &key, const ImRect &rect, bool isHover) {
+void TimelineEditor::drawKey(shared_ptr<LightGroup> group, shared_ptr<KeyPoint> &key, const ImRect &rect, bool isHover) {
     const ImVec2 &min = rect.Min;
     const ImVec2 &max = rect.Max;
+
     ImDrawList *drawList = GetWindowDrawList();
     ImVec2 mousePos = GetIO().MousePos;
+    float timeScaleX = getTimeScaleX();
 
     drawList->AddRectFilled(min, max, isHover ? COLOR_KEY_HOV : COLOR_KEY, COLOR_KEY_RADIUS * dpi);
+
+    float easing1 = timeScaleX * key->fadeStart.duration;
+    float easing2 = timeScaleX * (key->duration - key->fadeEnd.duration);
+
+    // draw path
+    float cur = 0;
+    float lineSize = dpi * 2;
+    float sizeY = max.y - min.y - lineSize * 2;
+    float sizeX = max.x - min.x;
+
+    drawList->PathClear();
+    while (cur < easing1 + CURVE_RESOLUTION * 4 and cur < sizeX) {
+        time_unit now = (time_unit) (cur / timeScaleX);
+        float i = key->computeEasing(now);
+        drawList->PathLineTo(ImVec2(min.x + cur, max.y - lineSize - i * sizeY));
+        cur += CURVE_RESOLUTION;
+    }
+    if (cur < easing2 - CURVE_RESOLUTION * 4) cur = easing2 - CURVE_RESOLUTION * 4;
+    while (cur < sizeX) {
+        time_unit now = (time_unit) (cur / timeScaleX);
+        float i = key->computeEasing(now);
+        drawList->PathLineTo(ImVec2(min.x + cur, max.y - lineSize - i * sizeY));
+        cur += CURVE_RESOLUTION;
+    }
+    drawList->PathLineTo(ImVec2(max.x, max.y - lineSize - key->computeEasing(key->duration) * sizeY));
+    drawList->PathStroke(COLOR_KEY_GRAPH, false, lineSize);
+
     drawList->AddRect(min, max, COLOR_KEY_OUTLINE, COLOR_KEY_RADIUS * dpi, ImDrawCornerFlags_All, dpi * 2);
 
     if (isHover) {
@@ -335,7 +361,7 @@ TimelineEditor::drawKey(shared_ptr<LightGroup> group, shared_ptr<KeyPoint> &key,
             type = KeypointDragger::RESIZE_END;
         }
         if (IsMouseClicked(0) && !IsKeyDown(GLFW_KEY_SPACE)) {
-            dragger.startDragging(key, group, type, getTimeScaleX());
+            dragger.startDragging(key, group, type, timeScaleX);
         }
     }
 }
@@ -354,9 +380,15 @@ void TimelineEditor::printTimeline(const project::Canvas &canvas, ImRect rect) {
         drawList->AddLine(ImVec2(pos, (rect.Min.y + rect.Max.y) / 2), ImVec2(pos, rect.Max.y), COLOR_LINE);
     }
 
+    float offset = -1;
     for (time_unit i = 0; i < duration; i += timeStep) {
         float pos = getTimePosScreenPos(i);
-        drawList->AddText(ImVec2(pos, rect.Min.y), textColor, timeLabel(i).c_str());
+        const string &text = timeLabel(i);
+        const ImVec2 &vec2 = CalcTextSize(text.c_str());
+        if (offset < pos) {
+            drawList->AddText(ImVec2(pos, rect.Min.y), textColor, text.c_str());
+            offset = pos + vec2.x;
+        }
     }
 
     EndChild();
@@ -367,10 +399,9 @@ string TimelineEditor::timeLabel(time_unit time) {
     time_unwrapped unwrapped = time_unwrap(time);
     char buffer[500];
     if (unwrapped.hours) {
-        ImFormatString(buffer, sizeof(buffer), "%02llu:%02llu:%02llu", unwrapped.hours, unwrapped.minutes,
-                       unwrapped.seconds);
+        ImFormatString(buffer, sizeof(buffer), "%02i:%02i:%02i", unwrapped.hours, unwrapped.minutes, unwrapped.seconds);
     } else {
-        ImFormatString(buffer, sizeof(buffer), "%02llu:%02llu", unwrapped.minutes, unwrapped.seconds);
+        ImFormatString(buffer, sizeof(buffer), "%02i:%02i", unwrapped.minutes, unwrapped.seconds);
     }
     return buffer;
 }

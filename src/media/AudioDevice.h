@@ -24,7 +24,7 @@ public:
 private:
     static int numberOfInstances;
     ao_device *adevice;
-    std::thread myThread;
+    //std::thread myThread;
 };
 
 }

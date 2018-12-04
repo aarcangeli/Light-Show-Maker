@@ -57,7 +57,7 @@ void KeypointDragger::update() {
         time_unit reposedStart;
         time_unit reposedDuration = end - start;
         int32_t layerIdx;
-        if (type == MOVE && editor->findPlacableKeyPos(GetIO().MousePos, reposedStart, reposedDuration, layerIdx)) {
+        if (type == MOVE && editor->findPlacableKeyPos(io.MousePos, reposedStart, reposedDuration, layerIdx)) {
             auto &newOwner = editor->getCanvas()->groups[layerIdx];
             if (newOwner != owner || reposedStart < minBound || reposedStart + reposedDuration > maxBound) {
                 owner->removeKey(key);
