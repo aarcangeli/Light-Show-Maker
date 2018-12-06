@@ -244,10 +244,7 @@ void Application::asyncCommand(const std::string &name, bool mergeable, const st
 }
 
 void Application::setAppHome(std::string path) {
-    std::replace(path.begin(), path.end(), '\\', '/');
-    size_t posDot = path.rfind('.');
-    size_t posSlash = path.rfind('/');
-    if (posSlash > 0 && posDot > posSlash) path.resize(posDot);
+    removeExtension(path);
 
     home = std::move(path);
     iniPath = home + ".ini";
@@ -259,6 +256,7 @@ bool Application::save(std::string filename) {
         std::string data = serializeObject(proj);
         std::ofstream file(filename);
         file << data;
+        exportIno(filename);
         return true;
     }
     return false;
@@ -302,4 +300,72 @@ void Application::saveLastDirectory(std::string path) {
 
 void Application::quit() {
     glfwSetWindowShouldClose(mainWindow, true);
+}
+
+void Application::exportIno(std::string filename) {
+    removeExtension(filename);
+    filename += ".h";
+
+    std::ofstream outputFile(filename);
+
+    outputFile << std::string("// Auto-generated with ") + APPL_NAME + "\n";
+    outputFile << "\n";
+    outputFile << "#ifndef __CLSM_H\n";
+    outputFile << "#define __CLSM_H\n\n";
+
+    outputFile << "const unsigned long LIGHT_COUNT = " << proj->canvas.groups.size() << ";\n";
+
+    outputFile << R"(
+// 32 bit unsigned
+typedef unsigned long time_unit;
+
+enum FADE_TYPE {
+    LINEAR,
+    EXPONENTIAL,
+    SIN,
+    SIN_DOUBLE,
+};
+
+struct CLS_Fade {
+    FADE_TYPE type;
+    time_unit duration;
+};
+
+struct CLS_Key {
+    time_unit start, duration;
+    CLS_Fade fadeStart, fadeEnd;
+};
+
+struct CLS_LightGroup {
+    unsigned int keysCount;
+    CLS_Key *keys;
+};
+
+)";
+
+    int i = 0;
+    for (auto &g : proj->canvas.groups) {
+        outputFile << "// " << g->name << "\n";
+        outputFile << "CLS_Key __keys__" << i << "[" << g->keys.size() << "] = {\n";
+        for (auto &k : g->keys) {
+            outputFile << "    {\n";
+            outputFile << "        " << k->start << ",\n";
+            outputFile << "        " << k->duration << ",\n";
+            outputFile << "        { (FADE_TYPE) " << k->fadeStart.type << ", " << k->fadeStart.duration << " } ,\n";
+            outputFile << "        { (FADE_TYPE) " << k->fadeEnd.type << ", " << k->fadeEnd.duration << " } ,\n";
+            outputFile << "    },\n";
+        }
+        outputFile << "};\n\n";
+        i++;
+    }
+
+    i = 0;
+    outputFile << "CLS_LightGroup groups[LIGHT_COUNT] = {\n";
+    for (auto &g : proj->canvas.groups) {
+        outputFile << "    {" << g->keys.size() << ", __keys__" << i << "},\n";
+        i++;
+    }
+    outputFile << "};\n\n";
+
+    outputFile << "\n#endif //__CLSM_H\n";
 }

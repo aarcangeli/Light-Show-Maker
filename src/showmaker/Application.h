@@ -90,6 +90,8 @@ public:
     GlobalHotKey &getHotKey() { return hotKey; };
 
     void quit();
+
+    void exportIno(std::string filename);
 };
 
 }
