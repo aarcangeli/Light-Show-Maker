@@ -1,5 +1,6 @@
 #include "Player.h"
 #include <GLFW/glfw3.h>
+#include <imgui.h>
 
 using namespace sm;
 
@@ -14,15 +15,16 @@ void Player::update() {
 }
 
 void Player::play() {
-    isPlaying = true;
+    setPlaying(true);
+
 }
 
 void Player::pause() {
-    isPlaying = false;
+    setPlaying(false);
 }
 
 void Player::stop() {
-    isPlaying = false;
+    setPlaying(false);
     position = 0;
 }
 
@@ -42,3 +44,18 @@ void Player::seek(sm::time_unit time) {
 }
 
 bool Player::playing() { return isPlaying; }
+
+void Player::togglePlay() {
+    setPlaying(!isPlaying);
+}
+
+void Player::goBack() {
+    position = backPosition;
+}
+
+void Player::setPlaying(bool playing) {
+    if (playing && !isPlaying) {
+        backPosition = position;
+    }
+    isPlaying = playing;
+}

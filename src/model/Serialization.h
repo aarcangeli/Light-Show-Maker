@@ -295,7 +295,20 @@ public:
     }
 };
 
+template<typename T>
+std::string serializeObject(const T obj) {
+    Serializer<SER_JSON> serializer;
+    obj->serialize(serializer);
+    return serializer.toString();
+}
 
+template<typename T>
+std::shared_ptr<T> deserializeObject(const std::string& str) {
+    Serializer<DESER_JSON> serializer(str);
+    std::shared_ptr<T> obj = std::make_shared<T>();
+    obj->serialize(serializer);
+    return obj;
+}
 
 }
 

@@ -9,10 +9,13 @@ class Player {
 public:
     void update();
 
+    void togglePlay();
     void play();
     void pause();
     void stop();
     void seek(time_unit time);
+    void setPlaying(bool playing);
+    void goBack();
 
     time_unit playerPosition();
     bool playing();
@@ -21,6 +24,7 @@ private:
     double lastTime = 0;
     bool isPlaying = false;
     float position = 0;
+    float backPosition = 0;
 };
 
 }

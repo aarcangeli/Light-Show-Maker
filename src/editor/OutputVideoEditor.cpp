@@ -72,7 +72,7 @@ void OutputVideoEditor::topMenu(const shared_ptr<project::Project> &proj) {
 }
 
 void OutputVideoEditor::openImage(const shared_ptr<project::Project> &proj) const {
-    string outPath = gApp->getPath("png,jpg,jpeg");
+    string outPath = gApp->getPath("png,jpg,jpeg", false);
     if (!outPath.empty()) {
         shared_ptr<media::Image> image = media::loadImage(outPath);
         if (image) {
@@ -170,6 +170,6 @@ ImRect OutputVideoEditor::getDecorationRegion(const std::shared_ptr<project::Dec
     return {pos, pos + dim};
 }
 
-void OutputVideoEditor::deleteDecoration(shared_ptr<project::Decoration> dec) {
+void OutputVideoEditor::deleteDecoration(const shared_ptr<project::Decoration> &dec) {
     decorationToDelete = dec;
 }

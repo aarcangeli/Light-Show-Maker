@@ -109,7 +109,7 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
             canvas.makeGroup();
         }
         if (Selectable("Audio File..")) {
-            string outPath = gApp->getPath("mp3,wav,mp4,avi");
+            string outPath = gApp->getPath("mp3,wav,mp4,avi", false);
             if (!outPath.empty()) {
                 loader.open(string(outPath));
                 if (!loader.isOpen()) {

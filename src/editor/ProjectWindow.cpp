@@ -4,6 +4,7 @@
 #include "ProjectWindow.h"
 #include "Application.h"
 #include <IconsFontAwesome4.h>
+#include <fstream>
 
 using namespace sm;
 using namespace sm::editor;
@@ -12,7 +13,7 @@ using namespace ImGui;
 ProjectWindow::ProjectWindow() : timelineEditor() {}
 
 void ProjectWindow::showFrame() {
-    if (viewportWidth <= 0 || viewportHeight <= 0 || !proj) return;
+    if (viewportWidth <= 0 || viewportHeight <= 0) return;
 
     timelineEditor.dpi = dpi;
 
@@ -24,10 +25,13 @@ void ProjectWindow::showFrame() {
     spacing = dpi;
 
     showMenu();
-    leftPanelWindow();
-    rightPanelWindow();
-    outputWindow();
-    timelineWindow();
+
+    if (proj) {
+        leftPanelWindow();
+        rightPanelWindow();
+        outputWindow();
+        timelineWindow();
+    }
 
     if (openErrorBox) {
         OpenPopup(MODAL_ERROR);
@@ -37,6 +41,8 @@ void ProjectWindow::showFrame() {
 }
 
 void ProjectWindow::outputWindow() {
+    if (!proj) return;
+
     SetNextWindowPos(ImVec2{leftPanelWidth, menuHeight});
     SetNextWindowSize(ImVec2{viewportWidth - leftPanelWidth - rightPanelWidth, centerHeight});
     PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
@@ -51,6 +57,8 @@ void ProjectWindow::outputWindow() {
 }
 
 void ProjectWindow::leftPanelWindow() {
+    if (!proj) return;
+
     SetNextWindowPos(ImVec2{0, menuHeight});
     SetNextWindowSize(ImVec2{leftPanelWidth - spacing, centerHeight});
     Begin("Project", nullptr, FLAGS);
@@ -77,6 +85,8 @@ void ProjectWindow::rightPanelWindow() {
 }
 
 void ProjectWindow::timelineWindow() {
+    if (!proj) return;
+
     SetNextWindowPos(ImVec2{0, viewportHeight - timelineHeight});
     SetNextWindowSize(ImVec2{(float) viewportWidth, timelineHeight});
     PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
@@ -95,23 +105,34 @@ void ProjectWindow::showMenu() {
                 gApp->open(std::make_shared<project::Project>());
             }
             if (ImGui::MenuItem("Open", "Ctrl+O")) {
-                // todo
+                std::string outPath = gApp->getPath("clsproj", false);
+                if (!outPath.empty()) {
+                    if (gApp->load(outPath)) {
+                        gApp->saveLastDirectory(outPath);
+                    }
+                    gApp->filename = outPath;
+                }
             }
-            if (ImGui::MenuItem("Save", "Ctrl+S")) {
-                // todo
+            if (ImGui::MenuItem("Save", "Ctrl+S", nullptr, bool(proj))) {
+                std::ifstream testOpen(gApp->filename);
+                bool exists = !testOpen.fail();
+                testOpen.close();
+                if (!exists) {
+                    gApp->filename = "";
+                    saveAs();
+                } else {
+                    gApp->save(gApp->filename);
+                }
+            }
+            if (ImGui::MenuItem("Save As..", "Ctrl+Shift+S", nullptr, bool(proj))) {
+                saveAs();
             }
             if (ImGui::MenuItem("Close", nullptr, nullptr, bool(proj))) {
                 gApp->close();
             }
-            if (ImGui::MenuItem("Save As..", "Ctrl+Shift+S")) {
-                // todo
-            }
             ImGui::Separator();
             if (ImGui::MenuItem("Quit")) {
-                //close();
-//                if (!proj) {
-//                    exit = true;
-//                }
+                gApp->quit();
             }
             ImGui::EndMenu();
         }
@@ -143,13 +164,25 @@ void ProjectWindow::showMenu() {
     }
 }
 
+void ProjectWindow::saveAs() const {
+    std::__cxx11::string outPath = gApp->getPath("clsproj", true);
+    if (!outPath.empty()) {
+        if (!endsWith(outPath, ".clsproj")) {
+            outPath += ".clsproj";
+        }
+        if (gApp->save(outPath)) {
+            gApp->saveLastDirectory(outPath);
+        }
+    }
+}
+
 void ProjectWindow::resize(int width, int height) {
     viewportWidth = width;
     viewportHeight = height;
 }
 
-void ProjectWindow::open(std::shared_ptr<project::Project> _proj) {
-    proj = std::move(_proj);
+void ProjectWindow::open(const std::shared_ptr<project::Project> &_proj) {
+    proj = _proj;
 }
 
 void ProjectWindow::close() {

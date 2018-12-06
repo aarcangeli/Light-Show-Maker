@@ -25,7 +25,7 @@ public:
     explicit ProjectWindow();
 
     // invoked by Application
-    void open(std::shared_ptr<project::Project> shared_ptr);
+    void open(const std::shared_ptr<project::Project> &shared_ptr);
     void close();
 
     void showError(std::string errorMsg) {
@@ -60,6 +60,8 @@ private:
     void timelineWindow();
     void leftPanelWindow();
     void rightPanelWindow();
+
+    void saveAs() const;
 };
 
 }

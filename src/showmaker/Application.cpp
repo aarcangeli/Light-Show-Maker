@@ -80,11 +80,9 @@ bool Application::init() {
     glClearDepth(1);
 
     // restore previous project
-    load(autosavePath);
+    load(autoSavePath);
     if (!proj) {
         open(std::make_shared<project::Project>());
-        proj->canvas.makeGroup()->addKey(0, 100);
-        proj->canvas.makeGroup();
         proj->canvas.makeGroup();
     }
 
@@ -117,6 +115,8 @@ void Application::applyTheme() {
 int Application::runLoop() {
 
     while (!exit && !glfwWindowShouldClose(mainWindow)) {
+        glfwSetWindowTitle(mainWindow, (std::string(APPL_NAME) + (filename.empty() ? "" : " - " + filename)).c_str());
+
         // manage dpi change
         float currentDpi = getDpiForWindow(mainWindow);
         if (dpi != currentDpi) {
@@ -158,15 +158,6 @@ int Application::runLoop() {
             windowHeight = viewportHeight;
         }
 
-        if (closeProject) {
-            if (proj) {
-                // some close behavior, for example save confirm
-                proj.reset();
-            }
-            projectWindow.close();
-            closeProject = false;
-        }
-
         glfwSwapBuffers(mainWindow);
         //usleep(500 * 1000);
 
@@ -176,10 +167,11 @@ int Application::runLoop() {
         }
         commands.resize(0);
 
+        hotKey.update();
         player.update();
     }
 
-    save(autosavePath);
+    save(autoSavePath);
 
     return 0;
 }
@@ -199,13 +191,18 @@ void Application::cleanUp() {
 }
 
 void Application::open(std::shared_ptr<project::Project> _proj) {
-    if (proj) return;
+    close();
     proj = std::move(_proj);
     projectWindow.open(proj);
 }
 
 void Application::close() {
-    closeProject = true;
+    if (proj) {
+        // some close behavior, for example save confirm
+        proj.reset();
+    }
+    projectWindow.close();
+    filename = "";
 }
 
 ImFont *Application::loadFont(const char *start, const char *end, float size, bool fontAwesome) const {
@@ -227,6 +224,7 @@ ImFont *Application::loadFont(const char *start, const char *end, float size, bo
 void Application::setLayerSelected(std::shared_ptr<project::LightGroup> layer) {
     selectedGroup = std::move(layer);
 }
+
 void Application::setDecorationSelected(std::shared_ptr<project::Decoration> decoration) {
     selectedDecoration = std::move(decoration);
 }
@@ -253,32 +251,38 @@ void Application::setAppHome(std::string path) {
 
     home = std::move(path);
     iniPath = home + ".ini";
-    autosavePath = home + "-autosave.json";
+    autoSavePath = home + "-autosave.clsproj";
 }
 
-void Application::save(std::string filename) {
-    Serializer<SER_JSON> serializer;
-    proj->serialize(serializer);
-    std::string data = serializer.toString();
-    std::ofstream file(filename);
-    file << data;
+bool Application::save(std::string filename) {
+    if (proj) {
+        std::string data = serializeObject(proj);
+        std::ofstream file(filename);
+        file << data;
+        return true;
+    }
+    return false;
 }
 
-void Application::load(std::string filename) {
+bool Application::load(std::string filename) {
     std::ifstream file(filename);
-    if (!file.good()) return;
+    if (!file.good()) return false;
     std::string data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    Serializer<DESER_JSON> serializer(data);
 
-    std::shared_ptr<project::Project> proj = std::make_shared<project::Project>();
-    proj->serialize(serializer);
+    std::shared_ptr<project::Project> proj = deserializeObject<project::Project>(data);
     open(proj);
+    return true;
 }
 
-std::string Application::getPath(const std::string &pathes) {
+std::string Application::getPath(const std::string &pathes, bool isSave) {
     std::string path;
     nfdchar_t *outPath = nullptr;
-    nfdresult_t result = NFD_OpenDialog(pathes.c_str(), gApp->lastDirectory.c_str(), &outPath);
+    nfdresult_t result;
+    if (isSave) {
+        result = NFD_SaveDialog(pathes.c_str(), gApp->lastDirectory.c_str(), &outPath);
+    } else {
+        result = NFD_OpenDialog(pathes.c_str(), gApp->lastDirectory.c_str(), &outPath);
+    }
     if (result == NFD_OKAY) {
         path = outPath;
         free(outPath);
@@ -294,4 +298,8 @@ void Application::saveLastDirectory(std::string path) {
         path[lastSlash] = '\0';
         lastDirectory = path;
     }
+}
+
+void Application::quit() {
+    glfwSetWindowShouldClose(mainWindow, true);
 }

@@ -10,6 +10,7 @@
 #include "ProjectWindow.h"
 #include "AudioDevice.h"
 #include "Player.h"
+#include "GlobalHotKey.h"
 
 namespace sm {
 
@@ -29,6 +30,7 @@ public:
     std::string lastDirectory = "";
     int windowWidth = 1280;
     int windowHeight = 720;
+    std::string filename;
 
     void setLayerSelected(std::shared_ptr<project::LightGroup> layer);
 
@@ -45,7 +47,7 @@ public:
 
     void setAppHome(std::string home);
 
-    std::string getPath(const std::string &pathes);
+    std::string getPath(const std::string &pathes, bool isSave);
     void saveLastDirectory(std::string path);
 
 private:
@@ -60,13 +62,13 @@ private:
     GLFWwindow *mainWindow = nullptr;
     ImGuiContext *ctx = nullptr;
     bool exit = false;
-    bool closeProject = false;
     bool dirtyStyle = false;
 
     std::shared_ptr<project::Project> proj;
     editor::ProjectWindow projectWindow;
     media::AudioDevice device;
     Player player;
+    GlobalHotKey hotKey;
 
     ImFont *loadFont(const char *start, const char *end, float size, bool fontAwesome) const;
 
@@ -76,16 +78,18 @@ private:
     std::shared_ptr<project::Decoration> selectedDecoration;
     std::string home;
     std::string iniPath;
-    std::string autosavePath;
-
-    void save(std::string filename);
-
-    void load(std::string filename);
+    std::string autoSavePath;
 
 public:
     void error(const std::string &errorMsg) { projectWindow.showError(errorMsg); }
 
+    bool save(std::string filename);
+    bool load(std::string filename);
+
     Player &getPlayer() { return player; };
+    GlobalHotKey &getHotKey() { return hotKey; };
+
+    void quit();
 };
 
 }

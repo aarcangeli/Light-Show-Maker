@@ -2,6 +2,7 @@
 
 #include "ScrollablePane.h"
 #include "GLFW/glfw3.h"
+#include "Application.h"
 
 using namespace sm;
 using namespace sm::editor;
@@ -44,7 +45,7 @@ void ScrollablePane::scrollPaneBegin(const ImRect &bounds, const ImVec2 &content
             scrollY -= delta.y;
         }
     }
-    if (isContentHovered && IsKeyDown(GLFW_KEY_SPACE) && IsMouseDragging(0, 0)) {
+    if (!isDragging && isContentHovered && IsKeyDown(GLFW_KEY_SPACE) && IsMouseDragging(0, 0)) {
         isDragging = true;
     }
     if (isDragging && !IsMouseDragging(0, 0)) {

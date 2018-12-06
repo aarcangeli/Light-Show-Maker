@@ -2,6 +2,7 @@
 #define CORE_H
 
 #include "stdint.h"
+#include "str-utils.h"
 
 namespace sm {
 

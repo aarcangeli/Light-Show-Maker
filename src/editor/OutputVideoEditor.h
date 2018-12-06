@@ -27,7 +27,7 @@ public:
     ImVec2 getLogicalScale() const;
     bool isFocused() const { return windowFocused; };
 
-    void deleteDecoration(std::shared_ptr<project::Decoration> dec);
+    void deleteDecoration(const std::shared_ptr <project::Decoration> &dec);
 
 private:
     void openImage(const std::shared_ptr<project::Project> &proj) const;
