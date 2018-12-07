@@ -25,6 +25,7 @@ public:
     // image
     std::shared_ptr<media::Image> image;
     float width, height;
+    float ratio = -1;
 
     // light
     uint32_t color;
@@ -39,6 +40,7 @@ public:
         ser.serialize("posY", posY);
         ser.serialize("width", width);
         ser.serialize("height", height);
+        ser.serialize("ratio", ratio);
 
         if (type == IMAGE) {
             std::vector<uint8_t> bytes;

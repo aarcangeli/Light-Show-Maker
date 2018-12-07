@@ -45,6 +45,7 @@ private:
     int viewportWidth = 0, viewportHeight = 0;
     bool openErrorBox = false;
     std::string lastError;
+    bool maximizeOutput = false;
 
     void errorBox();
 

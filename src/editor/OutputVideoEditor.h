@@ -35,8 +35,8 @@ private:
     void topMenu(const std::shared_ptr<project::Project> &proj);
     void drawContent(std::shared_ptr<project::Project> ptr);
     void drawCanvas(project::Canvas &canvas);
-    void drawVector(std::vector<std::shared_ptr<project::Decoration>> &array);
-    void printDecoration(const std::shared_ptr<project::Decoration> &shared_ptr);
+    void drawVector(float alpha, std::vector<std::shared_ptr<project::Decoration>> &array);
+    void printDecoration(float decAlpha, const std::shared_ptr<project::Decoration> &shared_ptr);
 
     ImVec2 canvasScreenPos;
     ImVec2 canvasSize;

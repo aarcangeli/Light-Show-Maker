@@ -55,6 +55,13 @@ size_t LightGroup::findIndex(time_unit time) {
     return findIndexIt(time, 0, keys.size());
 }
 
+float LightGroup::computeEasing(sm::time_unit time) {
+    size_t index = findIndex(time) - 1;
+    if (index < 0 || index >= keys.size()) return 0;
+    auto &key = keys[index];
+    return key->computeEasing(time - key->start);
+}
+
 size_t LightGroup::findIndexIt(time_unit time, size_t min, size_t max) {
     if (min >= max) return min;
     size_t midIdx = min + (max - min) / 2;

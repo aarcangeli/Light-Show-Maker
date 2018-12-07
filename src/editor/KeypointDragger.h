@@ -25,7 +25,7 @@ private:
     TimelineEditor *editor;
     DragType type;
 
-    bool dragging;
+    bool dragging = false;
     float timeScale;
     std::shared_ptr<project::KeyPoint> key;
     std::shared_ptr<project::LightGroup> owner;

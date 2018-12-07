@@ -27,6 +27,10 @@ void ProjectWindow::showFrame() {
     showMenu();
 
     if (proj) {
+        if (IsKeyPressed(GLFW_KEY_F11)) {
+            maximizeOutput = !maximizeOutput;
+        }
+
         leftPanelWindow();
         rightPanelWindow();
         outputWindow();
@@ -43,8 +47,13 @@ void ProjectWindow::showFrame() {
 void ProjectWindow::outputWindow() {
     if (!proj) return;
 
-    SetNextWindowPos(ImVec2{leftPanelWidth, menuHeight});
-    SetNextWindowSize(ImVec2{viewportWidth - leftPanelWidth - rightPanelWidth, centerHeight});
+    if (maximizeOutput) {
+        SetNextWindowPos(ImVec2{0, menuHeight});
+        SetNextWindowSize(ImVec2{(float) viewportWidth, viewportHeight - menuHeight});
+    } else {
+        SetNextWindowPos(ImVec2{leftPanelWidth, menuHeight});
+        SetNextWindowSize(ImVec2{viewportWidth - leftPanelWidth - rightPanelWidth, centerHeight});
+    }
     PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
     PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
     Begin("Output", nullptr, FLAGS | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
@@ -80,8 +89,23 @@ void ProjectWindow::rightPanelWindow() {
     Begin("Right", nullptr, FLAGS);
 
     auto dec = gApp->decorationSelected();
-    if (dec.size() == 1) {
-        ImGui::SliderFloat("size", &dec[0]->size, 1, 100, "%.2f");
+    if (dec.size() == 1 && dec[0]) {
+        auto &myDec = dec[0];
+
+        if (myDec->type == project::LIGHT) {
+            ImGui::SliderFloat("size", &myDec->size, 5, 50, "%.2f");
+        }
+        if (myDec->type == project::IMAGE) {
+            if (myDec->ratio < 0) {
+                myDec->ratio = myDec->width / myDec->height;
+            }
+            if (ImGui::SliderFloat("width", &myDec->width, 1, 10000, "%.2f")) {
+                myDec->height = myDec->width / myDec->ratio;
+            }
+            if (ImGui::SliderFloat("height", &myDec->height, 1, 10000, "%.2f")) {
+                myDec->width = myDec->height * myDec->ratio;
+            }
+        }
     }
 
     End();

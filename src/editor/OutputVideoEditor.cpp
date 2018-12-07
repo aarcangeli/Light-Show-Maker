@@ -1,3 +1,5 @@
+#include <memory>
+
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 #include "use_glad.h"
@@ -101,26 +103,51 @@ OutputVideoEditor::append(const shared_ptr<project::Project> &proj, const shared
 }
 
 void OutputVideoEditor::drawCanvas(project::Canvas &canvas) {
-    drawVector(canvas.decorations);
+    drawVector(1, canvas.decorations);
     for (auto &group : canvas.groups) {
-        drawVector(group->decorations);
+        time_unit position = gApp->getPlayer().playerPosition();
+        float alpha = position ? group->computeEasing(position) : 1;
+        drawVector(alpha, group->decorations);
     }
 }
 
-void OutputVideoEditor::drawVector(vector<shared_ptr<project::Decoration>> &array) {
+void OutputVideoEditor::drawVector(float alpha, vector<shared_ptr<project::Decoration>> &array) {
+    ImGuiIO &io = GetIO();
+    const auto &selected = gApp->decorationSelected();
     auto it = array.begin();
     while (it != array.end()) {
-        shared_ptr<project::Decoration> &el = *it;
+        shared_ptr<project::Decoration> el = *it;
         if (el == decorationToDelete) {
             it = array.erase(it);
             continue;
         }
-        printDecoration(el);
+        if (IsKeyPressed(GLFW_KEY_PAGE_UP) && it != array.end() - 1) {
+            if (!selected.empty() && selected[0] == el) {
+                it = array.erase(it);
+                it = array.insert(it + 1, el);
+                it -= 2;
+            }
+        }
+        printDecoration(alpha, el);
+        if (IsKeyPressed(GLFW_KEY_PAGE_DOWN) && it != array.begin()) {
+            if (!selected.empty() && selected[0] == el) {
+                it = array.erase(it);
+                it = array.insert(it - 1, el);
+                it++;
+            }
+        }
+        if (io.KeyCtrl && IsKeyPressed(GLFW_KEY_D)) {
+            if (!selected.empty() && selected[0] == el) {
+                auto copy = std::make_shared<project::Decoration>(*el);
+                it = array.insert(it + 1, copy);
+                it--;
+            }
+        }
         it++;
     }
 }
 
-void OutputVideoEditor::printDecoration(const std::shared_ptr<project::Decoration> &dec) {
+void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<project::Decoration> &dec) {
     ImVec2 pos = canvasScreenPos + ImVec2(dec->posX, dec->posY) * getLogicalScale();
     ImRect region = getDecorationRegion(dec);
 
@@ -152,7 +179,12 @@ void OutputVideoEditor::printDecoration(const std::shared_ptr<project::Decoratio
     }
 
     if (dec->type == project::LIGHT) {
-        drawList->AddCircleFilled(pos, dec->size, dec->color);
+        uint32_t color = dec->color;
+        uint32_t alpha = color >> 24;
+        color &= 0xffffff;
+        alpha = uint32_t(alpha * decAlpha);
+        color |= alpha << 24;
+        drawList->AddCircleFilled(pos, dec->size / logicalSize.y * canvasSize.y, color);
     }
 
     if (region.Contains(mousePos)) {
@@ -173,7 +205,8 @@ ImRect OutputVideoEditor::getDecorationRegion(const std::shared_ptr<project::Dec
         dim = ImVec2(dec->width, dec->height) * getLogicalScale();
     }
     if (dec->type == project::LIGHT) {
-        dim = ImVec2(dec->size, dec->size) * 2;
+        float size = dec->size / logicalSize.y * canvasSize.y;
+        dim = ImVec2(size, size) * 2;
         pos -= dim / 2;
     }
     return {pos, pos + dim};
