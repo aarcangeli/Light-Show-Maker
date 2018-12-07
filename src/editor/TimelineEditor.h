@@ -54,7 +54,7 @@ public:
 
 private:
     media::AudioLoader loader;
-    ScrollablePane scroll;
+    ScrollablePane scroll{true, false};
 
     project::Canvas *canvas;
 

@@ -13,16 +13,19 @@ using namespace sm::editor;
 using namespace std;
 using namespace ImGui;
 
+OutputVideoEditor::OutputVideoEditor() : dragger(this), scrollablePane(true, true) {
+}
+
 void OutputVideoEditor::editorOf(shared_ptr<project::Project> proj) {
     mouseClicked = IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseClicked(0);
     windowFocused = IsWindowFocused(ImGuiHoveredFlags_ChildWindows);
     mousePos = GetMousePos();
     decorationHover.reset();
-    drawContent(proj);
     topMenu(proj);
+    drawContent(proj);
     if (mouseClicked) {
         dragger.startEditing(decorationHover);
-        gApp->setDecorationSelected(decorationHover);
+        gApp->setDecorationSelected({decorationHover});
     }
     lastDecorationHover = decorationHover;
     dragger.update();
@@ -65,6 +68,7 @@ void OutputVideoEditor::topMenu(const shared_ptr<project::Project> &proj) {
         dec->color = 0xffffffff; // white
         append(proj, dec);
         dragger.startEditing(dec);
+        gApp->setDecorationSelected({dec});
     }
 
     EndChild();
@@ -97,13 +101,18 @@ OutputVideoEditor::append(const shared_ptr<project::Project> &proj, const shared
 }
 
 void OutputVideoEditor::drawCanvas(project::Canvas &canvas) {
-    auto &vector = canvas.decorations;
-    auto it = vector.begin();
-    while (it != vector.end()) {
-        uint64_t size = vector.size();
+    drawVector(canvas.decorations);
+    for (auto &group : canvas.groups) {
+        drawVector(group->decorations);
+    }
+}
+
+void OutputVideoEditor::drawVector(vector<shared_ptr<project::Decoration>> &array) {
+    auto it = array.begin();
+    while (it != array.end()) {
         shared_ptr<project::Decoration> &el = *it;
         if (el == decorationToDelete) {
-            it = vector.erase(it);
+            it = array.erase(it);
             continue;
         }
         printDecoration(el);

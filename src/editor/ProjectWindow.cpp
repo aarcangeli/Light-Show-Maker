@@ -79,7 +79,10 @@ void ProjectWindow::rightPanelWindow() {
     SetNextWindowSize(ImVec2{rightPanelWidth - spacing, centerHeight});
     Begin("Right", nullptr, FLAGS);
 
-    Text("CIAO");
+    auto dec = gApp->decorationSelected();
+    if (dec.size() == 1) {
+        ImGui::SliderFloat("size", &dec[0]->size, 1, 100, "%.2f");
+    }
 
     End();
 }

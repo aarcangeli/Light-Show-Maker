@@ -6,6 +6,7 @@
 #include "imgui_internal.h"
 #include "DecorationDragger.h"
 #include "Decoration.h"
+#include "ScrollablePane.h"
 
 namespace sm {
 namespace editor {
@@ -19,7 +20,7 @@ class OutputVideoEditor {
     const ImU32 COLOR_BORDER = IM_COL32(127, 127, 127, 255 * 0.4);
 
 public:
-    OutputVideoEditor() : dragger(this) {};
+    OutputVideoEditor();
 
     void editorOf(std::shared_ptr<project::Project> proj);
 
@@ -34,6 +35,7 @@ private:
     void topMenu(const std::shared_ptr<project::Project> &proj);
     void drawContent(std::shared_ptr<project::Project> ptr);
     void drawCanvas(project::Canvas &canvas);
+    void drawVector(std::vector<std::shared_ptr<project::Decoration>> &array);
     void printDecoration(const std::shared_ptr<project::Decoration> &shared_ptr);
 
     ImVec2 canvasScreenPos;
@@ -43,6 +45,8 @@ private:
     bool mouseClicked = false;
     bool windowFocused = false;
     ImVec2 mousePos;
+    ScrollablePane scrollablePane;
+
     std::shared_ptr<project::Decoration> decorationHover;
     std::shared_ptr<project::Decoration> lastDecorationHover;
     std::shared_ptr<project::Decoration> decorationToDelete;

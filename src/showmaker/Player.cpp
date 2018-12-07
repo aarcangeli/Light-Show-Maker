@@ -37,8 +37,8 @@ void Player::seek(sm::time_unit time) {
     if (position < min_time) {
         position = min_time;
     }
-    if (position < max_time) {
-        position = min_time;
+    if (position > max_time) {
+        position = max_time;
         isPlaying = false;
     }
 }

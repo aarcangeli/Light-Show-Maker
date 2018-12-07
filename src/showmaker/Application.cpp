@@ -223,10 +223,13 @@ ImFont *Application::loadFont(const char *start, const char *end, float size, bo
 
 void Application::setLayerSelected(std::shared_ptr<project::LightGroup> layer) {
     selectedGroup = std::move(layer);
+    if (layer) {
+        setDecorationSelected(layer->decorations);
+    }
 }
 
-void Application::setDecorationSelected(std::shared_ptr<project::Decoration> decoration) {
-    selectedDecoration = std::move(decoration);
+void Application::setDecorationSelected(std::vector<std::shared_ptr<project::Decoration>> decoration) {
+    selectedDecorations = std::move(decoration);
 }
 
 
@@ -351,8 +354,8 @@ struct CLS_LightGroup {
             outputFile << "    {\n";
             outputFile << "        " << k->start << ",\n";
             outputFile << "        " << k->duration << ",\n";
-            outputFile << "        { (FADE_TYPE) " << k->fadeStart.type << ", " << k->fadeStart.duration << " } ,\n";
-            outputFile << "        { (FADE_TYPE) " << k->fadeEnd.type << ", " << k->fadeEnd.duration << " } ,\n";
+            outputFile << "        { (FADE_TYPE) " << k->fadeStart.type << ", " << k->fadeStart.duration << " },\n";
+            outputFile << "        { (FADE_TYPE) " << k->fadeEnd.type << ", " << k->fadeEnd.duration << " },\n";
             outputFile << "    },\n";
         }
         outputFile << "};\n\n";

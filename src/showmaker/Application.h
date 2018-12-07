@@ -36,9 +36,9 @@ public:
 
     std::shared_ptr<project::LightGroup> layerSelected() { return selectedGroup; }
 
-    void setDecorationSelected(std::shared_ptr<project::Decoration> decoration);
+    void setDecorationSelected(std::vector<std::shared_ptr<project::Decoration>> decorations);
 
-    std::shared_ptr<project::Decoration> decorationSelected() { return selectedDecoration; }
+    std::vector<std::shared_ptr<project::Decoration>> decorationSelected() { return selectedDecorations; }
 
     void beginCommand(const std::string &name, bool mergeable = false);
     void endCommand();
@@ -75,7 +75,7 @@ private:
     void applyTheme();
 
     std::shared_ptr<project::LightGroup> selectedGroup;
-    std::shared_ptr<project::Decoration> selectedDecoration;
+    std::vector<std::shared_ptr<project::Decoration>> selectedDecorations;
     std::string home;
     std::string iniPath;
     std::string autoSavePath;

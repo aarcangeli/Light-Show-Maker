@@ -8,8 +8,6 @@ using namespace sm;
 using namespace sm::editor;
 using namespace ImGui;
 
-ScrollablePane::ScrollablePane() = default;
-
 void ScrollablePane::scrollPaneBegin(const ImRect &bounds, const ImVec2 &content) {
     ImGuiStyle &style = GetStyle();
     ImGuiIO &io = GetIO();

@@ -9,18 +9,20 @@ namespace editor {
 
 class ScrollablePane {
 public:
-    ScrollablePane();
+    ScrollablePane(bool zoomableX, bool zoomableY) : zoomableX(zoomableX), zoomableY(zoomableY) {};
 
     void scrollPaneBegin(const ImRect &bounds, const ImVec2 &content);
     void scrollPaneEnd();
 
     ImVec2 getOffset() const;
-    const ImVec2 & getScale() const;
+    const ImVec2 &getScale() const;
 
 private:
     ImVec2 oldPos;
-    float scrollX, scrollY;
+    float scrollX = 0, scrollY = 0;
     bool isDragging = false;
+    bool zoomableX;
+    bool zoomableY;
 
     ImVec2 zoom = {1, 1};
     ImVec2 zoomTarget = {1, 1};
