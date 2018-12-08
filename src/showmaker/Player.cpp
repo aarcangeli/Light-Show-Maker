@@ -75,6 +75,7 @@ void Player::togglePlay() {
 
 void Player::goBack() {
     position = backPosition;
+    afterSeek = true;
 }
 
 void Player::setPlaying(bool playing) {

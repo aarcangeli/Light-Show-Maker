@@ -20,6 +20,8 @@ public:
     std::string name;
     std::vector<std::shared_ptr<Decoration>> decorations;
     std::vector<std::shared_ptr<KeyPoint>> keys;
+    // volatile
+    bool isSelected = false;
 
     std::shared_ptr<KeyPoint> addKey(time_unit start, time_unit duration);
     void addKey(const std::shared_ptr<KeyPoint> &key);

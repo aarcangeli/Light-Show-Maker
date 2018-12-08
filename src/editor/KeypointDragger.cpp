@@ -1,3 +1,4 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "KeypointDragger.h"
 #include <imgui.h>
 #include <Application.h>
@@ -20,8 +21,9 @@ void KeypointDragger::startDragging(const std::shared_ptr<KeyPoint> &key_,
     timeScale = timeScale_;
     originalStart = key->start;
     originalDuration = key->duration;
-    originalMouseX = GetIO().MousePos.x;
+    originalMouse = GetIO().MousePos;
     dragging = true;
+    dragConfirmed = false;
     updateBounds();
 }
 
@@ -44,10 +46,23 @@ void KeypointDragger::updateBounds() {
 void KeypointDragger::update() {
     if (!dragging) return;
 
+    if (!IsMouseDown(0)) {
+        dragging = false;
+        key.reset();
+        owner.reset();
+        gApp->stopMerging();
+        type = NOTHING;
+        return;
+    }
+
     ImGuiIO &io = GetIO();
     if (io.MouseDelta.x != 0 || io.MouseDelta.y != 0) {
-        float delta = io.MousePos.x - originalMouseX;
-        time_unit diff = static_cast<time_unit>(delta / timeScale);
+        ImVec2 delta = io.MousePos - originalMouse;
+        if (std::abs(delta.x) > dpi * DRAG_MIN || std::abs(delta.y) > dpi * DRAG_MIN) {
+            dragConfirmed = true;
+        }
+        if (!dragConfirmed) return;
+        time_unit diff = static_cast<time_unit>(delta.x / timeScale);
 
         time_unit start = originalStart;
         time_unit end = originalStart + originalDuration;
@@ -121,14 +136,6 @@ void KeypointDragger::update() {
         assert(owner->sanityCheck()); // the order should not have been changed
 
         gApp->endCommand();
-    }
-
-    if (!IsMouseDown(0)) {
-        dragging = false;
-        key.reset();
-        owner.reset();
-        gApp->stopMerging();
-        type = NOTHING;
     }
 }
 

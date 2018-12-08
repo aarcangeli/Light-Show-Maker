@@ -88,7 +88,7 @@ void ProjectWindow::rightPanelWindow() {
     SetNextWindowSize(ImVec2{rightPanelWidth - spacing, centerHeight});
     Begin("Right", nullptr, FLAGS);
 
-    auto dec = gApp->decorationSelected();
+    auto &dec = gApp->getSelection().decorations;
     if (dec.size() == 1 && dec[0]) {
         auto &myDec = dec[0];
 

@@ -16,13 +16,12 @@ enum FADE_TYPE {
 
 class Fade {
 public:
-    FADE_TYPE type = EXPONENTIAL;
+    FADE_TYPE type = SIN;
     time_unit duration = static_cast<time_unit>(TIME_UNITS * 0.2);
 
     SERIALIZATION_START {
         ser.serializeEnum("type", type);
         ser.serialize("duration", duration);
-        type = SIN;
     }
 };
 

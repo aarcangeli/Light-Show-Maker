@@ -41,8 +41,6 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
     ImGuiStyle &style = GetStyle();
     ImDrawList *drawList = GetWindowDrawList();
     ImGuiIO &io = GetIO();
-    int cx = (int) (io.MousePos.x);
-    int cy = (int) (io.MousePos.y);
     ImFont *font = GetDefaultFont();
     float fontSize = font->FontSize;
 
@@ -300,10 +298,11 @@ void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key,
     const ImVec2 &max = rect.Max;
 
     ImDrawList *drawList = GetWindowDrawList();
-    ImVec2 mousePos = GetIO().MousePos;
+    ImGuiIO &io = GetIO();
+    ImVec2 mousePos = io.MousePos;
     float timeScaleX = getTimeScaleX();
 
-    drawList->AddRectFilled(min, max, isHover ? COLOR_KEY_HOV : COLOR_KEY, COLOR_KEY_RADIUS * dpi);
+    drawList->AddRectFilled(min, max, key->isSelected ? COLOR_KEY_SEL : isHover ? COLOR_KEY_HOV : COLOR_KEY, COLOR_KEY_RADIUS * dpi);
 
     float easing1 = timeScaleX * key->fadeStart.duration;
     float easing2 = timeScaleX * (key->duration - key->fadeEnd.duration);
@@ -349,6 +348,12 @@ void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key,
             type = KeypointDragger::RESIZE_END;
         }
         if (IsMouseClicked(0) && !IsKeyDown(GLFW_KEY_SPACE)) {
+            Selection<KeyPoint> &keypoints = gApp->getSelection().keypoints;
+            if (io.KeyCtrl) {
+                keypoints.toggle(key);
+            } else {
+                keypoints.set(key);
+            }
             dragger.startDragging(key, group, type, timeScaleX);
         }
     }
@@ -439,13 +444,17 @@ void TimelineEditor::printLayer(shared_ptr<project::Layer> group, ImRect rect) {
 
     BeginChild(GetCurrentWindow()->GetID(group.get()), rect.Max - rect.Min, false, ImGuiWindowFlags_NoScrollbar);
     bool isHovered = IsWindowHovered(0);
-    bool isSelected = selection == group;
+    bool isSelected = group->isSelected;
     ImDrawList *drawList = GetWindowDrawList();
 
     if (isHovered && io.MouseClicked[0]) {
-        selection = group;
         isSelected = true;
-        gApp->setLayerSelected(group);
+        auto &layers = gApp->getSelection().layers;
+        if (io.KeyCtrl) {
+            layers.toggle(group);
+        } else {
+            layers.set(group);
+        }
     }
 
     ImU32 color = isSelected ? btnActive : isHovered ? btnHover : COLOR_LAYER;
@@ -473,8 +482,7 @@ void TimelineEditor::deleteTrack(const shared_ptr<project::Layer> &group) {
     project::Canvas *canvas = this->canvas;
     gApp->asyncCommand(string("Delete ") + group->name, false, [canvas, group, this]() {
         canvas->deleteGroup(group);
-        gApp->setLayerSelected(nullptr);
-        selection.reset();
+        gApp->getSelection().layers.remove(group);
     });
 }
 

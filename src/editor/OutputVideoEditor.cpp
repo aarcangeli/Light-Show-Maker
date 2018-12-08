@@ -27,7 +27,11 @@ void OutputVideoEditor::editorOf(shared_ptr<project::Project> proj) {
     drawContent(proj);
     if (mouseClicked) {
         dragger.startEditing(decorationHover);
-        gApp->setDecorationSelected({decorationHover});
+        if (decorationHover) {
+            gApp->getSelection().decorations.set(decorationHover);
+        } else {
+            gApp->getSelection().decorations.reset();
+        }
     }
     lastDecorationHover = decorationHover;
     dragger.update();
@@ -70,7 +74,7 @@ void OutputVideoEditor::topMenu(const shared_ptr<project::Project> &proj) {
         dec->color = 0xffffffff; // white
         append(proj, dec);
         dragger.startEditing(dec);
-        gApp->setDecorationSelected({dec});
+        gApp->getSelection().decorations.set(dec);
     }
 
     EndChild();
@@ -98,8 +102,12 @@ void OutputVideoEditor::openImage(const shared_ptr<project::Project> &proj) cons
 
 void
 OutputVideoEditor::append(const shared_ptr<project::Project> &proj, const shared_ptr<project::Decoration> &dec) const {
-    shared_ptr<project::Layer> selected = gApp->layerSelected();
-    (selected ? selected->decorations : proj->canvas.decorations).push_back(dec);
+    auto &selected = gApp->getSelection().layers;
+    if (selected.size()) {
+        selected[0]->decorations.push_back(dec);
+    } else {
+        proj->canvas.decorations.push_back(dec);
+    }
 }
 
 void OutputVideoEditor::drawCanvas(project::Canvas &canvas) {
@@ -113,7 +121,7 @@ void OutputVideoEditor::drawCanvas(project::Canvas &canvas) {
 
 void OutputVideoEditor::drawVector(float alpha, vector<shared_ptr<project::Decoration>> &array) {
     ImGuiIO &io = GetIO();
-    const auto &selected = gApp->decorationSelected();
+    const auto &selected = gApp->getSelection().decorations;
     auto it = array.begin();
     while (it != array.end()) {
         shared_ptr<project::Decoration> el = *it;

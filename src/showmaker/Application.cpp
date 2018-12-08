@@ -221,18 +221,6 @@ ImFont *Application::loadFont(const char *start, const char *end, float size, bo
             size, &config, ranges);
 }
 
-void Application::setLayerSelected(std::shared_ptr<project::Layer> layer) {
-    selectedGroup = std::move(layer);
-    if (layer) {
-        setDecorationSelected(layer->decorations);
-    }
-}
-
-void Application::setDecorationSelected(std::vector<std::shared_ptr<project::Decoration>> decoration) {
-    selectedDecorations = std::move(decoration);
-}
-
-
 void Application::beginCommand(const std::string &name, bool mergeable) {
 }
 

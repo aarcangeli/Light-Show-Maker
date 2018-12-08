@@ -1,6 +1,7 @@
 #ifndef KEYPOINTDRAGGER_H
 #define KEYPOINTDRAGGER_H
 
+#include "imgui.h"
 #include "Layer.h"
 #include "KeyPoint.h"
 
@@ -10,8 +11,10 @@ namespace editor {
 class TimelineEditor;
 
 class KeypointDragger {
+    const int DRAG_MIN = 5;
+
 public:
-    KeypointDragger(TimelineEditor *editor) : editor(editor) {};
+    explicit KeypointDragger(TimelineEditor *editor) : editor(editor) {};
 
     enum DragType {
         NOTHING,
@@ -31,7 +34,8 @@ private:
     std::shared_ptr<project::Layer> owner;
     sm::time_unit originalStart;
     sm::time_unit originalDuration;
-    float originalMouseX;
+    ImVec2 originalMouse;
+    bool dragConfirmed = false;
 
     sm::time_unit minBound, maxBound;
 

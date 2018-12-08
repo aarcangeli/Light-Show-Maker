@@ -16,6 +16,8 @@ public:
     time_unit start;
     time_unit duration;
     Fade fadeStart, fadeEnd;
+    // volatile
+    bool isSelected = false;
 
     float computeEasing(time_unit time);
 

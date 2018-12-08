@@ -11,6 +11,7 @@
 #include "AudioDevice.h"
 #include "Player.h"
 #include "GlobalHotKey.h"
+#include "Selection.h"
 
 namespace sm {
 
@@ -31,14 +32,6 @@ public:
     int windowWidth = 1280;
     int windowHeight = 720;
     std::string filename;
-
-    void setLayerSelected(std::shared_ptr<project::Layer> layer);
-
-    std::shared_ptr<project::Layer> layerSelected() { return selectedGroup; }
-
-    void setDecorationSelected(std::vector<std::shared_ptr<project::Decoration>> decorations);
-
-    std::vector<std::shared_ptr<project::Decoration>> decorationSelected() { return selectedDecorations; }
 
     void beginCommand(const std::string &name, bool mergeable = false);
     void endCommand();
@@ -75,8 +68,7 @@ private:
 
     void applyTheme();
 
-    std::shared_ptr<project::Layer> selectedGroup;
-    std::vector<std::shared_ptr<project::Decoration>> selectedDecorations;
+    SelectionManager selection;
     std::string home;
     std::string iniPath;
     std::string autoSavePath;
@@ -89,6 +81,7 @@ public:
 
     Player &getPlayer() { return player; };
     GlobalHotKey &getHotKey() { return hotKey; };
+    SelectionManager &getSelection() { return selection; };
     media::AudioLoader &getAudio() { return audio; };
 
     void quit();

@@ -28,6 +28,7 @@ class TimelineEditor {
     const ImU32 OVERLAY_WHITE = IM_COL32(255, 255, 255, 255 * 0.05);
     const ImU32 COLOR_LINE = IM_COL32(127, 127, 127, 255 * 0.4);
     const ImU32 COLOR_KEY = IM_COL32(127, 127, 127, 255 * 0.4);
+    const ImU32 COLOR_KEY_SEL = IM_COL32(200, 200, 200, 255 * 0.8);
     const ImU32 COLOR_KEY_HOV = IM_COL32(127, 127, 127, 255 * 0.7);
     const ImU32 COLOR_KEY_OUTLINE = IM_COL32(50, 50, 50, 255 * 0.8);
     const ImU32 COLOR_KEY_RESIZE = IM_COL32(255, 0, 0, 255 * 0.8);
@@ -96,8 +97,6 @@ private:
     float getTimePosScreenPos(time_unit time);
     void printTimeline(const project::Canvas &canvas, ImRect rect);
     std::string timeLabel(time_unit time, bool withMills);
-
-    std::shared_ptr<project::Layer> selection;
 
     void deleteTrack(const std::shared_ptr<project::Layer> &group);
 

@@ -34,6 +34,9 @@ public:
     // volatile - hold texture
     void* textureId = nullptr;
 
+    // volatile
+    bool isSelected = false;
+
     SERIALIZATION_START {
         ser.serializeEnum("type", type);
         ser.serialize("posX", posX);
