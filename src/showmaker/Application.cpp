@@ -317,14 +317,21 @@ enum FADE_TYPE {
     SIN_DOUBLE,
 };
 
-struct CLS_Fade {
-    FADE_TYPE type;
-    time_unit duration;
-};
-
 struct CLS_Key {
-    time_unit start, duration;
-    CLS_Fade fadeStart, fadeEnd;
+    // key
+    time_unit start;
+    time_unit end;
+    time_unit duration;
+
+    // fade start
+    FADE_TYPE fade1;
+    time_unit fade1_end;
+    float fade1_duration;
+
+    // fade end
+    FADE_TYPE fade2;
+    time_unit fade2_start;
+    float fade2_duration;
 };
 
 struct CLS_LightGroup {
@@ -341,9 +348,14 @@ struct CLS_LightGroup {
         for (auto &k : g->keys) {
             outputFile << "    {\n";
             outputFile << "        " << k->start << ",\n";
+            outputFile << "        " << k->start + k->duration << ",\n";
             outputFile << "        " << k->duration << ",\n";
-            outputFile << "        { (FADE_TYPE) " << k->fadeStart.type << ", " << k->fadeStart.duration << " },\n";
-            outputFile << "        { (FADE_TYPE) " << k->fadeEnd.type << ", " << k->fadeEnd.duration << " },\n";
+            outputFile << "        (FADE_TYPE) " << k->fadeStart.type << ",\n";
+            outputFile << "        " << k->start + k->fadeStart.duration << ",\n";
+            outputFile << "        " << k->fadeStart.duration << ",\n";
+            outputFile << "        (FADE_TYPE) " << k->fadeEnd.type << ",\n";
+            outputFile << "        " << k->start + k->duration - k->fadeEnd.duration << ",\n";
+            outputFile << "        " << k->fadeEnd.duration << ",\n";
             outputFile << "    },\n";
         }
         outputFile << "};\n\n";
