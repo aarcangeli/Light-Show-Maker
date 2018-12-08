@@ -79,6 +79,7 @@ private:
     ImU32 btnActive, btnHover;
 
     bool isLayerListFocused;
+    bool isContentFocused;
 
     // visible layers [firstIndex, indexMax)
     int firstIndex, indexMax;
@@ -137,6 +138,8 @@ private:
                       time_unit &best, time_unit &bestDest, KeyChecker checker) const;
 
     void printWave(ImRect rect);
+
+    void deleteKeypoints();
 };
 
 }

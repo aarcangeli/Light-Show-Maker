@@ -136,8 +136,30 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
         }
     }
 
+    deleteKeypoints();
+
     EndGroup();
     this->canvas = nullptr;
+}
+
+void TimelineEditor::deleteKeypoints() {
+    Selection<KeyPoint> &selectedkeypoints = gApp->getSelection().keypoints;
+    if (isContentFocused && !selectedkeypoints.empty() && IsKeyPressed(GLFW_KEY_DELETE, false)) {
+        gApp->beginCommand(string("Delete" + to_string(selectedkeypoints.size()) + " keys"));
+        for (auto &group : canvas->groups) {
+            auto &keys = group->keys;
+            auto it = keys.begin();
+            while(it != keys.end()) {
+                if ((*it)->isSelected) {
+                    it = keys.erase(it);
+                    selectedkeypoints.remove(*it);
+                    continue;
+                }
+                it++;
+            }
+        }
+        gApp->endCommand();
+    }
 }
 
 ImU32 TimelineEditor::setAlpha(ImU32 color, double alpha) {
@@ -191,6 +213,11 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
     time_unit duration = canvas.duration;
     ImGuiIO &io = GetIO();
 
+    ImVec2 oldPos = GetCursorScreenPos();
+    SetCursorScreenPos(rect.Min);
+    BeginChild("Content", rect.Max - rect.Min, false, ImGuiWindowFlags_NoScrollbar);
+    isContentFocused = IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
+
     scroll.scrollPaneBegin(
             rect,
             ImVec2(duration * TIME_WIDTH / TIME_UNITS * scale.x + (rect.Max.x - rect.Min.x) * 0.5f,
@@ -238,16 +265,17 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
         foundKey = true;
     }
 
+    bool isFocused = IsWindowFocused();
     for (int i = firstIndex; i < indexMax; i++) {
         auto &group = canvas.groups[i];
+        auto &keys = group->keys;
         float screenPosY = rect.Min.y + i * layerHeight - offset.y;
         if (screenPosY + layerHeight < rect.Min.y) continue;
         if (screenPosY > rect.Max.y) continue;
 
         // find hover element
         float minHandle = COLOR_RESIZE_HANDLE_DIM * dpi / 2;
-        if (!foundKey && mousePos.y >= screenPosY && mousePos.y < screenPosY + layerHeight) {
-            auto &keys = group->keys;
+        if (isFocused && !foundKey && mousePos.y >= screenPosY && mousePos.y < screenPosY + layerHeight) {
             for (auto it = keys.rbegin(); it != keys.rend(); it++) {
                 auto &k = *it;
                 float startOffset = getTimePosScreenPos(k->start);
@@ -264,7 +292,7 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
             }
         }
 
-        for (auto &k : group->keys) {
+        for (auto &k : keys) {
             if (k->start + k->duration < minTime) continue;
             if (k->start > maxTime) continue;
             float startOffset = getTimePosScreenPos(k->start);
@@ -291,6 +319,9 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
     drawList->AddLine(ImVec2(pos, rect.Min.y), ImVec2(pos, rect.Max.y), COLOR_CURSOR);
 
     scroll.scrollPaneEnd();
+
+    EndChild();
+    SetCursorPos(oldPos);
 }
 
 void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key, const ImRect &rect, bool isHover) {
