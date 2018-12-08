@@ -555,5 +555,42 @@ void TimelineEditor::printMediaControls(ImRect rect) {
     SetCursorScreenPos(oldPos);
 }
 
+time_unit TimelineEditor::moveSnapped(time_unit input, TimelineEditor::KeyChecker checker) {
+    time_unit best = -1;
+    time_unit bestDest = 0;
+    findBestSnap(input, best, bestDest, checker);
+    if (best >= 0) {
+        return bestDest;
+    }
+    return input;
+}
+
+bool TimelineEditor::findBestSnap(time_unit input, time_unit &best, time_unit &bestDest,
+                                  const TimelineEditor::KeyChecker &checker) const {
+    for (auto &group : canvas->groups) {
+        auto &keys = group->keys;
+        int index = (int) group->findIndex(input);
+        int size = (int) keys.size();
+        for (int i = index - 3; i <= index + 3; i++) {
+            if (i >= 0 && i < size) {
+                auto key = keys[i];
+                snapItem(key->start, input, key, best, bestDest, checker);
+                snapItem(key->start + key->duration, input, key, best, bestDest, checker);
+            }
+        }
+    }
+    return best >= 0;
+}
+
+void TimelineEditor::snapItem(time_unit dest, time_unit input, const shared_ptr<KeyPoint> &key, time_unit &best,
+                              time_unit &bestDest, KeyChecker checker) const {
+    time_unit diff = abs(dest - input);
+    if ((best < 0 || diff < best) && checker(dest, key)) {
+        best = diff;
+        bestDest = dest;
+    }
+}
+
+
 // misc
 //drawList->AddRectFilled(ImVec2(0, 0), ImVec2(1000, 1000), 0xff0000ff, 0);

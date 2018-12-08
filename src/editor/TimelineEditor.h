@@ -7,6 +7,7 @@
 #include "Canvas.h"
 #include "map"
 #include "KeypointDragger.h"
+#include "functional"
 #include <AudioLoader.h>
 #include <ScrollablePane.h>
 #include <AudioDevice.h>
@@ -15,6 +16,7 @@ namespace sm {
 namespace editor {
 
 class TimelineEditor {
+    using KeyChecker = std::function<bool(time_unit, std::shared_ptr<project::KeyPoint>)>;
 
     const char *POPUP_ADD_LAYER = "POPUP_ADD_LAYER";
     const char *MODAL_ADD_AUDIO = "Audio Track";
@@ -124,6 +126,14 @@ public:
     bool isInsideContent(const ImVec2 &pos) const;
     void printMediaControls(ImRect rect);
     float getTimeOffsetX() const;
+
+    time_unit moveSnapped(time_unit input, KeyChecker checker);
+
+private:
+    bool findBestSnap(time_unit input, time_unit &best, time_unit &bestDest, const KeyChecker &checker) const;
+
+    void snapItem(time_unit dest, time_unit input, const std::shared_ptr<project::KeyPoint> &key,
+                      time_unit &best, time_unit &bestDest, KeyChecker checker) const;
 };
 
 }

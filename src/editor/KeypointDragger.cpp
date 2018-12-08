@@ -69,6 +69,10 @@ void KeypointDragger::update() {
             }
         }
 
+        if (type == MOVE && io.KeyShift) {
+            diff = 0;
+        }
+
         switch (type) {
             case MOVE:
                 if (start + diff < minBound) {
@@ -79,14 +83,31 @@ void KeypointDragger::update() {
                 }
                 start += diff;
                 end += diff;
+                if (io.KeyAlt) {
+                    time_unit duration = end - start;
+                    start = editor->moveSnapped(start, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
+                        return dest >= minBound && dest <= end && it != key;
+                    });
+                    end = start + duration;
+                }
                 break;
             case RESIZE_BEGIN:
                 start += diff;
+                if (io.KeyAlt) {
+                    start = editor->moveSnapped(start, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
+                        return dest >= minBound && dest <= end && it != key;
+                    });
+                }
                 if (start > end) start = end;
                 if (start < minBound) start = minBound;
                 break;
             case RESIZE_END:
                 end += diff;
+                if (io.KeyAlt) {
+                    end = editor->moveSnapped(end, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
+                        return dest >= start && dest <= maxBound && it != key;
+                    });
+                }
                 if (end < start) end = start;
                 if (end > maxBound) end = maxBound;
                 break;
