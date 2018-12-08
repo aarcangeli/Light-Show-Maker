@@ -1,17 +1,15 @@
 #include <cassert>
 #include <algorithm>
-#include "LightGroup.h"
+#include "Layer.h"
 
 using namespace sm;
 using namespace sm::project;
 
-LightGroup::LightGroup() = default;
+Layer::Layer() = default;
 
-LightGroup::~LightGroup() {
-    int t = 0;
-}
+Layer::~Layer() = default;
 
-std::shared_ptr<KeyPoint> LightGroup::addKey(sm::time_unit start, sm::time_unit duration) {
+std::shared_ptr<KeyPoint> Layer::addKey(sm::time_unit start, sm::time_unit duration) {
     assert(sanityCheck());
     auto ret = std::make_shared<KeyPoint>();
     ret->start = start;
@@ -20,24 +18,24 @@ std::shared_ptr<KeyPoint> LightGroup::addKey(sm::time_unit start, sm::time_unit 
     return ret;
 }
 
-void LightGroup::addKey(const std::shared_ptr<sm::project::KeyPoint> &key) {
+void Layer::addKey(const std::shared_ptr<sm::project::KeyPoint> &key) {
     assert(!hasKey(key));
     keys.insert(keys.begin() + findIndex(key->start), key);
     assert(sanityCheck());
 }
 
-void LightGroup::removeKey(const std::shared_ptr<KeyPoint> &key) {
+void Layer::removeKey(const std::shared_ptr<KeyPoint> &key) {
     int32_t idx = findIndex(key);
     assert(idx >= 0);
     keys.erase(keys.begin() + idx);
 }
 
-bool LightGroup::hasKey(const std::shared_ptr<sm::project::KeyPoint> &key) {
+bool Layer::hasKey(const std::shared_ptr<sm::project::KeyPoint> &key) {
     assert(sanityCheck());
     return findIndex(key) >= 0;
 }
 
-bool LightGroup::sanityCheck() {
+bool Layer::sanityCheck() {
     if (!keys.empty()) {
         time_unit last = keys[0]->start;
         for (auto &it : keys) {
@@ -50,19 +48,19 @@ bool LightGroup::sanityCheck() {
     return true;
 }
 
-size_t LightGroup::findIndex(time_unit time) {
+size_t Layer::findIndex(time_unit time) {
     assert(sanityCheck());
     return findIndexIt(time, 0, keys.size());
 }
 
-float LightGroup::computeEasing(sm::time_unit time) {
+float Layer::computeEasing(sm::time_unit time) {
     size_t index = findIndex(time) - 1;
     if (index < 0 || index >= keys.size()) return 0;
     auto &key = keys[index];
     return key->computeEasing(time - key->start);
 }
 
-size_t LightGroup::findIndexIt(time_unit time, size_t min, size_t max) {
+size_t Layer::findIndexIt(time_unit time, size_t min, size_t max) {
     if (min >= max) return min;
     size_t midIdx = min + (max - min) / 2;
     auto &mid = keys[midIdx];
@@ -70,14 +68,14 @@ size_t LightGroup::findIndexIt(time_unit time, size_t min, size_t max) {
     else return findIndexIt(time, min, midIdx);
 }
 
-void LightGroup::sortKeys() {
+void Layer::sortKeys() {
     std::stable_sort(keys.begin(), keys.end(), [](std::shared_ptr<KeyPoint> a, std::shared_ptr<KeyPoint> b) -> bool {
         return a->start < b->start;
     });
     assert(sanityCheck());
 }
 
-int32_t LightGroup::findIndex(const std::shared_ptr<KeyPoint> &key) {
+int32_t Layer::findIndex(const std::shared_ptr<KeyPoint> &key) {
     size_t ret = findIndex(key->start);
     if (ret < keys.size() && keys[ret] == key && (int32_t) ret == ret) {
         return (int32_t) ret;

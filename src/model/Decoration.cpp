@@ -1,6 +1,6 @@
 #include "Decoration.h"
 #include "Canvas.h"
-#include "LightGroup.h"
+#include "Layer.h"
 
 using namespace sm::project;
 

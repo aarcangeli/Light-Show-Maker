@@ -321,7 +321,7 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
     scroll.scrollPaneEnd();
 }
 
-void TimelineEditor::drawKey(shared_ptr<LightGroup> group, shared_ptr<KeyPoint> &key, const ImRect &rect, bool isHover) {
+void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key, const ImRect &rect, bool isHover) {
     const ImVec2 &min = rect.Min;
     const ImVec2 &max = rect.Max;
 
@@ -458,7 +458,7 @@ void TimelineEditor::printLayerList(const project::Canvas &canvas, ImRect rect) 
     SetCursorPos(oldPos);
 }
 
-void TimelineEditor::printLayer(shared_ptr<project::LightGroup> group, ImRect rect) {
+void TimelineEditor::printLayer(shared_ptr<project::Layer> group, ImRect rect) {
     ImGuiIO &io = GetIO();
     ImVec2 oldPos = GetCursorScreenPos();
     SetCursorScreenPos(rect.Min);
@@ -495,7 +495,7 @@ void TimelineEditor::printLayer(shared_ptr<project::LightGroup> group, ImRect re
     }
 }
 
-void TimelineEditor::deleteTrack(const shared_ptr<project::LightGroup> &group) {
+void TimelineEditor::deleteTrack(const shared_ptr<project::Layer> &group) {
     project::Canvas *canvas = this->canvas;
     gApp->asyncCommand(string("Delete ") + group->name, false, [canvas, group, this]() {
         canvas->deleteGroup(group);
@@ -506,7 +506,7 @@ void TimelineEditor::deleteTrack(const shared_ptr<project::LightGroup> &group) {
 
 bool TimelineEditor::findPlacableKeyPos(ImVec2 &pos, time_unit &start, time_unit duration, int32_t &layerIdx) {
     if (lookUpAtPos(pos, &start, &layerIdx)) {
-        shared_ptr<LightGroup> &layer = canvas->groups[layerIdx];
+        shared_ptr<Layer> &layer = canvas->groups[layerIdx];
         size_t idx = layer->findIndex(start);
         if (idx > 0) {
             shared_ptr<KeyPoint> &key = layer->keys[idx - 1];

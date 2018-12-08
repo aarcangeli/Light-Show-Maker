@@ -221,7 +221,7 @@ ImFont *Application::loadFont(const char *start, const char *end, float size, bo
             size, &config, ranges);
 }
 
-void Application::setLayerSelected(std::shared_ptr<project::LightGroup> layer) {
+void Application::setLayerSelected(std::shared_ptr<project::Layer> layer) {
     selectedGroup = std::move(layer);
     if (layer) {
         setDecorationSelected(layer->decorations);

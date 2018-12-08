@@ -98,7 +98,7 @@ void OutputVideoEditor::openImage(const shared_ptr<project::Project> &proj) cons
 
 void
 OutputVideoEditor::append(const shared_ptr<project::Project> &proj, const shared_ptr<project::Decoration> &dec) const {
-    shared_ptr<project::LightGroup> selected = gApp->layerSelected();
+    shared_ptr<project::Layer> selected = gApp->layerSelected();
     (selected ? selected->decorations : proj->canvas.decorations).push_back(dec);
 }
 

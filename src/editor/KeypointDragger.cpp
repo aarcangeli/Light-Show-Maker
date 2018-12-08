@@ -10,7 +10,7 @@ using namespace sm::project;
 using namespace sm::editor;
 
 void KeypointDragger::startDragging(const std::shared_ptr<KeyPoint> &key_,
-                                    const std::shared_ptr<LightGroup> &owner_,
+                                    const std::shared_ptr<Layer> &owner_,
                                     DragType type_,
                                     float timeScale_) {
     assert(type_ > NOTHING && type_ < DragType::SIZE);

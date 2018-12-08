@@ -7,7 +7,7 @@
 
 namespace sm {
 namespace project {
-class LightGroup;
+class Layer;
 
 class KeyPoint {
 public:

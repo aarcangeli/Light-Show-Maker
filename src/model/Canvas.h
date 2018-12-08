@@ -5,7 +5,7 @@
 #include "memory"
 #include "core.h"
 #include "list"
-#include "LightGroup.h"
+#include "Layer.h"
 #include "Decoration.h"
 #include "Serialization.h"
 
@@ -24,11 +24,11 @@ public:
 
     time_unit duration = 210 * TIME_UNITS;
     std::vector<std::shared_ptr<Decoration>> decorations;
-    std::vector<std::shared_ptr<LightGroup>> groups;
+    std::vector<std::shared_ptr<Layer>> groups;
 
-    std::shared_ptr<LightGroup> makeGroup();
+    std::shared_ptr<Layer> makeGroup();
 
-    void deleteGroup(const std::shared_ptr<LightGroup> &group);
+    void deleteGroup(const std::shared_ptr<Layer> &group);
 
     SERIALIZATION_START {
         ser.serialize("decorations", decorations);

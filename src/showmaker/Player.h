@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include "core.h"
+#include "AudioDevice.h"
 
 namespace sm {
 
@@ -25,6 +26,9 @@ private:
     bool isPlaying = false;
     float position = 0;
     float backPosition = 0;
+
+    sm::media::AudioDevice device;
+
 };
 
 }

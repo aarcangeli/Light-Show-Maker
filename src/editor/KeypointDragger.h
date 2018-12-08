@@ -1,7 +1,7 @@
 #ifndef KEYPOINTDRAGGER_H
 #define KEYPOINTDRAGGER_H
 
-#include "LightGroup.h"
+#include "Layer.h"
 #include "KeyPoint.h"
 
 namespace sm {
@@ -28,7 +28,7 @@ private:
     bool dragging = false;
     float timeScale;
     std::shared_ptr<project::KeyPoint> key;
-    std::shared_ptr<project::LightGroup> owner;
+    std::shared_ptr<project::Layer> owner;
     sm::time_unit originalStart;
     sm::time_unit originalDuration;
     float originalMouseX;
@@ -39,7 +39,7 @@ public:
     void update();
 
     void startDragging(const std::shared_ptr<project::KeyPoint> &key,
-                       const std::shared_ptr<project::LightGroup> &owner,
+                       const std::shared_ptr<project::Layer> &owner,
                        DragType type,
                        float timeScale);
 

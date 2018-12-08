@@ -32,9 +32,9 @@ public:
     int windowHeight = 720;
     std::string filename;
 
-    void setLayerSelected(std::shared_ptr<project::LightGroup> layer);
+    void setLayerSelected(std::shared_ptr<project::Layer> layer);
 
-    std::shared_ptr<project::LightGroup> layerSelected() { return selectedGroup; }
+    std::shared_ptr<project::Layer> layerSelected() { return selectedGroup; }
 
     void setDecorationSelected(std::vector<std::shared_ptr<project::Decoration>> decorations);
 
@@ -74,7 +74,7 @@ private:
 
     void applyTheme();
 
-    std::shared_ptr<project::LightGroup> selectedGroup;
+    std::shared_ptr<project::Layer> selectedGroup;
     std::vector<std::shared_ptr<project::Decoration>> selectedDecorations;
     std::string home;
     std::string iniPath;

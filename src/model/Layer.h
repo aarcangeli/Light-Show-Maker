@@ -1,5 +1,5 @@
-#ifndef LIGHTGROUP_H
-#define LIGHTGROUP_H
+#ifndef LAYER_H
+#define LAYER_H
 
 #include <memory>
 #include <vector>
@@ -12,10 +12,10 @@
 namespace sm {
 namespace project {
 
-class LightGroup {
+class Layer {
 public:
-    LightGroup();
-    ~LightGroup();
+    Layer();
+    ~Layer();
 
     std::string name;
     std::vector<std::shared_ptr<Decoration>> decorations;
@@ -50,4 +50,4 @@ private:
 }
 }
 
-#endif //LIGHTGROUP_H
+#endif //LAYER_H

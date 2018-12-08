@@ -89,15 +89,14 @@ private:
     void printContent(project::Canvas &canvas, const ImRect &rect);
     void printLayerList(const project::Canvas &canvas, ImRect rect);
 
-    void printLayer(std::shared_ptr<project::LightGroup> group, ImRect rect);
+    void printLayer(std::shared_ptr<project::Layer> group, ImRect rect);
     float getTimePosScreenPos(time_unit time);
     void printTimeline(const project::Canvas &canvas, ImRect rect);
     std::string timeLabel(time_unit time, bool withMills);
 
-    sm::media::AudioDevice device;
-    std::shared_ptr<project::LightGroup> selection;
+    std::shared_ptr<project::Layer> selection;
 
-    void deleteTrack(const std::shared_ptr<project::LightGroup> &group);
+    void deleteTrack(const std::shared_ptr<project::Layer> &group);
 
     bool lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
     bool lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
@@ -108,7 +107,7 @@ private:
 
     bool isDraggingPosition = false;
 
-    void drawKey(std::shared_ptr<project::LightGroup> group,
+    void drawKey(std::shared_ptr<project::Layer> group,
                  std::shared_ptr<project::KeyPoint> &key,
                  const ImRect &rect,
                  bool isHover);
