@@ -25,6 +25,7 @@ public:
     time_unit duration = 210 * TIME_UNITS;
     std::vector<std::shared_ptr<Decoration>> decorations;
     std::vector<std::shared_ptr<Layer>> groups;
+    std::string audioFile;
 
     std::shared_ptr<Layer> makeGroup();
 
@@ -33,6 +34,7 @@ public:
     SERIALIZATION_START {
         ser.serialize("decorations", decorations);
         ser.serialize("groups", groups);
+        ser.serialize("audioFile", audioFile);
     }
 
 private:

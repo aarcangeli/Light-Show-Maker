@@ -33,8 +33,6 @@ void AudioDevice::open(int sampleRate, int channels, int bits) {
         printf("Cannot open driver, errno=%i\n", errno);
         return;
     }
-
-
 }
 
 void AudioDevice::play(void *data, int size) {

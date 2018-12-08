@@ -24,10 +24,6 @@ struct StreamInfo {
     StreamType type;
     int sampleRate;
     sm::time_unit duration;
-
-private:
-    AVCodecContext *dec_ctx = nullptr;
-
     friend class AudioLoader;
 };
 
@@ -39,18 +35,25 @@ public:
     void open(std::string filename);
     void close();
     bool isOpen();
-    void process();
+    void readAllSamples();
 
     std::vector<StreamInfo> streams;
-    int preferredStream;
+
+    int sampleRate;
+    std::vector<int16_t> samples;
 
 private:
-    // ffmpeg data
-    bool mIsOpen = true;
+    bool mIsOpen = false;
+    bool eof = false;
     AVFormatContext *fmt_ctx = nullptr;
     AVCodec *dec;
     AVFrame *frame;
     void loop();
+    int preferredStream;
+
+    // selected stream
+    int choosedStream;
+    AVCodecContext *dec_ctx = nullptr;
 };
 
 }

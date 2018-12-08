@@ -34,6 +34,7 @@ class TimelineEditor {
     const ImU32 COLOR_KEY_GRAPH = IM_COL32(255, 0, 0, 255 * 0.6);
 
     const ImU32 COLOR_CURSOR = IM_COL32(0, 255, 0, 255 * 0.8);
+    const float SIZE_WAVE = 30;
 
     const float COLOR_KEY_RADIUS = 2;
     const float COLOR_RESIZE_HANDLE_DIM = 4;
@@ -55,14 +56,16 @@ public:
     float dpi;
 
 private:
+    // for preview
     media::AudioLoader loader;
     ScrollablePane scroll{true, false};
 
     project::Canvas *canvas;
 
     ImU32 setAlpha(ImU32 color, double alpha);
-    void addAudioModal();
 
+    ImRect waveRect;
+    ImRect layersRect;
     ImRect contentRect;
 
     float headerTopHeight;
@@ -133,6 +136,8 @@ private:
 
     void snapItem(time_unit dest, time_unit input, const std::shared_ptr<project::KeyPoint> &key,
                       time_unit &best, time_unit &bestDest, KeyChecker checker) const;
+
+    void printWave(ImRect rect);
 };
 
 }

@@ -64,6 +64,7 @@ private:
     bool exit = false;
     bool dirtyStyle = false;
 
+    media::AudioLoader audio;
     std::shared_ptr<project::Project> proj;
     editor::ProjectWindow projectWindow;
     media::AudioDevice device;
@@ -88,6 +89,7 @@ public:
 
     Player &getPlayer() { return player; };
     GlobalHotKey &getHotKey() { return hotKey; };
+    media::AudioLoader &getAudio() { return audio; };
 
     void quit();
 

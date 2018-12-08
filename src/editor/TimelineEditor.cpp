@@ -76,10 +76,15 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
                                       widgetPos + ImVec2(leftSideWidth, headerTopHeight));
     ImRect timelineRect = ImRect(widgetPos + ImVec2(leftSideWidth, 0),
                                  widgetPos + ImVec2(widgetSize.x, headerTopHeight));
-    ImRect layersRect = ImRect(widgetPos + ImVec2(0, headerTopHeight),
-                               widgetPos + ImVec2(leftSideWidth, widgetSize.y - headerBotHeight));
+    layersRect = ImRect(widgetPos + ImVec2(0, headerTopHeight),
+                        widgetPos + ImVec2(leftSideWidth, widgetSize.y - headerBotHeight));
     contentRect = ImRect(widgetPos + ImVec2(leftSideWidth, headerTopHeight),
                          widgetPos + ImVec2(widgetSize.x, widgetSize.y));
+
+    waveRect = contentRect;
+    waveRect.Max.y = waveRect.Min.y + SIZE_WAVE * dpi;
+    contentRect.Min.y = waveRect.Max.y;
+    layersRect.Min.y = waveRect.Max.y;
 
     BeginGroup();
 
@@ -94,10 +99,10 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
     printContent(canvas, contentRect);
     printLayerList(canvas, layersRect);
     printTimeline(canvas, timelineRect);
+    printWave(waveRect);
 
     SetCursorScreenPos(widgetPos + ImVec2(0, widgetSize.y - headerBotHeight));
 
-    bool openAudioFile = false;
     if (Button("Add", ImVec2(50, headerBotHeight))) {
         OpenPopup(POPUP_ADD_LAYER);
     }
@@ -115,16 +120,15 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
                 if (!loader.isOpen()) {
                     gApp->error("Cannot open '" + string(outPath) + "'");
                 } else {
-                    openAudioFile = true;
                     gApp->saveLastDirectory(outPath);
+                    canvas.audioFile = outPath;
+                    gApp->getPlayer().reloadMedia();
                 }
+                loader.close();
             }
         }
         EndPopup();
     }
-
-    if (openAudioFile) OpenPopup(MODAL_ADD_AUDIO);
-    addAudioModal();
 
     if (isDraggingPosition) {
         float seek = (GetIO().MousePos.x - getTimeOffsetX()) / getTimeScaleX();
@@ -140,36 +144,6 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
 
 ImU32 TimelineEditor::setAlpha(ImU32 color, double alpha) {
     return (color & 0xffffff) + (((uint32_t) (alpha * 0xff) & 0xff) << 27);
-}
-
-void TimelineEditor::addAudioModal() {
-    if (BeginPopupModal(MODAL_ADD_AUDIO, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-        Indent();
-        for (auto &stream : loader.streams) {
-            switch (stream.type) {
-                case StreamType::AUDIO:
-                    Button(ICON_FA_HEADPHONES);
-                    SameLine();
-                    Text("Audio #%i", stream.number);
-                    break;
-                case StreamType::VIDEO:
-                    Button(ICON_FA_VIDEO_CAMERA);
-                    SameLine();
-                    Text("Video #%i", stream.number);
-                    break;
-                default:
-                    Button(ICON_FA_QUESTION);
-                    Text("Unknown #%i", stream.number);
-            }
-        }
-        Unindent();
-        Separator();
-        if (Button("OK", ImVec2(120, 0))) { CloseCurrentPopup(); }
-        SetItemDefaultFocus();
-        SameLine();
-        if (Button("Cancel", ImVec2(120, 0))) { CloseCurrentPopup(); }
-        EndPopup();
-    }
 }
 
 float TimelineEditor::getTimePosScreenPos(time_unit time) {
@@ -591,6 +565,35 @@ void TimelineEditor::snapItem(time_unit dest, time_unit input, const shared_ptr<
     }
 }
 
+void TimelineEditor::printWave(ImRect rect) {
+    vector<int16_t> &samples = gApp->getAudio().samples;
+    int sampleRate = gApp->getAudio().sampleRate;
+    size_t max = samples.size();
+
+    ImDrawList *drawList = GetWindowDrawList();
+
+    float spaceX = rect.Max.x - rect.Min.x;
+    float multY = (rect.Max.y - rect.Min.y) / 2;
+    float startX = rect.Min.x;
+    float startY = rect.Min.y + multY;
+    ImVec2 cursor;
+
+    float timeOffsetX = getTimeOffsetX();
+    float timeScaleX = getTimeScaleX();
+
+    drawList->PathClear();
+    for (int i = 0; i < spaceX; i++) {
+        cursor.x = startX + i;
+        size_t samplePos = (size_t) ((cursor.x - timeOffsetX) / timeScaleX / TIME_UNITS * sampleRate);
+        if (samplePos < 0) continue;
+        if (samplePos >= max) break;
+        float alpha = (float) samples[samplePos] / 0x7fff;
+        cursor.y = startY - alpha * multY;
+        drawList->PathLineTo(cursor);
+    }
+
+    drawList->PathStroke(COLOR_LINE, false);
+}
 
 // misc
 //drawList->AddRectFilled(ImVec2(0, 0), ImVec2(1000, 1000), 0xff0000ff, 0);

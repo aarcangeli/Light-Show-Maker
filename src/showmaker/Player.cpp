@@ -1,22 +1,45 @@
 #include "Player.h"
+#include "Application.h"
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 
 using namespace sm;
 
-void Player::update() {
+void Player::update(project::Canvas &canvas) {
     double currentFrame = glfwGetTime();
     double delta = currentFrame - lastTime;
     lastTime = currentFrame;
+    media::AudioLoader &audio = gApp->getAudio();
+
+    if (justPlayed) {
+        if (!audio.isOpen()) {
+            audio.open(canvas.audioFile);
+            if (audio.isOpen()) {
+                device.open(audio.sampleRate, 1, 16);
+            }
+            audio.readAllSamples();
+        }
+        justPlayed = false;
+    }
 
     if (isPlaying) {
         position += delta;
+        sampleTarget = (size_t) (position * audio.sampleRate);
+        int total = audio.sampleRate / 60;
+        if (afterSeek) {
+            afterSeek = false;
+            samplePosition = sampleTarget;
+        }
+        if (samplePosition < 0) samplePosition = 0;
+        while (samplePosition < sampleTarget) {
+            device.play(&audio.samples[samplePosition], total * 2);
+            samplePosition += total;
+        }
     }
 }
 
 void Player::play() {
     setPlaying(true);
-
 }
 
 void Player::pause() {
@@ -41,6 +64,7 @@ void Player::seek(sm::time_unit time) {
         position = max_time;
         isPlaying = false;
     }
+    afterSeek = true;
 }
 
 bool Player::playing() { return isPlaying; }
@@ -56,6 +80,11 @@ void Player::goBack() {
 void Player::setPlaying(bool playing) {
     if (playing && !isPlaying) {
         backPosition = position;
+        justPlayed = true;
     }
     isPlaying = playing;
+}
+
+void Player::reloadMedia() {
+    gApp->getAudio().close();
 }

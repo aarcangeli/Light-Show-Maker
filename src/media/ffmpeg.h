@@ -9,5 +9,6 @@ extern "C" {
 #include <libavutil/opt.h>
 #include <libavutil/channel_layout.h>
 #include <libavutil/imgutils.h>
+#include <libswresample/swresample.h>
 }
 #endif

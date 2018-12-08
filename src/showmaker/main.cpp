@@ -10,7 +10,7 @@ int main(int argc, char **argv) {
     glfwSetErrorCallback(glfw_error_callback);
     setupDpi();
 
-    Application app{};
+    Application &app = *new Application;
 
     app.setAppHome(argv[0]);
 

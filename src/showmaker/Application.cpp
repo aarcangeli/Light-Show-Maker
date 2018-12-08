@@ -168,7 +168,7 @@ int Application::runLoop() {
         commands.resize(0);
 
         hotKey.update();
-        player.update();
+        player.update(proj->canvas);
     }
 
     save(autoSavePath);

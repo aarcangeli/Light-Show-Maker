@@ -3,12 +3,14 @@
 
 #include "core.h"
 #include "AudioDevice.h"
+#include "Canvas.h"
+#include "AudioDevice.h"
 
 namespace sm {
 
 class Player {
 public:
-    void update();
+    void update(project::Canvas &canvas);
 
     void togglePlay();
     void play();
@@ -17,6 +19,7 @@ public:
     void seek(time_unit time);
     void setPlaying(bool playing);
     void goBack();
+    void reloadMedia();
 
     time_unit playerPosition();
     bool playing();
@@ -26,9 +29,11 @@ private:
     bool isPlaying = false;
     float position = 0;
     float backPosition = 0;
-
-    sm::media::AudioDevice device;
-
+    bool justPlayed = false;
+    bool afterSeek = false;
+    size_t sampleTarget;
+    size_t samplePosition;
+    media::AudioDevice device;
 };
 
 }

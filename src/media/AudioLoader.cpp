@@ -2,6 +2,12 @@
 
 using namespace sm::media;
 
+static char *errtext(int err) {
+    static char errbuff[512];
+    av_strerror(err, errbuff, sizeof(errbuff));
+    return errbuff;
+}
+
 AudioLoader::AudioLoader() {
     frame = av_frame_alloc();
 };
@@ -55,10 +61,36 @@ void AudioLoader::open(std::string filename) {
             avcodec_free_context(&dec_ctx);
             continue;
         }
-        stream.dec_ctx = dec_ctx;
+        sampleRate = stream.sampleRate;
+        this->choosedStream = stream.number;
+        this->dec_ctx = dec_ctx;
     }
 
+//    // Set resampler options
+//    resample_context = swr_alloc_set_opts(nullptr,
+//                                          av_get_default_channel_layout(OUTPUT_CHANNELS),
+//                                          OUTPUT_FMT,
+//                                          OUTPUT_RATE,
+//                                          dec_ctx->channel_layout,
+//                                          dec_ctx->sample_fmt,
+//                                          dec_ctx->sample_rate,
+//                                          0, nullptr);
+//    if (!resample_context) {
+//        fprintf(stderr, "Unable to allocate resampler context\n");
+//        close();
+//        return;
+//    }
+//
+//    // Open the resampler
+//    if ((ret = swr_init(resample_context)) < 0) {
+//        fprintf(stderr, "Unable to open resampler context: %s\n", errtext(ret));
+//        swr_free(&resample_context);
+//        close();
+//        return;
+//    }
+
     mIsOpen = true;
+    eof = false;
 }
 
 void AudioLoader::close() {
@@ -67,11 +99,10 @@ void AudioLoader::close() {
     mIsOpen = false;
 }
 
-void AudioLoader::process() {
-    if (!mIsOpen) return;
-
-    // todo: time based process
-    while (mIsOpen) loop();
+void AudioLoader::readAllSamples() {
+    while (mIsOpen && !eof) {
+        loop();
+    }
 }
 
 void AudioLoader::loop() {
@@ -79,31 +110,37 @@ void AudioLoader::loop() {
     AVPacket packet;
 
     if (av_read_frame(fmt_ctx, &packet) < 0) {
-        close();
+        eof = true;
         return;
     }
 
-    StreamInfo stream = streams[packet.stream_index];
-    if (!stream.dec_ctx) {
+    if (packet.stream_index != choosedStream)
         return;
-    }
 
-    ret = avcodec_send_packet(stream.dec_ctx, &packet);
+    ret = avcodec_send_packet(dec_ctx, &packet);
     if (ret < 0) {
-        printf("ERROR: Error while sending a packet to the decoder of stream %i\n", stream.number);
+        printf("ERROR: Error while sending a packet to the decoder of stream %i\n", packet.stream_index);
         close();
         return;
     }
 
     while (ret >= 0) {
-        ret = avcodec_receive_frame(stream.dec_ctx, frame);
+        ret = avcodec_receive_frame(dec_ctx, frame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             break;
         }
         if (ret < 0) {
-            printf("ERROR: Error while receiving a frame from the decoder of stream %i\n", stream.number);
+            printf("ERROR: Error while receiving a frame from the decoder of stream %i\n", packet.stream_index);
             close();
             return;
+        }
+
+        size_t pos = samples.size();
+        samples.resize(pos + frame->nb_samples);
+        float *inputSamples = (float *) frame->data[1];
+
+        for (int i = 0; i < frame->nb_samples; i++) {
+            samples[pos + i] = (short) (inputSamples[i] * 0x7fff);
         }
 
         av_frame_unref(frame);
