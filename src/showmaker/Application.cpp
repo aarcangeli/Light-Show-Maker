@@ -260,6 +260,7 @@ bool Application::load(std::string filename) {
 
     std::shared_ptr<project::Project> proj = deserializeObject<project::Project>(data);
     open(proj);
+    this->filename = filename;
     return true;
 }
 
@@ -307,6 +308,8 @@ void Application::exportIno(std::string filename) {
     outputFile << "const unsigned long LIGHT_COUNT = " << proj->canvas.groups.size() << ";\n";
 
     outputFile << R"(
+namespace CLS {
+
 // 32 bit unsigned
 typedef unsigned long time_unit;
 
@@ -317,26 +320,31 @@ enum FADE_TYPE {
     SIN_DOUBLE,
 };
 
-struct CLS_Key {
+struct FadeParams {
+    FADE_TYPE type;
+    float exponent;
+};
+
+struct Key {
     // key
     time_unit start;
     time_unit end;
     time_unit duration;
 
     // fade start
-    FADE_TYPE fade1;
+    FadeParams fade1;
     time_unit fade1_end;
     float fade1_duration;
 
     // fade end
-    FADE_TYPE fade2;
+    FadeParams fade2;
     time_unit fade2_start;
     float fade2_duration;
 };
 
-struct CLS_LightGroup {
+struct LightGroup {
     unsigned int keysCount;
-    CLS_Key *keys;
+    const Key *keys;
 };
 
 )";
@@ -344,16 +352,16 @@ struct CLS_LightGroup {
     int i = 0;
     for (auto &g : proj->canvas.groups) {
         outputFile << "// " << g->name << "\n";
-        outputFile << "CLS_Key __keys__" << i << "[" << g->keys.size() << "] = {\n";
+        outputFile << "const PROGMEM Key __keys__" << i << "[" << g->keys.size() << "] = {\n";
         for (auto &k : g->keys) {
             outputFile << "    {\n";
             outputFile << "        " << k->start << ",\n";
             outputFile << "        " << k->start + k->duration << ",\n";
             outputFile << "        " << k->duration << ",\n";
-            outputFile << "        (FADE_TYPE) " << k->fadeStart.type << ",\n";
+            outputFile << "        {(FADE_TYPE) " << k->fadeStart.type << ", " << k->fadeStart.exponent << "},\n";
             outputFile << "        " << k->start + k->fadeStart.duration << ",\n";
             outputFile << "        " << k->fadeStart.duration << ",\n";
-            outputFile << "        (FADE_TYPE) " << k->fadeEnd.type << ",\n";
+            outputFile << "        {(FADE_TYPE) " << k->fadeEnd.type << ", " << k->fadeEnd.exponent << "},\n";
             outputFile << "        " << k->start + k->duration - k->fadeEnd.duration << ",\n";
             outputFile << "        " << k->fadeEnd.duration << ",\n";
             outputFile << "    },\n";
@@ -363,12 +371,77 @@ struct CLS_LightGroup {
     }
 
     i = 0;
-    outputFile << "CLS_LightGroup groups[LIGHT_COUNT] = {\n";
+    outputFile << "const LightGroup groups[LIGHT_COUNT] = {\n";
     for (auto &g : proj->canvas.groups) {
-        outputFile << "    {" << g->keys.size() << ", __keys__" << i << "},\n";
+        outputFile << "    {" << g->keys.size() << ", __keys__" << i << "}, // " << g->name << "\n";
         i++;
     }
-    outputFile << "};\n\n";
+    outputFile << "};";
 
-    outputFile << "\n#endif //__CLSM_H\n";
+    outputFile << R"(
+
+float computeEasing(FadeParams &params, float alpha) {
+    switch (params.type) {
+        case LINEAR:
+            return alpha;
+        case EXPONENTIAL:
+            return pow(alpha, params.exponent);
+        case SIN:
+            return (float) sin(alpha * M_PI_2);
+        case SIN_DOUBLE:
+            return (float) ((1 + sin((alpha - 0.5) * M_PI)) / 2);
+        default:
+            return 1;
+    }
+}
+
+float computeEasing(Key &key, time_unit pos) {
+    if (pos < key.start || pos > key.end) return 0;
+    time_unit diff1 = pos - key.fade1_end;
+    if (pos < key.fade1_end) {
+        float alpha = (pos - key.start) / key.fade1_duration;
+        return computeEasing(key.fade1, alpha);
+    }
+    if (pos > key.fade2_start) {
+        float alpha = (pos - key.fade2_start) / key.fade2_duration;
+        return computeEasing(key.fade2, 1 - alpha);
+    }
+    return 1;
+}
+
+struct LightContext {
+    Key current;
+    int index = -1;
+    long cycles;
+    float alpha;
+    bool on;
+};
+
+LightContext ctxs[LIGHT_COUNT];
+
+void updateAlpha(time_unit position) {
+    for (int i = 0; i < LIGHT_COUNT; i++) {
+        const LightGroup &group = groups[i];
+        LightContext &ctx = ctxs[i];
+        ctx.alpha = 0;
+        int &index = ctx.index;
+        while (index < 0 || (index < group.keysCount && position > ctx.current.end)) {
+            index++;
+            const char *source = (char*) &group.keys[index];
+            char *dest = (char*) &ctx.current;
+            for (int j = 0; j < sizeof(Key); j++) {
+                dest[j] = pgm_read_byte_near(&source[j]);
+            }
+        }
+        if (index >= group.keysCount) continue;
+        Key &key = ctx.current;
+        ctx.alpha = computeEasing(key, position);
+    }
+}
+
+)";
+
+    outputFile << "} // namespace CLS \n\n";
+
+    outputFile << "#endif //__CLSM_H\n";
 }

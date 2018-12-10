@@ -26,7 +26,7 @@ float KeyPoint::computeFade(bool isRight, const Fade &fade, sm::time_unit time) 
         case LINEAR:
             return alpha;
         case EXPONENTIAL:
-            return pow(alpha, 2.f);
+            return pow(alpha, fade.exponent);
         case SIN:
             return (float) sin(alpha * M_PI_2);
         case SIN_DOUBLE:

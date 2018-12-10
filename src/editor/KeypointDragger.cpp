@@ -85,7 +85,7 @@ void KeypointDragger::update() {
         }
 
         if (type == MOVE && io.KeyShift) {
-            diff = 0;
+            //diff = 0;
         }
 
         switch (type) {
@@ -98,17 +98,26 @@ void KeypointDragger::update() {
                 }
                 start += diff;
                 end += diff;
-                if (io.KeyAlt) {
+                if (io.KeyShift) {
+                    time_unit dest1, dest2;
                     time_unit duration = end - start;
-                    start = editor->moveSnapped(start, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
+                    dest1 = editor->moveSnapped(start, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
                         return dest >= minBound && dest <= end && it != key;
                     });
+                    dest2 = editor->moveSnapped(end, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
+                        return dest >= minBound && dest <= end && it != key;
+                    });
+                    if (std::abs(dest2 - end) < std::abs(dest1 - start)) {
+                        start = dest2 - duration;
+                    } else {
+                        start = dest1;
+                    }
                     end = start + duration;
                 }
                 break;
             case RESIZE_BEGIN:
                 start += diff;
-                if (io.KeyAlt) {
+                if (io.KeyShift) {
                     start = editor->moveSnapped(start, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
                         return dest >= minBound && dest <= end && it != key;
                     });
@@ -118,7 +127,7 @@ void KeypointDragger::update() {
                 break;
             case RESIZE_END:
                 end += diff;
-                if (io.KeyAlt) {
+                if (io.KeyShift) {
                     end = editor->moveSnapped(end, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
                         return dest >= start && dest <= maxBound && it != key;
                     });

@@ -88,25 +88,7 @@ void ProjectWindow::rightPanelWindow() {
     SetNextWindowSize(ImVec2{rightPanelWidth - spacing, centerHeight});
     Begin("Right", nullptr, FLAGS);
 
-    auto &dec = gApp->getSelection().decorations;
-    if (dec.size() == 1 && dec[0]) {
-        auto &myDec = dec[0];
-
-        if (myDec->type == project::LIGHT) {
-            ImGui::SliderFloat("size", &myDec->size, 5, 50, "%.2f");
-        }
-        if (myDec->type == project::IMAGE) {
-            if (myDec->ratio < 0) {
-                myDec->ratio = myDec->width / myDec->height;
-            }
-            if (ImGui::SliderFloat("width", &myDec->width, 1, 10000, "%.2f")) {
-                myDec->height = myDec->width / myDec->ratio;
-            }
-            if (ImGui::SliderFloat("height", &myDec->height, 1, 10000, "%.2f")) {
-                myDec->width = myDec->height * myDec->ratio;
-            }
-        }
-    }
+    propertyPanel.showProperties(gApp->getSelection());
 
     End();
 }

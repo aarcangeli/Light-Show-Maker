@@ -13,7 +13,7 @@ extern float dpi;
 const int TIME_UNITS = 1000;
 
 /// a time in units
-using time_unit = int64_t;
+using time_unit = int32_t;
 
 const time_unit min_time = 0;
 

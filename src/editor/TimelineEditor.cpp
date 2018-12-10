@@ -63,7 +63,7 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
     headerTopHeight = ImFloor(GetFrameHeight() * 1.5f);
     headerBotHeight = headerTopHeight;
     leftSideWidth = fontSize * 20;
-    layerHeight = ImFloor(fontSize * 3);
+    layerHeight = ImFloor(fontSize * 2);
     lineDim = ImFloor(dpi);
     delim1 = ImFloor(fontSize * 0.7f);
 
@@ -261,11 +261,9 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
 
     std::shared_ptr<project::KeyPoint> hoverElement;
     if (dragger.isDragging()) {
-        hoverElement = dragger.getElement();
         foundKey = true;
     }
 
-    bool isFocused = IsWindowFocused();
     for (int i = firstIndex; i < indexMax; i++) {
         auto &group = canvas.groups[i];
         auto &keys = group->keys;
@@ -275,7 +273,7 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
 
         // find hover element
         float minHandle = COLOR_RESIZE_HANDLE_DIM * dpi / 2;
-        if (isFocused && !foundKey && mousePos.y >= screenPosY && mousePos.y < screenPosY + layerHeight) {
+        if (isHover && !foundKey && mousePos.y >= screenPosY && mousePos.y < screenPosY + layerHeight) {
             for (auto it = keys.rbegin(); it != keys.rend(); it++) {
                 auto &k = *it;
                 float startOffset = getTimePosScreenPos(k->start);
@@ -385,7 +383,16 @@ void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key,
             } else {
                 keypoints.set(key);
             }
-            dragger.startDragging(key, group, type, timeScaleX);
+            if (io.KeyAlt) {
+                gApp->asyncCommand("Duplicate", false, [=]() {
+                    shared_ptr<KeyPoint> duplicated = std::make_shared<KeyPoint>(*key);
+                    group->addKey(duplicated);
+                    dragger.startDragging(duplicated, group, type, timeScaleX);
+                    gApp->getSelection().keypoints.set(duplicated);
+                });
+            } else {
+                dragger.startDragging(key, group, type, timeScaleX);
+            }
         }
     }
 }
@@ -572,6 +579,7 @@ time_unit TimelineEditor::moveSnapped(time_unit input, TimelineEditor::KeyChecke
     time_unit best = -1;
     time_unit bestDest = 0;
     findBestSnap(input, best, bestDest, checker);
+    snapItem(gApp->getPlayer().playerPosition(), input, nullptr, best, bestDest, checker);
     if (best >= 0) {
         return bestDest;
     }
@@ -598,7 +606,7 @@ bool TimelineEditor::findBestSnap(time_unit input, time_unit &best, time_unit &b
 void TimelineEditor::snapItem(time_unit dest, time_unit input, const shared_ptr<KeyPoint> &key, time_unit &best,
                               time_unit &bestDest, KeyChecker checker) const {
     time_unit diff = abs(dest - input);
-    if ((best < 0 || diff < best) && checker(dest, key)) {
+    if ((best < 0 || diff < best) && (!key || checker(dest, key))) {
         best = diff;
         bestDest = dest;
     }

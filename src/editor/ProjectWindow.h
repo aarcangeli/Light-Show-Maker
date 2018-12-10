@@ -10,13 +10,14 @@
 #include <imgui_internal.h>
 #include "TimelineEditor.h"
 #include "OutputVideoEditor.h"
+#include "PropertyPanel.h"
 
 namespace sm {
 namespace editor {
 
 class ProjectWindow {
     const char *MODAL_ERROR = "Error!";
-    const float TIMELINE_HEIGHT_RATIO = 0.4;
+    const float TIMELINE_HEIGHT_RATIO = 0.7;
     const float TIMELINE_PANELS_WIDTH_RATIO = 0.15;
 
     const int FLAGS = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse;
@@ -42,6 +43,7 @@ private:
     Editor myEditor;
     TimelineEditor timelineEditor;
     OutputVideoEditor outputPreview;
+    PropertyPanel propertyPanel;
     int viewportWidth = 0, viewportHeight = 0;
     bool openErrorBox = false;
     std::string lastError;

@@ -21,6 +21,10 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    if (argc == 2) {
+        app.load(argv[1]);
+    }
+
     int res = app.runLoop();
     app.cleanUp();
     return res;

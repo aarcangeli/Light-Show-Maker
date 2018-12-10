@@ -121,7 +121,7 @@ void OutputVideoEditor::drawCanvas(project::Canvas &canvas) {
 
 void OutputVideoEditor::drawVector(float alpha, vector<shared_ptr<project::Decoration>> &array) {
     ImGuiIO &io = GetIO();
-    const auto &selected = gApp->getSelection().decorations;
+    auto &selected = gApp->getSelection().decorations;
     auto it = array.begin();
     while (it != array.end()) {
         shared_ptr<project::Decoration> el = *it;
@@ -149,6 +149,13 @@ void OutputVideoEditor::drawVector(float alpha, vector<shared_ptr<project::Decor
                 auto copy = std::make_shared<project::Decoration>(*el);
                 it = array.insert(it + 1, copy);
                 it--;
+            }
+        }
+        if (mouseClicked && io.KeyAlt) {
+            if (!selected.empty() && selected[0] == el) {
+                auto copy = std::make_shared<project::Decoration>(*el);
+                it = array.insert(it + 1, copy);
+                selected.set(copy);
             }
         }
         it++;

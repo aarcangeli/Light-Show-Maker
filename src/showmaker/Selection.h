@@ -17,11 +17,17 @@ enum SELECTION_TYPE {
     KEYPOINT,
 };
 
+class SelectionManager;
+
 template <typename T>
 class Selection {
-    Selection(SELECTION_TYPE type) : type(type) {};
+    typedef typename std::vector<std::shared_ptr<T>> array_type;
+    typedef typename array_type::const_iterator const_iterator;
+
+    Selection(SelectionManager *manager, SELECTION_TYPE type) : manager(manager), type(type) {};
     const SELECTION_TYPE type;
-    std::vector<std::shared_ptr<T>> currentSelection;
+    SelectionManager *manager;
+    array_type currentSelection;
     friend class SelectionManager;
 
 public:
@@ -34,6 +40,7 @@ public:
         currentSelection.resize(1);
         currentSelection[0] = item;
         item->isSelected = true;
+        setLastSelection();
     }
 
     void toggle(std::shared_ptr<T> item) {
@@ -42,6 +49,7 @@ public:
             currentSelection.push_back(item);
             item->isSelected = true;
         }
+        setLastSelection();
     }
 
     bool remove(std::shared_ptr<T> item) {
@@ -80,22 +88,33 @@ public:
         return currentSelection.empty();
     }
 
-    std::vector<std::shared_ptr<T>> getVector() {
+    array_type getVector() {
         return currentSelection;
     }
+
+    inline const_iterator begin() const noexcept { return currentSelection.cbegin(); }
+    inline const_iterator end() const noexcept { return currentSelection.cend(); }
+
+    void setLastSelection();
 };
 
 class SelectionManager {
 public:
     SelectionManager()
-            : layers(LAYER),
-              decorations(DECORATION),
-              keypoints(KEYPOINT) {};
+            : layers(this, LAYER),
+              decorations(this, DECORATION),
+              keypoints(this, KEYPOINT) {};
 
+    SELECTION_TYPE lastSelection;
     Selection<project::Layer> layers;
     Selection<project::Decoration> decorations;
     Selection<project::KeyPoint> keypoints;
 };
+
+template<typename T>
+void Selection<T>::setLastSelection() {
+    manager->lastSelection = type;
+}
 
 }
 
