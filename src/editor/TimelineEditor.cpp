@@ -5,6 +5,7 @@
 #include <imgui_internal.h>
 #include <Application.h>
 #include <IconsFontAwesome4.h>
+#include <set>
 
 using namespace std;
 using namespace sm;
@@ -38,6 +39,7 @@ void TimelineEditor::reset() {
  */
 void TimelineEditor::editorOf(project::Canvas &canvas) {
     this->canvas = &canvas;
+    auto isFocused = IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
     ImGuiStyle &style = GetStyle();
     ImDrawList *drawList = GetWindowDrawList();
     ImGuiIO &io = GetIO();
@@ -134,6 +136,10 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
         if (!IsMouseDown(0)) {
             isDraggingPosition = false;
         }
+    }
+
+    if (isFocused) {
+        orderLayers();
     }
 
     deleteKeypoints();
@@ -640,6 +646,34 @@ void TimelineEditor::printWave(ImRect rect) {
     }
 
     drawList->PathStroke(COLOR_LINE, false);
+}
+
+void TimelineEditor::orderLayers() {
+    auto &selection = gApp->getSelection().layers;
+    if (selection.empty()) {
+        return;
+    }
+    shared_ptr<project::Layer> selected = selection[0];
+
+    auto &array = canvas->groups;
+    auto it = array.begin();
+    while (it != array.end()) {
+        shared_ptr<project::Layer> el = *it;
+        if (el == selected) {
+            if (IsKeyPressed(GLFW_KEY_PAGE_UP) && it != array.begin()) {
+                it = array.erase(it);
+                it--;
+                it = array.insert(it, el);
+                return;
+            }
+            if (IsKeyPressed(GLFW_KEY_PAGE_DOWN) && it != array.end() - 1) {
+                it = array.erase(it);
+                it = array.insert(it + 1, el);
+                return;
+            }
+        }
+        it++;
+    }
 }
 
 // misc

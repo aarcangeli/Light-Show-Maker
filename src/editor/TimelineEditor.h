@@ -140,6 +140,7 @@ private:
     void printWave(ImRect rect);
 
     void deleteKeypoints();
+    void orderLayers();
 };
 
 }
