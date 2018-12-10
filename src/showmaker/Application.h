@@ -87,6 +87,8 @@ public:
     void quit();
 
     void exportIno(std::string filename);
+
+    void exportChunk(std::string filename, project::arduino_number number) const;
 };
 
 }

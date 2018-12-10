@@ -76,6 +76,11 @@ void PropertyPanel::showPropertiesOf(std::shared_ptr<project::Layer> &layer) {
     if (ImGui::InputText("Name", buffer, sizeof(buffer))) {
         layer->name = buffer;
     }
+    InputInt("Arduino Number", &layer->number);
+    strcpy_s(buffer, sizeof(buffer), layer->identifier.c_str());
+    if (ImGui::InputText("Identifier", buffer, sizeof(buffer))) {
+        layer->identifier = buffer;
+    }
 }
 
 void PropertyPanel::showPropertiesOf(std::shared_ptr<project::KeyPoint> &keypoint) {

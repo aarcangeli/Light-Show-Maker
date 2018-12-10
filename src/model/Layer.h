@@ -12,6 +12,8 @@
 namespace sm {
 namespace project {
 
+typedef int arduino_number;
+
 class Layer {
 public:
     Layer();
@@ -20,6 +22,8 @@ public:
     std::string name;
     std::vector<std::shared_ptr<Decoration>> decorations;
     std::vector<std::shared_ptr<KeyPoint>> keys;
+    arduino_number number = 0;
+    std::string identifier;
     // volatile
     bool isSelected = false;
 
@@ -41,6 +45,8 @@ public:
         ser.serialize("name", name);
         ser.serialize("decorations", decorations);
         ser.serialize("keys", keys);
+        ser.serialize("number", number);
+        ser.serialize("identifier", identifier);
     }
 
     bool sanityCheck();

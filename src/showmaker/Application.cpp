@@ -17,6 +17,7 @@
 #include <fstream>
 #include <streambuf>
 #include <nfd.h>
+#include <set>
 
 using namespace sm;
 using namespace sm::editor;
@@ -295,9 +296,19 @@ void Application::quit() {
 }
 
 void Application::exportIno(std::string filename) {
-    removeExtension(filename);
-    filename += ".h";
+    std::set<project::arduino_number> tabooList;
+    for(auto &layer : proj->canvas.groups) {
+        auto it = tabooList.find(layer->number);
+        if (it == tabooList.end()) {
+            tabooList.insert(layer->number);
+            exportChunk(filename, layer->number);
+        }
+    }
+}
 
+void Application::exportChunk(std::string filename, project::arduino_number number) const {
+    removeExtension(filename);
+    filename += "_" + std::to_string(number) + ".h";
     std::ofstream outputFile(filename);
 
     outputFile << std::string("// Auto-generated with ") + APPL_NAME + "\n";
@@ -305,7 +316,33 @@ void Application::exportIno(std::string filename) {
     outputFile << "#ifndef __CLSM_H\n";
     outputFile << "#define __CLSM_H\n\n";
 
-    outputFile << "const unsigned long LIGHT_COUNT = " << proj->canvas.groups.size() << ";\n";
+    int count = 0;
+    for(auto &layer : proj->canvas.groups) {
+        if (layer->number == number) {
+            count++;
+        }
+    }
+
+    outputFile << "const unsigned long LIGHT_COUNT = " << count << ";\n\n";
+
+    size_t maxLetters = 0;
+    for (auto &layer : proj->canvas.groups) {
+        if (layer->number != number) continue;
+        maxLetters = std::max(maxLetters, layer->identifier.size());
+    }
+    size_t i = 0;
+    for (auto &layer : proj->canvas.groups) {
+        if (layer->number != number) continue;
+        if (!layer->identifier.empty()) {
+            size_t letterCount = maxLetters - layer->identifier.size();
+            outputFile << "#define LAYER_" << layer->identifier << " ";
+            for (size_t j = 0; j < letterCount; j++) {
+                outputFile << " ";
+            }
+            outputFile << std::to_string(i) << "\n";
+        }
+        i++;
+    }
 
     outputFile << R"(
 namespace CLS {
@@ -349,8 +386,9 @@ struct LightGroup {
 
 )";
 
-    int i = 0;
+    i = 0;
     for (auto &g : proj->canvas.groups) {
+        if (g->number != number) continue;
         outputFile << "// " << g->name << "\n";
         outputFile << "const PROGMEM Key __keys__" << i << "[" << g->keys.size() << "] = {\n";
         for (auto &k : g->keys) {
@@ -373,6 +411,7 @@ struct LightGroup {
     i = 0;
     outputFile << "const LightGroup groups[LIGHT_COUNT] = {\n";
     for (auto &g : proj->canvas.groups) {
+        if (g->number != number) continue;
         outputFile << "    {" << g->keys.size() << ", __keys__" << i << "}, // " << g->name << "\n";
         i++;
     }
