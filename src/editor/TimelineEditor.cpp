@@ -671,6 +671,14 @@ void TimelineEditor::orderLayers() {
                 it = array.insert(it + 1, el);
                 return;
             }
+            if (IsKeyPressed(GLFW_KEY_INSERT) && GetIO().KeyAlt) {
+                auto layer = std::make_shared<project::Layer>();
+                layer->name = el->name;
+                layer->number = el->number;
+                layer->identifier = el->identifier;
+                array.insert(it + 1, layer);
+                return;
+            }
         }
         it++;
     }

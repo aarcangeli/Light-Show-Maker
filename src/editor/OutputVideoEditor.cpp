@@ -111,15 +111,15 @@ OutputVideoEditor::append(const shared_ptr<project::Project> &proj, const shared
 }
 
 void OutputVideoEditor::drawCanvas(project::Canvas &canvas) {
-    drawVector(1, canvas.decorations);
+    drawVector(1, canvas.decorations, false);
     for (auto &group : canvas.groups) {
         time_unit position = gApp->getPlayer().playerPosition();
         float alpha = position ? group->computeEasing(position) : 1;
-        drawVector(alpha, group->decorations);
+        drawVector(alpha, group->decorations, group->isSelected);
     }
 }
 
-void OutputVideoEditor::drawVector(float alpha, vector<shared_ptr<project::Decoration>> &array) {
+void OutputVideoEditor::drawVector(float alpha, std::vector<std::shared_ptr<project::Decoration>> &array, bool isSelected) {
     ImGuiIO &io = GetIO();
     auto &selected = gApp->getSelection().decorations;
     auto it = array.begin();
@@ -136,7 +136,7 @@ void OutputVideoEditor::drawVector(float alpha, vector<shared_ptr<project::Decor
                 it -= 2;
             }
         }
-        printDecoration(alpha, el);
+        printDecoration(alpha, el, isSelected);
         if (IsKeyPressed(GLFW_KEY_PAGE_DOWN) && it != array.begin()) {
             if (!selected.empty() && selected[0] == el) {
                 it = array.erase(it);
@@ -162,7 +162,7 @@ void OutputVideoEditor::drawVector(float alpha, vector<shared_ptr<project::Decor
     }
 }
 
-void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<project::Decoration> &dec) {
+void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<project::Decoration> &dec, bool isSelected) {
     ImVec2 pos = canvasScreenPos + ImVec2(dec->posX, dec->posY) * getLogicalScale();
     ImRect region = getDecorationRegion(dec);
 
@@ -202,7 +202,7 @@ void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<pr
         drawList->AddCircleFilled(pos, dec->size / logicalSize.y * canvasSize.y, color);
     }
 
-    if (region.Contains(mousePos)) {
+    if (isSelected && region.Contains(mousePos)) {
         decorationHover = dec;
     }
 

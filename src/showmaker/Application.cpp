@@ -172,7 +172,7 @@ int Application::runLoop() {
         player.update(proj->canvas);
     }
 
-    save(autoSavePath);
+    //save(autoSavePath);
 
     return 0;
 }
