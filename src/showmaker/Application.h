@@ -89,6 +89,7 @@ public:
     void exportIno(std::string filename);
 
     void exportChunk(std::string filename, project::arduino_number number) const;
+    void exportCommons(std::string basic_string);
 };
 
 }

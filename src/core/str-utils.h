@@ -15,6 +15,12 @@ static bool startsWith(const std::string &str, const std::string &prefix) {
     return str.size() >= prefix.size() && 0 == str.compare(0, prefix.size(), prefix);
 }
 
+static void dirName(std::string &path) {
+    std::replace(path.begin(), path.end(), '\\', '/');
+    size_t posSlash = path.rfind('/');
+    path.resize(posSlash);
+}
+
 static void removeExtension(std::string &path) {
     std::replace(path.begin(), path.end(), '\\', '/');
     size_t posDot = path.rfind('.');
