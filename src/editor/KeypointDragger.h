@@ -10,19 +10,19 @@ namespace editor {
 
 class TimelineEditor;
 
+enum DragType {
+    DRAG_NOTHING,
+    DRAG_MOVE,
+    DRAG_RESIZE_BEGIN,
+    DRAG_RESIZE_END,
+    DRAG_SIZE,
+};
+
 class KeypointDragger {
     const int DRAG_MIN = 5;
 
 public:
     explicit KeypointDragger(TimelineEditor *editor) : editor(editor) {};
-
-    enum DragType {
-        NOTHING,
-        MOVE,
-        RESIZE_BEGIN,
-        RESIZE_END,
-        SIZE,
-    };
 
 private:
     TimelineEditor *editor;

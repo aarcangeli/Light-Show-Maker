@@ -30,6 +30,7 @@ public:
     std::shared_ptr<Layer> makeGroup();
 
     void deleteGroup(const std::shared_ptr<Layer> &group);
+    std::shared_ptr<Layer> findGroupWith(const std::shared_ptr<KeyPoint> &point);
 
     SERIALIZATION_START {
         ser.serialize("decorations", decorations);

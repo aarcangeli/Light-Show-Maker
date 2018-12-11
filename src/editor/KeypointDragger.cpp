@@ -14,7 +14,7 @@ void KeypointDragger::startDragging(const std::shared_ptr<KeyPoint> &key_,
                                     const std::shared_ptr<Layer> &owner_,
                                     DragType type_,
                                     float timeScale_) {
-    assert(type_ > NOTHING && type_ < DragType::SIZE);
+    assert(type_ > DRAG_NOTHING && type_ < DRAG_SIZE);
     key = key_;
     owner = owner_;
     type = type_;
@@ -51,7 +51,7 @@ void KeypointDragger::update() {
         key.reset();
         owner.reset();
         gApp->stopMerging();
-        type = NOTHING;
+        type = DRAG_NOTHING;
         return;
     }
 
@@ -72,7 +72,7 @@ void KeypointDragger::update() {
         time_unit reposedStart;
         time_unit reposedDuration = end - start;
         int32_t layerIdx;
-        if (type == MOVE && editor->findPlacableKeyPos(io.MousePos, reposedStart, reposedDuration, layerIdx)) {
+        if (type == DRAG_MOVE && editor->findPlacableKeyPos(io.MousePos, reposedStart, reposedDuration, layerIdx)) {
             auto &newOwner = editor->getCanvas()->groups[layerIdx];
             if (newOwner != owner || reposedStart < minBound || reposedStart + reposedDuration > maxBound) {
                 owner->removeKey(key);
@@ -84,12 +84,12 @@ void KeypointDragger::update() {
             }
         }
 
-        if (type == MOVE && io.KeyShift) {
+        if (type == DRAG_MOVE && io.KeyShift) {
             //diff = 0;
         }
 
         switch (type) {
-            case MOVE:
+            case DRAG_MOVE:
                 if (start + diff < minBound) {
                     diff = minBound - start;
                 }
@@ -115,7 +115,7 @@ void KeypointDragger::update() {
                     end = start + duration;
                 }
                 break;
-            case RESIZE_BEGIN:
+            case DRAG_RESIZE_BEGIN:
                 start += diff;
                 if (io.KeyShift) {
                     start = editor->moveSnapped(start, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
@@ -125,7 +125,7 @@ void KeypointDragger::update() {
                 if (start > end) start = end;
                 if (start < minBound) start = minBound;
                 break;
-            case RESIZE_END:
+            case DRAG_RESIZE_END:
                 end += diff;
                 if (io.KeyShift) {
                     end = editor->moveSnapped(end, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {

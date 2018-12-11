@@ -18,3 +18,12 @@ void Canvas::deleteGroup(const std::shared_ptr<Layer> &group) {
     if (position != groups.end())
         groups.erase(position);
 }
+
+std::shared_ptr<Layer> Canvas::findGroupWith(const std::shared_ptr<KeyPoint> &point) {
+    for (auto &g : groups) {
+        if (g->findIndex(point) >= 0) {
+            return g;
+        }
+    }
+    return nullptr;
+}

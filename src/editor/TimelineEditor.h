@@ -6,6 +6,7 @@
 #include "core.h"
 #include "Canvas.h"
 #include "map"
+#include "MultiKeypointDragger.h"
 #include "KeypointDragger.h"
 #include "functional"
 #include <AudioLoader.h>
@@ -87,6 +88,7 @@ private:
     time_unit timeStep;
 
     KeypointDragger dragger;
+    MultiKeypointDragger multiDragger;
 
     // scale and offset of timeline
     ImVec2 offset, scale;

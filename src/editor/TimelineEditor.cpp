@@ -14,7 +14,7 @@ using namespace sm::media;
 using namespace sm::project;
 using namespace ImGui;
 
-TimelineEditor::TimelineEditor() : dragger(this) {
+TimelineEditor::TimelineEditor() : dragger(this), multiDragger(this) {
     reset();
 }
 
@@ -94,6 +94,7 @@ void TimelineEditor::editorOf(project::Canvas &canvas) {
                             setAlpha(background, 0.04), 0);
 
     dragger.update();
+    multiDragger.update();
 
     printMediaControls(mediaControlsRect);
     printContent(canvas, contentRect);
@@ -368,36 +369,62 @@ void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key,
     drawList->AddRect(min, max, COLOR_KEY_OUTLINE, COLOR_KEY_RADIUS * dpi, ImDrawCornerFlags_All, dpi * 2);
 
     if (isHover) {
-        auto type = KeypointDragger::MOVE;
+        DragType type = DRAG_MOVE;
         float handleDim = COLOR_RESIZE_HANDLE_DIM * dpi;
         if ((!dragger.isDragging() && mousePos.x < min.x + handleDim) ||
-            dragger.getType() == KeypointDragger::RESIZE_BEGIN) {
+            dragger.getType() == DRAG_RESIZE_BEGIN) {
             drawList->AddRectFilled(min, ImVec2(min.x + handleDim, max.y), COLOR_KEY_RESIZE);
             SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-            type = KeypointDragger::RESIZE_BEGIN;
+            type = DRAG_RESIZE_BEGIN;
         }
         if ((!dragger.isDragging() && mousePos.x > max.x - handleDim) ||
-            dragger.getType() == KeypointDragger::RESIZE_END) {
+            dragger.getType() == DRAG_RESIZE_END) {
             drawList->AddRectFilled(ImVec2(max.x - handleDim, min.y), max, COLOR_KEY_RESIZE);
             SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-            type = KeypointDragger::RESIZE_END;
+            type = DRAG_RESIZE_END;
         }
         if (IsMouseClicked(0) && !IsKeyDown(GLFW_KEY_SPACE)) {
             Selection<KeyPoint> &keypoints = gApp->getSelection().keypoints;
-            if (io.KeyCtrl) {
-                keypoints.toggle(key);
+            if (keypoints.size() <= 1 || io.KeyCtrl) {
+                if (io.KeyCtrl) {
+                    keypoints.toggle(key);
+                } else {
+                    keypoints.set(key);
+                }
+                if (io.KeyAlt) {
+                    gApp->asyncCommand("Duplicate", false, [=]() {
+                        shared_ptr<KeyPoint> duplicated = std::make_shared<KeyPoint>(*key);
+                        group->addKey(duplicated);
+                        dragger.startDragging(duplicated, group, type, timeScaleX);
+                        gApp->getSelection().keypoints.set(duplicated);
+                    });
+                } else {
+                    dragger.startDragging(key, group, type, timeScaleX);
+                }
             } else {
-                keypoints.set(key);
-            }
-            if (io.KeyAlt) {
-                gApp->asyncCommand("Duplicate", false, [=]() {
-                    shared_ptr<KeyPoint> duplicated = std::make_shared<KeyPoint>(*key);
-                    group->addKey(duplicated);
-                    dragger.startDragging(duplicated, group, type, timeScaleX);
-                    gApp->getSelection().keypoints.set(duplicated);
-                });
-            } else {
-                dragger.startDragging(key, group, type, timeScaleX);
+                if (!key->isSelected) {
+                    keypoints.set(key);
+                } else {
+                    Canvas *pCanvas = canvas;
+                    auto vector = keypoints.getVector();
+                    if (io.KeyAlt) {
+                        gApp->asyncCommand("Duplicate bulk", false, [=, &keypoints]() {
+                            keypoints.reset();
+                            for(auto &k : vector) {
+                                shared_ptr<Layer> owner = pCanvas->findGroupWith(k);
+                                if (owner) {
+                                    shared_ptr<KeyPoint> duplicated = std::make_shared<KeyPoint>(*key);
+                                    owner->addKey(duplicated);
+                                    keypoints.add(duplicated);
+                                }
+                            }
+                            shared_ptr<KeyPoint> duplicated = std::make_shared<KeyPoint>(*key);
+                            multiDragger.startDragging(keypoints.getVector(), pCanvas, type, timeScaleX);
+                        });
+                    } else {
+                        multiDragger.startDragging(vector, pCanvas, type, timeScaleX);
+                    }
+                }
             }
         }
     }

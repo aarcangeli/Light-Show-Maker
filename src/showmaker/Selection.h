@@ -52,6 +52,15 @@ public:
         setLastSelection();
     }
 
+    void add(std::shared_ptr<T> item) {
+        assert(item);
+        if (!item->isSelected) {
+            currentSelection.push_back(item);
+            item->isSelected = true;
+        }
+        setLastSelection();
+    }
+
     bool remove(std::shared_ptr<T> item) {
         assert(item);
         if (item->isSelected) {
