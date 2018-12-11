@@ -405,6 +405,8 @@ void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key,
                 if (!key->isSelected) {
                     keypoints.set(key);
                 } else {
+                    keypoints.remove(key);
+                    keypoints.add(key);
                     Canvas *pCanvas = canvas;
                     auto vector = keypoints.getVector();
                     if (io.KeyAlt) {
@@ -413,12 +415,11 @@ void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key,
                             for(auto &k : vector) {
                                 shared_ptr<Layer> owner = pCanvas->findGroupWith(k);
                                 if (owner) {
-                                    shared_ptr<KeyPoint> duplicated = std::make_shared<KeyPoint>(*key);
+                                    shared_ptr<KeyPoint> duplicated = std::make_shared<KeyPoint>(*k);
                                     owner->addKey(duplicated);
                                     keypoints.add(duplicated);
                                 }
                             }
-                            shared_ptr<KeyPoint> duplicated = std::make_shared<KeyPoint>(*key);
                             multiDragger.startDragging(keypoints.getVector(), pCanvas, type, timeScaleX);
                         });
                     } else {

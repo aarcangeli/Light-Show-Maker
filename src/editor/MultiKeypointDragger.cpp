@@ -48,16 +48,22 @@ void MultiKeypointDragger::update() {
         if (!dragConfirmed) return;
         time_unit mouseMoved = static_cast<time_unit>(delta.x / timeScale);
         time_unit deltaTime = mouseMoved - lastDiff;
-        lastDiff = mouseMoved;
 
         gApp->beginCommand("Move/Resize multiple key point", true);
 
         if (io.KeyShift && type == DRAG_MOVE) {
-            auto first = keys[0];
+            auto first = keys[keys.size() - 1];
+            time_unit from = deltaTime + first->start;
             time_unit dest1;
-            first->start = editor->moveSnapped(first->start, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
-                return it != first;
+            dest1 = editor->moveSnapped(from, [&](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
+                for (auto &k : keys) {
+                    if (it == k) {
+                        return false;
+                    }
+                }
+                return true;
             });
+            deltaTime += dest1 - from;
         }
 
         if (type == DRAG_MOVE) {
@@ -65,10 +71,12 @@ void MultiKeypointDragger::update() {
                 l->start += deltaTime;
             }
         }
+        lastDiff += deltaTime;
 
         // sort all
         for (auto &l : owner->groups) {
             l->sortKeys();
+            l->sanityCheck();
         }
 
         gApp->endCommand();
