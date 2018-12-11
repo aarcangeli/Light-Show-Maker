@@ -48,27 +48,40 @@ void MultiKeypointDragger::update() {
         if (!dragConfirmed) return;
         time_unit mouseMoved = static_cast<time_unit>(delta.x / timeScale);
         time_unit deltaTime = mouseMoved - lastDiff;
+        auto last = keys[keys.size() - 1];
 
         gApp->beginCommand("Move/Resize multiple key point", true);
 
         if (io.KeyShift && type == DRAG_MOVE) {
-            auto first = keys[keys.size() - 1];
-            time_unit from = deltaTime + first->start;
-            time_unit dest1;
-            dest1 = editor->moveSnapped(from, [&](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
-                for (auto &k : keys) {
-                    if (it == k) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-            deltaTime += dest1 - from;
+            snapTime(last->start, deltaTime);
         }
 
         if (type == DRAG_MOVE) {
             for (auto &l : keys) {
                 l->start += deltaTime;
+            }
+        }
+        if (type == DRAG_RESIZE_BEGIN) {
+            if (io.KeyShift) snapTime(last->start, deltaTime);
+            for (auto &l : keys) {
+                if (l->duration - deltaTime < 0) {
+                    deltaTime = l->duration;
+                }
+            }
+            for (auto &l : keys) {
+                l->start += deltaTime;
+                l->duration -= deltaTime;
+            }
+        }
+        if (type == DRAG_RESIZE_END) {
+            if (io.KeyShift) snapTime(last->start + last->duration, deltaTime);
+            for (auto &l : keys) {
+                if (l->duration + deltaTime < 0) {
+                    deltaTime = -l->duration;
+                }
+            }
+            for (auto &l : keys) {
+                l->duration += deltaTime;
             }
         }
         lastDiff += deltaTime;
@@ -81,4 +94,18 @@ void MultiKeypointDragger::update() {
 
         gApp->endCommand();
     }
+}
+
+void MultiKeypointDragger::snapTime(time_unit source, time_unit &deltaTime) const {
+    time_unit from = deltaTime + source;
+    time_unit dest1;
+    dest1 = editor->moveSnapped(from, [&](time_unit dest, shared_ptr<KeyPoint> it) -> bool {
+        for (auto &k : keys) {
+            if (it == k) {
+                return false;
+            }
+        }
+        return true;
+    });
+    deltaTime += dest1 - from;
 }

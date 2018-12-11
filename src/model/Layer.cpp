@@ -26,6 +26,9 @@ void Layer::addKey(const std::shared_ptr<sm::project::KeyPoint> &key) {
 
 void Layer::removeKey(const std::shared_ptr<KeyPoint> &key) {
     int32_t idx = findIndex(key);
+    if (idx < 0) {
+        int t = 0;
+    }
     assert(idx >= 0);
     keys.erase(keys.begin() + idx);
 }
@@ -76,8 +79,14 @@ void Layer::sortKeys() {
 }
 
 int32_t Layer::findIndex(const std::shared_ptr<KeyPoint> &key) {
-    size_t ret = findIndex(key->start);
-    if (ret < keys.size() && keys[ret] == key && (int32_t) ret == ret) {
+    int32_t ret = static_cast<int>(findIndex(key->start));
+    while (ret > 0 && ret < keys.size() && keys[ret]->start == keys[ret - 1]->start) {
+        ret--;
+    }
+    while (ret >= 0 && ret < keys.size() - 1 && keys[ret] != key && keys[ret]->start == keys[ret + 1]->start) {
+        ret++;
+    }
+    if (ret < keys.size() && keys[ret] == key) {
         return (int32_t) ret;
     }
     return -1;

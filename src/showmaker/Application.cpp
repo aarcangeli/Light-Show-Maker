@@ -359,6 +359,7 @@ void Application::exportChunk(std::string filename, project::arduino_number numb
             outputFile << "        " << k->start << ",\n";
             outputFile << "        " << k->start + k->duration << ",\n";
             outputFile << "        " << k->duration << ",\n";
+            outputFile << "        " << k->maxWeight << ",\n";
             outputFile << "        {(FADE_TYPE) " << k->fadeStart.type << ", " << k->fadeStart.exponent << "},\n";
             outputFile << "        " << k->start + k->fadeStart.duration << ",\n";
             outputFile << "        " << k->fadeStart.duration << ",\n";
@@ -442,6 +443,7 @@ struct Key {
     time_unit start;
     time_unit end;
     time_unit duration;
+    float maxWeight;
 
     // fade start
     FadeParams fade1;
@@ -487,13 +489,13 @@ float computeEasing(Key &key, time_unit pos) {
     time_unit diff1 = pos - key.fade1_end;
     if (pos < key.fade1_end) {
         float alpha = (pos - key.start) / key.fade1_duration;
-        return computeEasing(key.fade1, alpha);
+        return computeEasing(key.fade1, alpha) * key.maxWeight;
     }
     if (pos > key.fade2_start) {
         float alpha = (pos - key.fade2_start) / key.fade2_duration;
-        return computeEasing(key.fade2, 1 - alpha);
+        return computeEasing(key.fade2, 1 - alpha) * key.maxWeight;
     }
-    return 1;
+    return key.maxWeight;
 }
 
 

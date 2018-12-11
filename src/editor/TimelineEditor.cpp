@@ -158,8 +158,8 @@ void TimelineEditor::deleteKeypoints() {
             auto it = keys.begin();
             while(it != keys.end()) {
                 if ((*it)->isSelected) {
-                    it = keys.erase(it);
                     selectedkeypoints.remove(*it);
+                    it = keys.erase(it);
                     continue;
                 }
                 it++;

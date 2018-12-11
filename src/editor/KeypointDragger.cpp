@@ -142,6 +142,7 @@ void KeypointDragger::update() {
         key->start = start;
         key->duration = end - start;
 
+        owner->sortKeys();
         assert(owner->sanityCheck()); // the order should not have been changed
 
         gApp->endCommand();

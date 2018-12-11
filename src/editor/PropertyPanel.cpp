@@ -84,7 +84,9 @@ void PropertyPanel::showPropertiesOf(std::shared_ptr<project::Layer> &layer) {
 }
 
 void PropertyPanel::showPropertiesOf(std::shared_ptr<project::KeyPoint> &keypoint) {
+    InputInt("Start", &keypoint->start);
     InputInt("Duration", &keypoint->duration);
+    InputFloat("Max Weight", &keypoint->maxWeight);
     showPropertiesOf(keypoint->fadeStart, "Fade start", keypoint->duration - keypoint->fadeEnd.duration);
     showPropertiesOf(keypoint->fadeEnd, "Fade end", keypoint->duration - keypoint->fadeStart.duration);
     if (Button("Copy Fade Start")) {
@@ -114,6 +116,10 @@ void PropertyPanel::showPropertiesOf(project::Fade &fade, const char *name, time
 
 void PropertyPanel::multiKeypointEditor(SelectionManager &manager) {
     if (manager.keypoints.empty()) return;
+
+    bulkEditor("Duration", manager,
+               [](KeyRef key) -> int & { return (int &) key->duration; },
+               [](KeyRef key) -> int { return TIME_UNITS * 2; });
 
     bulkEditor("Start", manager,
                [](KeyRef key) -> int & { return (int &) key->fadeStart.duration; },

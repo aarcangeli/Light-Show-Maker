@@ -39,6 +39,7 @@ public:
                        float timeScale);
 
     bool isDragging() { return dragging; }
+    void snapTime(time_unit source, time_unit &deltaTime) const;
 };
 
 }

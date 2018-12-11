@@ -18,6 +18,7 @@ public:
     Fade fadeStart, fadeEnd;
     // volatile
     bool isSelected = false;
+    float maxWeight = 1;
 
     float computeEasing(time_unit time);
 
@@ -26,6 +27,7 @@ public:
         ser.serialize("duration", duration);
         ser.serialize("fadeStart", fadeStart);
         ser.serialize("fadeEnd", fadeEnd);
+        ser.serialize("maxWeight", maxWeight);
     }
 
 private:

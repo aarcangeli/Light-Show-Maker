@@ -8,12 +8,12 @@ KeyPoint::KeyPoint() = default;
 float KeyPoint::computeEasing(sm::time_unit time) {
     if (time < 0 || time >= duration) return 0;
     if (time <= fadeStart.duration) {
-        return computeFade(false, fadeStart, time);
+        return computeFade(false, fadeStart, time) * maxWeight;
     }
     if (time >= duration - fadeEnd.duration) {
-        return computeFade(true, fadeEnd, fadeEnd.duration - (time - duration + fadeEnd.duration));
+        return computeFade(true, fadeEnd, fadeEnd.duration - (time - duration + fadeEnd.duration)) * maxWeight;
     }
-    return 1;
+    return maxWeight;
 }
 
 float KeyPoint::computeFade(bool isRight, const Fade &fade, sm::time_unit time) const {
