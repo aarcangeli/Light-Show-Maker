@@ -82,3 +82,16 @@ int32_t Layer::findIndex(const std::shared_ptr<KeyPoint> &key) {
     }
     return -1;
 }
+
+void Layer::changeKeyStart(std::shared_ptr<KeyPoint> &key, time_unit newStart) {
+    assert(sanityCheck());
+    int32_t idx = findIndex(key);
+    assert(idx >= 0);
+    // remove
+    keys.erase(keys.begin() + idx);
+    // change start
+    key->start = newStart;
+    // readd
+    keys.insert(keys.begin() + findIndex(key->start), key);
+    assert(sanityCheck());
+}

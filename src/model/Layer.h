@@ -51,6 +51,8 @@ public:
 
     bool sanityCheck();
 
+    void changeKeyStart(std::shared_ptr<KeyPoint> &key, time_unit newStart);
+
 private:
     size_t findIndexIt(time_unit time, size_t min, size_t max);
 };
