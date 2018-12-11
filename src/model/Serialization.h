@@ -214,10 +214,14 @@ private:
         if (jsonValue.isMember("__shared")) {
             Json::UInt id = jsonValue["__shared"].asUInt();
             void *itm = ctx->findObj(id);
-            value = std::shared_ptr<C>((C *) itm);
+            if (itm) {
+                value = *(std::shared_ptr<C> *) itm;
+            } else {
+                value = nullptr;
+            }
             if (!value) {
                 value = std::make_shared<C>();
-                ctx->registerObj(id, value.get());
+                ctx->registerObj(id, (void *) &value);
             }
         } else {
             value = std::make_shared<C>();
