@@ -35,6 +35,9 @@ public:
     // returns first index that starts at 'time' or after, if missing returns keys.size()
     size_t findIndex(time_unit time);
 
+    // returns first index that starts at 'time' or after, if missing returns keys.size()
+    size_t findBefore(time_unit time);
+
     float computeEasing(time_unit time);
 
     int32_t findIndex(const std::shared_ptr<KeyPoint> &key);

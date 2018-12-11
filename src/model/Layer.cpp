@@ -56,6 +56,13 @@ size_t Layer::findIndex(time_unit time) {
     return findIndexIt(time, 0, keys.size());
 }
 
+size_t Layer::findBefore(time_unit time) {
+    assert(sanityCheck());
+    size_t it = findIndex(time);
+    while (it > 0 && keys[it - 1]->start + keys[it - 1]->duration > time) it--;
+    return it;
+}
+
 float Layer::computeEasing(sm::time_unit time) {
     size_t index = findIndex(time) - 1;
     if (index < 0 || index >= keys.size()) return 0;

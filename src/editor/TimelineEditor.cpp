@@ -312,11 +312,40 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
         time_unit start;
         time_unit duration = TIME_UNITS;
         int32_t layer;
-        if (findPlacableKeyPos(GetIO().MouseClickedPos[0], start, duration, layer)) {
-            auto &group = canvas.groups[layer];
-            gApp->beginCommand("Move/Resize key point");
-            group->addKey(start, duration);
-            gApp->endCommand();
+        boxSelecting = true;
+        boxStart = io.MousePos;
+//        if (findPlacableKeyPos(GetIO().MouseClickedPos[0], start, duration, layer)) {
+//            auto &group = canvas.groups[layer];
+//            gApp->beginCommand("Move/Resize key point");
+//            group->addKey(start, duration);
+//            gApp->endCommand();
+//        }
+    }
+    if (boxSelecting) {
+        auto min = ImMin(boxStart, io.MousePos);
+        auto max = ImMax(boxStart, io.MousePos);
+        time_unit timeStart, timeEnd;
+        int layerStart, layerEnd;
+        GetWindowDrawList()->AddRect(boxStart, io.MousePos, 0xff0000ff);
+        if (io.MouseDelta.x != 0 || io.MouseDelta.y != 0) {
+            if (lookUpAtPos(min, &timeStart, &layerStart) && lookUpAtPos(max, &timeEnd, &layerEnd)) {
+                assert(layerStart <= layerEnd);
+                auto &keypoints = gApp->getSelection().keypoints;
+                keypoints.reset();
+                for (int i = layerStart; i <= layerEnd; i++) {
+                    std::shared_ptr<project::Layer> &groups = canvas.groups[i];
+                    size_t index1 = groups->findBefore(timeStart);
+                    size_t index2 = groups->findIndex(timeEnd);
+                    assert(index1 <= index2);
+                    assert(index2 <= groups->keys.size());
+                    for (size_t j = index1; j < index2; ++j) {
+                        keypoints.add(groups->keys[j]);
+                    }
+                }
+            }
+        }
+        if (!IsMouseDown(0)) {
+            boxSelecting = false;
         }
     }
 
