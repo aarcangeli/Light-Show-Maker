@@ -29,7 +29,7 @@ void ScrollablePane::scrollPaneBegin(const ImRect &bounds, const ImVec2 &content
         if (io.KeyAlt) {
             double factor = pow(1.1, io.MouseWheel);
             zoomTarget.x *= factor;
-            zoomTarget.x = ImClamp(zoomTarget.x, 0.04f, 100.f);
+            zoomTarget.x = ImClamp(zoomTarget.x, 0.04f, 200.f);
         } else if (io.KeyShift) {
             scrollX -= io.MouseWheel * scrollAmount;
         } else {

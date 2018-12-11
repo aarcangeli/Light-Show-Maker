@@ -111,8 +111,13 @@ private:
     time_unit snapTime = TIME_UNITS;
 
     bool isDraggingPosition = false;
+    bool withDetails;
+
+    // box selection
     bool boxSelecting = false;
     ImVec2 boxStart;
+    time_unit timeStart;
+    int layerStart;
 
     void drawKey(std::shared_ptr<project::Layer> group,
                  std::shared_ptr<project::KeyPoint> &key,

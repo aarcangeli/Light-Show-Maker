@@ -230,6 +230,7 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
             ImVec2(duration * TIME_WIDTH / TIME_UNITS * scale.x + (rect.Max.x - rect.Min.x) * 0.5f,
                    groupSize * layerHeight + headerBotHeight)
     );
+    withDetails = scroll.getScale().x >= 3.f;
     bool isHover = IsWindowHovered();
 
     ImDrawList *drawList = GetWindowDrawList();
@@ -312,8 +313,10 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
         time_unit start;
         time_unit duration = TIME_UNITS;
         int32_t layer;
-        boxSelecting = true;
-        boxStart = io.MousePos;
+        if (lookUpAtPos(io.MousePos, &timeStart, &layerStart)) {
+            boxSelecting = true;
+            boxStart = io.MousePos + offset;
+        }
 //        if (findPlacableKeyPos(GetIO().MouseClickedPos[0], start, duration, layer)) {
 //            auto &group = canvas.groups[layer];
 //            gApp->beginCommand("Move/Resize key point");
@@ -322,14 +325,23 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
 //        }
     }
     if (boxSelecting) {
-        auto min = ImMin(boxStart, io.MousePos);
-        auto max = ImMax(boxStart, io.MousePos);
-        time_unit timeStart, timeEnd;
-        int layerStart, layerEnd;
-        GetWindowDrawList()->AddRect(boxStart, io.MousePos, 0xff0000ff);
+        time_unit timeEnd;
+        int layerEnd;
+        GetWindowDrawList()->AddRect(boxStart - offset, io.MousePos, 0xff0000ff);
         if (io.MouseDelta.x != 0 || io.MouseDelta.y != 0) {
-            if (lookUpAtPos(min, &timeStart, &layerStart) && lookUpAtPos(max, &timeEnd, &layerEnd)) {
-                assert(layerStart <= layerEnd);
+            if (lookUpAtPos(io.MousePos, &timeEnd, &layerEnd)) {
+                auto timeStart = this->timeStart;
+                auto layerStart = this->layerStart;
+                if (layerEnd < layerStart) {
+                    auto temp = layerEnd;
+                    layerEnd = layerStart;
+                    layerStart = temp;
+                }
+                if (timeEnd < timeStart) {
+                    auto temp = timeEnd;
+                    timeEnd = timeStart;
+                    timeStart = temp;
+                }
                 auto &keypoints = gApp->getSelection().keypoints;
                 keypoints.reset();
                 for (int i = layerStart; i <= layerEnd; i++) {
@@ -378,22 +390,24 @@ void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key,
     float sizeY = max.y - min.y - lineSize * 2;
     float sizeX = max.x - min.x;
 
-    drawList->PathClear();
-    while (cur < easing1 + CURVE_RESOLUTION * 4 and cur < sizeX) {
-        time_unit now = (time_unit) (cur / timeScaleX);
-        float i = key->computeEasing(now);
-        drawList->PathLineTo(ImVec2(min.x + cur, max.y - lineSize - i * sizeY));
-        cur += CURVE_RESOLUTION;
+    if (withDetails) {
+        drawList->PathClear();
+        while (cur < easing1 + CURVE_RESOLUTION * 4 and cur < sizeX) {
+            time_unit now = (time_unit) (cur / timeScaleX);
+            float i = key->computeEasing(now);
+            drawList->PathLineTo(ImVec2(min.x + cur, max.y - lineSize - i * sizeY));
+            cur += CURVE_RESOLUTION;
+        }
+        if (cur < easing2 - CURVE_RESOLUTION * 4) cur = easing2 - CURVE_RESOLUTION * 4;
+        while (cur < sizeX) {
+            time_unit now = (time_unit) (cur / timeScaleX);
+            float i = key->computeEasing(now);
+            drawList->PathLineTo(ImVec2(min.x + cur, max.y - lineSize - i * sizeY));
+            cur += CURVE_RESOLUTION;
+        }
+        drawList->PathLineTo(ImVec2(max.x, max.y - lineSize - key->computeEasing(key->duration) * sizeY));
+        drawList->PathStroke(COLOR_KEY_GRAPH, false, lineSize);
     }
-    if (cur < easing2 - CURVE_RESOLUTION * 4) cur = easing2 - CURVE_RESOLUTION * 4;
-    while (cur < sizeX) {
-        time_unit now = (time_unit) (cur / timeScaleX);
-        float i = key->computeEasing(now);
-        drawList->PathLineTo(ImVec2(min.x + cur, max.y - lineSize - i * sizeY));
-        cur += CURVE_RESOLUTION;
-    }
-    drawList->PathLineTo(ImVec2(max.x, max.y - lineSize - key->computeEasing(key->duration) * sizeY));
-    drawList->PathStroke(COLOR_KEY_GRAPH, false, lineSize);
 
     drawList->AddRect(min, max, COLOR_KEY_OUTLINE, COLOR_KEY_RADIUS * dpi, ImDrawCornerFlags_All, dpi * 2);
 

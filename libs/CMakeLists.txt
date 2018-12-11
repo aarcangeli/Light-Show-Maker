@@ -40,6 +40,7 @@ set(
 )
 add_library(imgui ${IMGUI_SOURCES})
 target_include_directories(imgui PUBLIC imgui imgui/examples ${OPENGL_INCLUDE_DIR})
+target_compile_definitions(imgui PUBLIC "-DImDrawIdx=unsigned int")
 target_compile_definitions(imgui PRIVATE -DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 target_link_libraries(imgui glad glfw ${GLFW_LIBRARIES})
 

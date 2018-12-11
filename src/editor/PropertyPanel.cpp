@@ -127,7 +127,7 @@ void PropertyPanel::multiKeypointEditor(SelectionManager &manager) {
 
     bulkEditor("End", manager,
                [](KeyRef key) -> int & { return (int &) key->fadeEnd.duration; },
-               [](KeyRef key) -> int { return key->duration - key->fadeEnd.duration; });
+               [](KeyRef key) -> int { return key->duration - key->fadeStart.duration; });
 }
 
 void PropertyPanel::bulkEditor(const char *name, SelectionManager &manager,

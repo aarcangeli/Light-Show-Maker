@@ -353,18 +353,17 @@ void Application::exportChunk(std::string filename, project::arduino_number numb
     for (auto &g : proj->canvas.groups) {
         if (g->number != number) continue;
         outputFile << "// " << g->name << "\n";
-        outputFile << "const PROGMEM Key __keys__" << i << "[" << g->keys.size() << "] = {\n";
+        outputFile << "const PROGMEM Key_Compact __keys__" << i << "[" << g->keys.size() << "] = {\n";
         for (auto &k : g->keys) {
             outputFile << "    {\n";
             outputFile << "        " << k->start << ",\n";
-            outputFile << "        " << k->start + k->duration << ",\n";
             outputFile << "        " << k->duration << ",\n";
             outputFile << "        " << k->maxWeight << ",\n";
-            outputFile << "        {(FADE_TYPE) " << k->fadeStart.type << ", " << k->fadeStart.exponent << "},\n";
-            outputFile << "        " << k->start + k->fadeStart.duration << ",\n";
+            outputFile << "        {" << k->fadeStart.type << ", " << k->fadeStart.exponent << "},\n";
             outputFile << "        " << k->fadeStart.duration << ",\n";
-            outputFile << "        {(FADE_TYPE) " << k->fadeEnd.type << ", " << k->fadeEnd.exponent << "},\n";
-            outputFile << "        " << k->start + k->duration - k->fadeEnd.duration << ",\n";
+            outputFile << "        " << k->fadeStart.duration << ",\n";
+            outputFile << "        {" << k->fadeEnd.type << ", " << k->fadeEnd.exponent << "},\n";
+            outputFile << "        " << std::max(0, k->duration - k->fadeEnd.duration) << ",\n";
             outputFile << "        " << k->fadeEnd.duration << ",\n";
             outputFile << "    },\n";
         }
@@ -393,11 +392,22 @@ void updateAlpha(time_unit position) {
         int &index = ctx.index;
         while (index < 0 || (index < group.keysCount && position > ctx.current.end)) {
             index++;
+            Key_Compact destKey;
             const char *source = (char*) &group.keys[index];
-            char *dest = (char*) &ctx.current;
+            char *dest = (char*) &destKey;
             for (int j = 0; j < sizeof(Key); j++) {
                 dest[j] = pgm_read_byte_near(&source[j]);
             }
+            time_unit start = destKey.start;
+            ctx.current.start = start;
+            ctx.current.end = start + destKey.duration;
+            ctx.current.maxWeight = destKey.maxWeight;
+            ctx.current.fade1 = destKey.fade1;
+            ctx.current.fade1_end = start + destKey.fade1_end;
+            ctx.current.fade1_duration = destKey.fade1_duration;
+            ctx.current.fade2 = destKey.fade2;
+            ctx.current.fade2_start = start + destKey.fade2_start;
+            ctx.current.fade2_duration = destKey.fade2_duration;
         }
         if (index >= group.keysCount) continue;
         Key &key = ctx.current;
@@ -425,16 +435,17 @@ namespace CLS {
 
 // 32 bit unsigned
 typedef unsigned long time_unit;
+// 16 bit unsigned
+typedef unsigned int time_unit_compact;
 
-enum FADE_TYPE {
-    LINEAR,
-    EXPONENTIAL,
-    SIN,
-    SIN_DOUBLE,
-};
+// FADE_TYPE
+const unsigned char LINEAR = 0;
+const unsigned char EXPONENTIAL = 1;
+const unsigned char SIN = 2;
+const unsigned char SIN_DOUBLE = 3;
 
 struct FadeParams {
-    FADE_TYPE type;
+    unsigned char type;
     float exponent;
 };
 
@@ -442,7 +453,6 @@ struct Key {
     // key
     time_unit start;
     time_unit end;
-    time_unit duration;
     float maxWeight;
 
     // fade start
@@ -456,9 +466,26 @@ struct Key {
     float fade2_duration;
 };
 
+struct Key_Compact {
+    // key
+    time_unit start;
+    time_unit_compact duration;
+    float maxWeight;
+
+    // fade start
+    FadeParams fade1;
+    time_unit_compact fade1_end; // relative to start
+    float fade1_duration;
+
+    // fade end
+    FadeParams fade2;
+    time_unit_compact fade2_start; // relative to start
+    float fade2_duration;
+};
+
 struct LightGroup {
     unsigned int keysCount;
-    const Key *keys;
+    const Key_Compact *keys;
 };
 
 struct LightContext {
