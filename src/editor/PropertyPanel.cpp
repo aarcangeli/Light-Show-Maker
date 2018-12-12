@@ -117,30 +117,43 @@ void PropertyPanel::showPropertiesOf(project::Fade &fade, const char *name, time
 void PropertyPanel::multiKeypointEditor(SelectionManager &manager) {
     if (manager.keypoints.empty()) return;
 
-    bulkEditor("Duration", manager,
-               [](KeyRef key) -> int & { return (int &) key->duration; },
-               [](KeyRef key) -> int { return TIME_UNITS * 2; });
+    bulkEditor<float>("Max Weight", manager,
+                      [](KeyRef key) -> float & { return (float &) key->maxWeight; },
+                      [](KeyRef key) -> float { return 1; });
 
-    bulkEditor("Start", manager,
-               [](KeyRef key) -> int & { return (int &) key->fadeStart.duration; },
-               [](KeyRef key) -> int { return key->duration - key->fadeEnd.duration; });
+    bulkEditor<int>("Duration", manager,
+                    [](KeyRef key) -> int & { return (int &) key->duration; },
+                    [](KeyRef key) -> int { return TIME_UNITS * 2; });
 
-    bulkEditor("End", manager,
-               [](KeyRef key) -> int & { return (int &) key->fadeEnd.duration; },
-               [](KeyRef key) -> int { return key->duration - key->fadeStart.duration; });
+    bulkEditor<int>("Start", manager,
+                    [](KeyRef key) -> int & { return (int &) key->fadeStart.duration; },
+                    [](KeyRef key) -> int { return key->duration - key->fadeEnd.duration; });
+
+    bulkEditor<int>("End", manager,
+                    [](KeyRef key) -> int & { return (int &) key->fadeEnd.duration; },
+                    [](KeyRef key) -> int { return key->duration - key->fadeStart.duration; });
 }
 
+
+template<typename T>
 void PropertyPanel::bulkEditor(const char *name, SelectionManager &manager,
-                               std::function<int & (KeyRef)> getter,
-                               std::function<int(KeyRef)> maxGetter) {
-    int item = getter(manager.keypoints[0]);
-    int max = 0;
+                               std::function<T & (KeyRef)> getter,
+                               std::function<T(KeyRef)> maxGetter) {
+    T item = getter(manager.keypoints[0]);
+    T max = 0;
     for (auto &key : manager.keypoints) {
         max = std::max(max, maxGetter(key));
     }
-    if (SliderInt(name, &item, 0, max)) {
+    if (showSlider(name, max, item)) {
         for (auto &key : manager.keypoints) {
             getter(key) = std::min(item, maxGetter(key));
         }
     }
+}
+
+bool PropertyPanel::showSlider(const char *name, int max, int &item) const {
+    return SliderInt(name, &item, 0, max);
+}
+bool PropertyPanel::showSlider(const char *name, float max, float &item) const {
+    return SliderFloat(name, &item, 0, max);
 }

@@ -20,11 +20,14 @@ public:
     void multiKeypointEditor(SelectionManager &manager);
 
 private:
+    template<typename T>
     void bulkEditor(const char *name, SelectionManager &manager,
-                    std::function<int &(KeyRef)> getter,
-                    std::function<int (KeyRef)> maxGetter);
+                    std::function<T &(KeyRef)> getter,
+                    std::function<T (KeyRef)> maxGetter);
 
     project::Fade fade;
+    bool showSlider(const char *name, int max, int &item) const;
+    bool showSlider(const char *name, float max, float &item) const;
 };
 
 }
