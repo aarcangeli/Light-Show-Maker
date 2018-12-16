@@ -90,7 +90,7 @@ int32_t Layer::findIndex(const std::shared_ptr<KeyPoint> &key) {
     while (ret > 0 && ret < keys.size() && keys[ret]->start == keys[ret - 1]->start) {
         ret--;
     }
-    while (ret >= 0 && ret < keys.size() - 1 && keys[ret] != key && keys[ret]->start == keys[ret + 1]->start) {
+    while (ret >= 0 && ret < (int32_t) keys.size() - 1 && keys[ret] != key && keys[ret]->start == keys[ret + 1]->start) {
         ret++;
     }
     if (ret < keys.size() && keys[ret] == key) {

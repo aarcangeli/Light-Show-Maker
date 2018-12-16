@@ -345,9 +345,22 @@ void Application::exportChunk(std::string filename, project::arduino_number numb
         }
         i++;
     }
+    outputFile << "\n";
 
     outputFile << "namespace CLS {\n\n";
     outputFile << "const unsigned long LIGHT_COUNT = " << count << ";\n\n";
+
+    i = 0;
+    outputFile << "const unsigned int ALL_LAYERS[" << count << "] = {\n";
+    for (auto &layer : proj->canvas.groups) {
+        if (layer->number != number) continue;
+        if (!layer->identifier.empty()) {
+            outputFile << "        LAYER_" << layer->identifier << ",";
+            outputFile << "\n";
+        }
+        i++;
+    }
+    outputFile << "};\n\n";
 
     i = 0;
     for (auto &g : proj->canvas.groups) {

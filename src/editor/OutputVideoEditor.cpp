@@ -111,11 +111,12 @@ OutputVideoEditor::append(const shared_ptr<project::Project> &proj, const shared
 }
 
 void OutputVideoEditor::drawCanvas(project::Canvas &canvas) {
-    drawVector(1, canvas.decorations, false);
+    bool withLayerRestriction = true;
+    drawVector(1, canvas.decorations, !withLayerRestriction);
     for (auto &group : canvas.groups) {
         time_unit position = gApp->getPlayer().playerPosition();
         float alpha = position ? group->computeEasing(position) : 1;
-        drawVector(alpha, group->decorations, group->isSelected);
+        drawVector(alpha, group->decorations, !withLayerRestriction || group->isSelected);
     }
 }
 
@@ -129,8 +130,9 @@ void OutputVideoEditor::drawVector(float alpha, std::vector<std::shared_ptr<proj
             it = array.erase(it);
             continue;
         }
+        bool isDecorationSelected = !selected.empty() && selected[0] == el;
         if (IsKeyPressed(GLFW_KEY_PAGE_UP) && it != array.end() - 1) {
-            if (!selected.empty() && selected[0] == el) {
+            if (isDecorationSelected) {
                 it = array.erase(it);
                 it = array.insert(it + 1, el);
                 it -= 2;
@@ -138,21 +140,21 @@ void OutputVideoEditor::drawVector(float alpha, std::vector<std::shared_ptr<proj
         }
         printDecoration(alpha, el, isSelected);
         if (IsKeyPressed(GLFW_KEY_PAGE_DOWN) && it != array.begin()) {
-            if (!selected.empty() && selected[0] == el) {
+            if (isDecorationSelected) {
                 it = array.erase(it);
                 it = array.insert(it - 1, el);
                 it++;
             }
         }
         if (io.KeyCtrl && IsKeyPressed(GLFW_KEY_D)) {
-            if (!selected.empty() && selected[0] == el) {
+            if (isDecorationSelected) {
                 auto copy = std::make_shared<project::Decoration>(*el);
                 it = array.insert(it + 1, copy);
                 it--;
             }
         }
         if (mouseClicked && io.KeyAlt) {
-            if (!selected.empty() && selected[0] == el) {
+            if (isDecorationSelected) {
                 auto copy = std::make_shared<project::Decoration>(*el);
                 it = array.insert(it + 1, copy);
                 selected.set(copy);
@@ -163,7 +165,7 @@ void OutputVideoEditor::drawVector(float alpha, std::vector<std::shared_ptr<proj
 }
 
 void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<project::Decoration> &dec, bool isSelected) {
-    ImVec2 pos = canvasScreenPos + ImVec2(dec->posX, dec->posY) * getLogicalScale();
+    ImVec2 pos = canvasScreenPos + (OFFSET + ImVec2(dec->posX, dec->posY)) * getLogicalScale();
     ImRect region = getDecorationRegion(dec);
 
     ImDrawList *drawList = GetWindowDrawList();
@@ -214,7 +216,7 @@ void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<pr
 ImVec2 OutputVideoEditor::getLogicalScale() const { return canvasSize / logicalSize; }
 
 ImRect OutputVideoEditor::getDecorationRegion(const std::shared_ptr<project::Decoration> &dec) {
-    ImVec2 pos = canvasScreenPos + ImVec2(dec->posX, dec->posY) * getLogicalScale();
+    ImVec2 pos = canvasScreenPos + (OFFSET + ImVec2(dec->posX, dec->posY)) * getLogicalScale();
     ImVec2 dim;
     if (dec->type == project::IMAGE) {
         dim = ImVec2(dec->width, dec->height) * getLogicalScale();
