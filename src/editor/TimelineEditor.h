@@ -103,8 +103,10 @@ private:
 
     void deleteTrack(const std::shared_ptr<project::Layer> &group);
 
+public:
     bool lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
     bool lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
+private:
 
     // editor settings
     bool snapCursor = true;

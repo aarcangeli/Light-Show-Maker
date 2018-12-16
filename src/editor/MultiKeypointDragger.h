@@ -29,6 +29,9 @@ private:
     project::Canvas *owner;
     ImVec2 originalMouse;
     bool dragConfirmed = false;
+    int lastIndex;
+    int groupIndexStart;
+    int groupIndexEnd;
 
 public:
     void update();

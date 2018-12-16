@@ -25,6 +25,16 @@ void MultiKeypointDragger::startDragging(const std::vector<std::shared_ptr<proje
     dragging = true;
     dragConfirmed = false;
     lastDiff = 0;
+    auto last = keys[keys.size() - 1];
+    lastIndex = owner->findGroupIndexWith(last);
+    groupIndexStart = lastIndex;
+    groupIndexEnd = lastIndex;
+    for (auto &it : keys) {
+        int index = owner->findGroupIndexWith(it);
+        assert(index >= 0);
+        if (index < groupIndexStart) groupIndexStart = index;
+        if (index > groupIndexEnd) groupIndexEnd = index;
+    }
 }
 
 void MultiKeypointDragger::update() {
@@ -51,6 +61,25 @@ void MultiKeypointDragger::update() {
         auto last = keys[keys.size() - 1];
 
         gApp->beginCommand("Move/Resize multiple key point", true);
+
+        int32_t layerIdx;
+        size_t groupSize = owner->groups.size();
+        if (editor->lookUpAtPos(io.MousePos, nullptr, &layerIdx) && layerIdx != lastIndex) {
+            int deltaIndex = layerIdx - lastIndex;
+            if (groupIndexStart + deltaIndex < 0) deltaIndex = -groupIndexStart;
+            if (groupIndexEnd + deltaIndex > groupSize) deltaIndex = (int) (groupSize - groupIndexEnd - 1);
+            for (auto &k : keys) {
+                int index = owner->findGroupIndexWith(k);
+                assert(index >= 0);
+                assert(index + deltaIndex >= 0);
+                assert(index + deltaIndex < groupSize);
+                owner->groups[index]->removeKey(k);
+                owner->groups[index + deltaIndex]->addKey(k);
+            }
+            lastIndex += deltaIndex;
+            groupIndexStart += deltaIndex;
+            groupIndexEnd += deltaIndex;
+        }
 
         if (io.KeyShift && type == DRAG_MOVE) {
             snapTime(last->start, deltaTime);
