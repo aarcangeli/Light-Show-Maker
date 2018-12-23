@@ -13,20 +13,3 @@ endif ()
 if (MSVC)
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /ENTRY:mainCRTStartup")
 endif ()
-
-CHECK_CXX_SOURCE_RUNS("
-    #include <thread>
-    int returnValue = 1;
-    void work() {
-        returnValue = 0;
-    }
-    int main() {
-        std::thread test(&work);
-        test.join();
-        return returnValue;
-    }
-" WITH_THREAD)
-
-if (NOT WITH_THREAD)
-    message(FATAL_ERROR "Unable to compile: this compiler doesn't support C++11 std::thread")
-endif ()

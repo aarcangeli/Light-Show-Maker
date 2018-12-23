@@ -58,8 +58,8 @@ std::vector<uint8_t> ImageLoader::encodeImage(const shared_ptr<Image> &image) {
     codecCtx->width = w;
     codecCtx->height = h;
     codecCtx->pix_fmt = AV_PIX_FMT_RGBA;
-    codecCtx->time_base = (AVRational) {1, 25};
-    codecCtx->framerate = (AVRational) {25, 1};
+    codecCtx->time_base = {1, 25};
+    codecCtx->framerate = {25, 1};
 
     int ret = avcodec_open2(codecCtx, codec, nullptr);
     if (ret < 0) {

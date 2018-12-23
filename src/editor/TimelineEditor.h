@@ -55,8 +55,6 @@ public:
     void reset();
     void editorOf(project::Canvas &canvas);
 
-    float dpi;
-
 private:
     // for preview
     media::AudioLoader loader;
