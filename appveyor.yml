@@ -1,20 +1,27 @@
 version: '{build}'
 image:
-  - Visual Studio 2015
+#  - Visual Studio 2015
   - Visual Studio 2017
   - Ubuntu
+
 configuration:
+#  - Debug
   - Release
-  - Debug
+
 platform:
   - x64
 
 init:
-  - cmd: set generator="%APPVEYOR_BUILD_WORKER_IMAGE% Win64"
-  - cmd: echo %generator%
+  - cmd: |-
+      if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013 Win64" )
+      if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015 Win64" )
+      if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017 Win64" )
+      echo %generator%
 
 install:
   - git submodule update --init --recursive
+  - sh: sudo apt-get update
+  - sh: sudo apt-get install xorg-dev libglu1-mesa-dev
 
 before_build:
   - sh: echo Running before_build on ubuntu
