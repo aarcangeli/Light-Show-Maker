@@ -6,7 +6,6 @@
 #include "ffmpeg.h"
 #include "core.h"
 #include "vector"
-#include "thread"
 #include "mutex"
 
 namespace sm {
@@ -24,7 +23,6 @@ public:
 private:
     static int numberOfInstances;
     ao_device *adevice;
-    //std::thread myThread;
 };
 
 }

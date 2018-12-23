@@ -3,7 +3,6 @@ include(FetchContent)
 add_library(FFmpeg INTERFACE)
 
 set(FFMPEG_RUNTIME_LIBRARY "")
-set(FFMPEG_RUNTIME_LIBRARY "")
 set(FFMPEG_FOUND OFF)
 
 # On win64 use precompiled libraries
@@ -25,9 +24,6 @@ if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
 
     endmacro()
 
-    set(FFMPEG_URL https://FFmpeg.zeranoe.com/builds/win64/dev/FFmpeg-4.1-win64-dev.zip)
-    set(FFMPEG_SHA1 8290EDEE18533DA26F57424E8FD78DE41FC81F5A)
-
     download(
             # NAME
             FFMPEG_DEV
@@ -46,7 +42,7 @@ if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
             0AAC4FEFDAE4392ED670B16223687250993DB288
     )
 
-    file(GLOB SOURCES ${FFMPEG_DEV}/lib/*.dll.a)
+    file(GLOB SOURCES ${FFMPEG_DEV}/lib/*.lib)
     target_include_directories(FFmpeg INTERFACE ${FFMPEG_DEV}/include)
     target_link_libraries(FFmpeg INTERFACE ${SOURCES})
     file(GLOB FFMPEG_RUNTIME_LIBRARY ${FFMPEG_SHARED}/bin/*.dll)

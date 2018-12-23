@@ -15,8 +15,6 @@ ProjectWindow::ProjectWindow() : timelineEditor() {}
 void ProjectWindow::showFrame() {
     if (viewportWidth <= 0 || viewportHeight <= 0) return;
 
-    timelineEditor.dpi = dpi;
-
     timelineHeight = ((float) viewportHeight) * TIMELINE_HEIGHT_RATIO;
     centerHeight = viewportHeight - timelineHeight - menuHeight - spacing;
     leftPanelWidth = ((float) viewportWidth) * TIMELINE_PANELS_WIDTH_RATIO;
@@ -174,7 +172,7 @@ void ProjectWindow::showMenu() {
 }
 
 void ProjectWindow::saveAs() const {
-    std::__cxx11::string outPath = gApp->getPath("clsproj", true);
+    std::string outPath = gApp->getPath("clsproj", true);
     if (!outPath.empty()) {
         if (!endsWith(outPath, ".clsproj")) {
             outPath += ".clsproj";

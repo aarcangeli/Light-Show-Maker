@@ -392,7 +392,7 @@ void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key,
 
     if (withDetails) {
         drawList->PathClear();
-        while (cur < easing1 + CURVE_RESOLUTION * 4 and cur < sizeX) {
+        while (cur < easing1 + CURVE_RESOLUTION * 4 && cur < sizeX) {
             time_unit now = (time_unit) (cur / timeScaleX);
             float i = key->computeEasing(now);
             drawList->PathLineTo(ImVec2(min.x + cur, max.y - lineSize - i * sizeY));

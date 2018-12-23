@@ -38,4 +38,8 @@ static const char *APPL_NAME = "Christmas Light Show Maker";
 
 }
 
+// I love visual studio
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #endif //CORE_H

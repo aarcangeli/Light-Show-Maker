@@ -60,6 +60,4 @@ public:
 }
 }
 
-#include <AudioDevice.h>
-
 #endif //KEYPOINTDRAGGER_H

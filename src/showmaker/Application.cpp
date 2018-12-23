@@ -2,7 +2,6 @@
 
 #include <utility>
 #include <memory>
-#include <unistd.h>
 #include <string>
 #include <use_glad.h>
 #include "Application.h"
