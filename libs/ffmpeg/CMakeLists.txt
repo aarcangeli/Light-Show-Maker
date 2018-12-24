@@ -8,40 +8,23 @@ set(FFMPEG_FOUND OFF)
 # On win64 use precompiled libraries
 if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
 
-    macro(download name url sha1)
-        FetchContent_Declare(
-                ${name}
-                DOWNLOAD_DIR ${CMAKE_CURRENT_SOURCE_DIR}
-                URL ${url}
-                URL_HASH SHA1=${sha1}
-        )
-        string(TOLOWER ${name} name_lower)
-
-        message(STATUS "Downloading ${url}")
-        FetchContent_Populate(${name})
-        set(${name} ${${name_lower}_SOURCE_DIR})
-        message(STATUS "${name} extracted into ${${name}}")
-
+    macro(extract name archive path)
+        set(${name} "${CMAKE_BINARY_DIR}/${path}")
+        if (NOT ${name}_EXTRACTED)
+            message(STATUS "extracting ${archive} into ${${name}}")
+            execute_process(
+                    COMMAND ${CMAKE_COMMAND} -E tar xzf "${archive}"
+                    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            )
+            set(${name}_EXTRACTED true CACHE BOOL "" FORCE)
+        endif ()
     endmacro()
 
-    download(
-            # NAME
-            FFMPEG_DEV
-            # URL
-            https://FFmpeg.zeranoe.com/builds/win64/dev/FFmpeg-4.1-win64-dev.zip
-            # SHA1
-            8290EDEE18533DA26F57424E8FD78DE41FC81F5A
-    )
+    extract(FFMPEG_DEV "${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg-4.1-win64-dev.zip" "ffmpeg-4.1-win64-dev")
+    extract(FFMPEG_SHARED "${CMAKE_CURRENT_SOURCE_DIR}/ffmpeg-4.1-win64-shared.zip" "ffmpeg-4.1-win64-shared")
 
-    download(
-            # NAME
-            FFMPEG_SHARED
-            # URL
-            https://ffmpeg.zeranoe.com/builds/win64/shared/ffmpeg-4.1-win64-shared.zip
-            # SHA1
-            0AAC4FEFDAE4392ED670B16223687250993DB288
-    )
-
+    message(STATUS "FFMPEG_DEV: ${FFMPEG_DEV}")
+    message(STATUS "FFMPEG_SHARED: ${FFMPEG_SHARED}")
     file(GLOB SOURCES ${FFMPEG_DEV}/lib/*.lib)
     target_include_directories(FFmpeg INTERFACE ${FFMPEG_DEV}/include)
     target_link_libraries(FFmpeg INTERFACE ${SOURCES})
