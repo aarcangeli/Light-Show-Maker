@@ -1,51 +1,54 @@
-version: 0.{build}
+version: 0.1.{build}
 
 environment:
-  LSM_VERSION: 1.0.$(APPVEYOR_BUILD_VERSION)
+  LSM_VERSION: $(APPVEYOR_BUILD_VERSION)
 
 image:
 #  - Visual Studio 2015
-  - Visual Studio 2017
-  - Ubuntu
+- Visual Studio 2017
+- Ubuntu
+
+for:
+- matrix: {only: [{image: Ubuntu}]}
+  environment:
+  - LSM_PLATFORM: linux
+- matrix: {only: [{image: Visual Studio 2017}]}
+  environment:
+  - LSM_PLATFORM: windows
 
 configuration:
 #  - Debug
-  - Release
+- Release
 
 platform:
-  - x64
+- x64
 
 init:
-  - cmd: |-
-      if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013 Win64" )
-      if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015 Win64" )
-      if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017 Win64" )
-      echo %generator%
-  - sh: |-
-      sudo apt-get update
-      sudo apt-get install -y xorg-dev libglu1-mesa-dev gtk2.0
+- cmd: |-
+    if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013 Win64" )
+    if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015 Win64" )
+    if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017 Win64" )
+    echo %generator%
+- sh: |-
+    sudo apt-get update
+    sudo apt-get install -y xorg-dev libglu1-mesa-dev gtk2.0
 
 install:
-  - git submodule update --init --recursive
+- git submodule update --init --recursive
 
 before_build:
-  - echo Building LSM version $(APPVEYOR_BUILD_VERSION)
-  - echo Building LSM version {APPVEYOR_BUILD_VERSION}
-  - echo LSM_VERSION=$(LSM_VERSION)
-  - echo LSM_VERSION=%LSM_VERSION%
-  - echo LSM_VERSION={LSM_VERSION}
-  - sh: echo Running before_build on ubuntu
-  - sh: pwd
-  - cmd: echo Running before_build on windows
-  - mkdir build
-  - cd build
-  - cmake --version
-  - sh: cmake .. -DCMAKE_BUILD_TYPE=Release
-  - cmd: cmake -G %generator% .. -DCMAKE_BUILD_TYPE=Release
+- cmd: echo Building LSM version %APPVEYOR_BUILD_VERSION%
+- sh: echo Building LSM version $(APPVEYOR_BUILD_VERSION)
+- sh: pwd
+- mkdir build
+- cd build
+- cmake --version
+- sh: cmake .. -DCMAKE_BUILD_TYPE=Release
+- cmd: cmake -G %generator% .. -DCMAKE_BUILD_TYPE=Release
 
 build_script:
-  - cmake --build . --target install
+- cmake --build . --target install --config Release
 
 artifacts:
-  - path: bin
-    name: showmaker
+- path: bin
+  name: showmaker-$(LSM_PLATFORM)-x64-{version}
