@@ -4,7 +4,7 @@ file(GLOB_RECURSE SOURCES *.cpp)
 compile_resources(SOURCES fonts fonts/*.ttf)
 add_executable(showmaker ${SOURCES})
 target_link_libraries(showmaker editor imgui nativefiledialog)
-install(TARGETS showmaker RUNTIME DESTINATION ${OUTPUT_DIRECTORY})
+install(TARGETS showmaker RUNTIME DESTINATION ${LSM_OUTPUT_DIRECTORY})
 target_include_directories(showmaker PUBLIC .)
 ffmpeg_install_runtimes(showmaker)
 

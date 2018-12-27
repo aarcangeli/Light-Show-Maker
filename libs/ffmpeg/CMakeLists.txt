@@ -54,6 +54,6 @@ macro(ffmpeg_install_runtimes target)
         add_custom_command(TARGET ${target} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different ${FFMPEG_RUNTIME_LIBRARY}
                 $<TARGET_FILE_DIR:${target}>)
-        install(FILES ${FFMPEG_RUNTIME_LIBRARY} DESTINATION ${OUTPUT_DIRECTORY})
+        install(FILES ${FFMPEG_RUNTIME_LIBRARY} DESTINATION ${LSM_OUTPUT_DIRECTORY})
     endif ()
 endmacro()

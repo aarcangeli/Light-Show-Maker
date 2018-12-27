@@ -1,0 +1,37 @@
+version: 0.1_{build}
+image: Visual Studio 2017
+configuration: Release
+platform: x64
+
+init:
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013 Win64" )
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015 Win64" )
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017 Win64" )
+- echo %generator%
+
+install:
+- git submodule update --init --recursive
+
+before_build:
+- echo Building LSM version %APPVEYOR_BUILD_VERSION%
+- mkdir build
+- cd build
+- cmake --version
+- cmake -G %generator% .. -DCMAKE_BUILD_TYPE=Release "-DLSM_VERSION=%APPVEYOR_BUILD_VERSION%"
+
+build_script:
+- cmake --build . --target install --config Release
+
+artifacts:
+- path: bin
+  name: showmaker-windows-x64-$(APPVEYOR_BUILD_VERSION)
+
+deploy:
+- release: showmaker-v$(APPVEYOR_REPO_TAG_NAME)
+  provider: GitHub
+  auth_token:
+    secure: bpeCseo8I1Z2Eq9ofzVpNvFQWI+D11TQAlZb1SIpWmzTxHEYhmlBbazeyW0WAazT
+  on:
+    # deploy on tag push on master branch only
+    branch: master
+    APPVEYOR_REPO_TAG: true
