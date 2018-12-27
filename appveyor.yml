@@ -11,10 +11,10 @@ image:
 for:
 - matrix: {only: [{image: Ubuntu}]}
   environment:
-  - LSM_PLATFORM: linux
+    LSM_PLATFORM: linux
 - matrix: {only: [{image: Visual Studio 2017}]}
   environment:
-  - LSM_PLATFORM: windows
+    LSM_PLATFORM: windows
 
 configuration:
 #  - Debug
