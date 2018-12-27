@@ -1,4 +1,4 @@
-version: 0.1_{build}
+version: 0.2_{build}
 image: Visual Studio 2017
 configuration: Release
 platform: x64
