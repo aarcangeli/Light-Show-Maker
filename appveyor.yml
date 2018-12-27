@@ -1,54 +1,27 @@
-version: 0.1.{build}
-
-image:
-#  - Visual Studio 2015
-- Visual Studio 2017
-- Ubuntu
-
-configuration:
-#  - Debug
-- Release
-
-platform:
-- x64
-
-environment:
-  LSM_VERSION: $(APPVEYOR_BUILD_VERSION)
-
-for:
-- matrix: {only: [{image: Ubuntu}]}
-  environment:
-    LSM_PLATFORM: linux
-- matrix: {only: [{image: Visual Studio 2017}]}
-  environment:
-    LSM_PLATFORM: windows
+version: 0.1_{build}
+image: Visual Studio 2017
+configuration: Release
+platform: x64
 
 init:
-- cmd: |-
-    if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013 Win64" )
-    if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015 Win64" )
-    if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017 Win64" )
-    echo %generator%
-- sh: |-
-    sudo apt-get update
-    sudo apt-get install -y xorg-dev libglu1-mesa-dev libgtk-3-dev
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013 Win64" )
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015 Win64" )
+- if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017 Win64" )
+- echo %generator%
 
 install:
 - git submodule update --init --recursive
 
 before_build:
-- cmd: echo Building LSM version %APPVEYOR_BUILD_VERSION%
-- sh: echo Building LSM version $(APPVEYOR_BUILD_VERSION)
-- sh: pwd
+- echo Building LSM version %APPVEYOR_BUILD_VERSION%
 - mkdir build
 - cd build
 - cmake --version
-- sh: cmake .. -DCMAKE_BUILD_TYPE=Release
-- cmd: cmake -G %generator% .. -DCMAKE_BUILD_TYPE=Release
+- cmake -G %generator% .. -DCMAKE_BUILD_TYPE=Release
 
 build_script:
 - cmake --build . --target install --config Release
 
 artifacts:
 - path: bin
-  name: showmaker-$(LSM_PLATFORM)-x64-$(LSM_VERSION)
+  name: showmaker-windows-x64-$(APPVEYOR_BUILD_VERSION)
