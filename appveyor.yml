@@ -1,12 +1,19 @@
 version: 0.1.{build}
 
-environment:
-  LSM_VERSION: $(APPVEYOR_BUILD_VERSION)
-
 image:
 #  - Visual Studio 2015
 - Visual Studio 2017
 - Ubuntu
+
+configuration:
+#  - Debug
+- Release
+
+platform:
+- x64
+
+environment:
+  LSM_VERSION: $(APPVEYOR_BUILD_VERSION)
 
 for:
 - matrix: {only: [{image: Ubuntu}]}
@@ -16,13 +23,6 @@ for:
   environment:
     LSM_PLATFORM: windows
 
-configuration:
-#  - Debug
-- Release
-
-platform:
-- x64
-
 init:
 - cmd: |-
     if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2013" ( set generator="Visual Studio 12 2013 Win64" )
@@ -31,7 +31,7 @@ init:
     echo %generator%
 - sh: |-
     sudo apt-get update
-    sudo apt-get install -y xorg-dev libglu1-mesa-dev gtk2.0
+    sudo apt-get install -y xorg-dev libglu1-mesa-dev libgtk-3-dev
 
 install:
 - git submodule update --init --recursive
@@ -51,4 +51,4 @@ build_script:
 
 artifacts:
 - path: bin
-  name: showmaker-$(LSM_PLATFORM)-x64-{version}
+  name: showmaker-$(LSM_PLATFORM)-x64-$(LSM_VERSION)
