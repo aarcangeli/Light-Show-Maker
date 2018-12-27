@@ -17,11 +17,12 @@ init:
       if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" ( set generator="Visual Studio 14 2015 Win64" )
       if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" ( set generator="Visual Studio 15 2017 Win64" )
       echo %generator%
+  - sh: |-
+      sudo apt-get update
+      sudo apt-get install -y xorg-dev libglu1-mesa-dev
 
 install:
   - git submodule update --init --recursive
-  - sh: sudo apt-get update
-  - sh: sudo apt-get install -y xorg-dev libglu1-mesa-dev
 
 before_build:
   - sh: echo Running before_build on ubuntu
@@ -30,10 +31,13 @@ before_build:
   - mkdir build
   - cd build
   - cmake --version
-  - sh: cmake ..
-  - cmd: cmake -G %generator% ..
+  - sh: cmake .. -DCMAKE_BUILD_TYPE=Release
+  - cmd: cmake -G %generator% .. -DCMAKE_BUILD_TYPE=Release
+  # build all
+  - cmake --build . --target install
 
-build:
-  project: build\ChristmasLightShowMaker.sln
-  verbosity: minimal
-  parallel: true
+build: off
+
+artifacts:
+  - path: bin
+    name: showmaker
