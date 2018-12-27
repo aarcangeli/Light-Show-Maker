@@ -33,10 +33,9 @@ before_build:
   - cmake --version
   - sh: cmake .. -DCMAKE_BUILD_TYPE=Release
   - cmd: cmake -G %generator% .. -DCMAKE_BUILD_TYPE=Release
-  # build all
-  - cmake --build . --target install
 
-build: off
+build_script:
+  - cmake --build . --target install
 
 artifacts:
   - path: bin
