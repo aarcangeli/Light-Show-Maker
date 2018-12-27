@@ -30,8 +30,10 @@ install:
 
 before_build:
   - echo Building LSM version $(APPVEYOR_BUILD_VERSION)
+  - echo Building LSM version {APPVEYOR_BUILD_VERSION}
   - echo LSM_VERSION=$(LSM_VERSION)
   - echo LSM_VERSION=%LSM_VERSION%
+  - echo LSM_VERSION={LSM_VERSION}
   - sh: echo Running before_build on ubuntu
   - sh: pwd
   - cmd: echo Running before_build on windows
