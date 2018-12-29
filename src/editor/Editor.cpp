@@ -7,7 +7,7 @@
 
 using namespace sm;
 using namespace sm::editor;
-using namespace sm::project;
+using namespace sm::model;
 using namespace ImGui;
 
 Editor::Editor() = default;

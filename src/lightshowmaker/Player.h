@@ -10,7 +10,7 @@ namespace sm {
 
 class Player {
 public:
-    void update(project::Canvas &canvas);
+    void update(model::Canvas &canvas);
 
     void togglePlay();
     void play();

@@ -8,11 +8,11 @@
 using namespace std;
 using namespace ImGui;
 using namespace sm;
-using namespace sm::project;
+using namespace sm::model;
 using namespace sm::editor;
 
-void MultiKeypointDragger::startDragging(const std::vector<std::shared_ptr<project::KeyPoint>> &keys_,
-                                         project::Canvas *owner_,
+void MultiKeypointDragger::startDragging(const std::vector<std::shared_ptr<model::KeyPoint>> &keys_,
+                                         model::Canvas *owner_,
                                          DragType type_,
                                          float timeScale_) {
     assert(keys_.size() > 1);

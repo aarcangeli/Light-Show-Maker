@@ -26,7 +26,7 @@ public:
     explicit ProjectWindow();
 
     // invoked by Application
-    void open(const std::shared_ptr<project::Project> &shared_ptr);
+    void open(const std::shared_ptr<model::Project> &shared_ptr);
     void close();
 
     void showError(std::string errorMsg) {
@@ -39,7 +39,7 @@ public:
     void showFrame();
 
 private:
-    std::shared_ptr<project::Project> proj;
+    std::shared_ptr<model::Project> proj;
     Editor myEditor;
     TimelineEditor timelineEditor;
     OutputVideoEditor outputPreview;

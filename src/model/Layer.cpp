@@ -3,7 +3,7 @@
 #include "Layer.h"
 
 using namespace sm;
-using namespace sm::project;
+using namespace sm::model;
 
 Layer::Layer() = default;
 
@@ -18,7 +18,7 @@ std::shared_ptr<KeyPoint> Layer::addKey(sm::time_unit start, sm::time_unit durat
     return ret;
 }
 
-void Layer::addKey(const std::shared_ptr<sm::project::KeyPoint> &key) {
+void Layer::addKey(const std::shared_ptr<sm::model::KeyPoint> &key) {
     assert(!hasKey(key));
     keys.insert(keys.begin() + findIndex(key->start), key);
     assert(sanityCheck());
@@ -33,7 +33,7 @@ void Layer::removeKey(const std::shared_ptr<KeyPoint> &key) {
     keys.erase(keys.begin() + idx);
 }
 
-bool Layer::hasKey(const std::shared_ptr<sm::project::KeyPoint> &key) {
+bool Layer::hasKey(const std::shared_ptr<sm::model::KeyPoint> &key) {
     assert(sanityCheck());
     return findIndex(key) >= 0;
 }

@@ -20,7 +20,7 @@ class Application {
 public:
     Application();
 
-    void open(std::shared_ptr<project::Project> proj);
+    void open(std::shared_ptr<model::Project> proj);
     void close();
 
     bool init();
@@ -58,7 +58,7 @@ private:
     bool dirtyStyle = false;
 
     media::AudioLoader audio;
-    std::shared_ptr<project::Project> proj;
+    std::shared_ptr<model::Project> proj;
     editor::ProjectWindow projectWindow;
     media::AudioDevice device;
     Player player;
@@ -88,7 +88,7 @@ public:
 
     void exportIno(std::string filename);
 
-    void exportChunk(std::string filename, project::arduino_number number) const;
+    void exportChunk(std::string filename, model::arduino_number number) const;
     void exportCommons(std::string basic_string);
 };
 

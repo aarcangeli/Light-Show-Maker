@@ -109,7 +109,7 @@ void ProjectWindow::showMenu() {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New", "Ctrl+N")) {
-                gApp->open(std::make_shared<project::Project>());
+                gApp->open(std::make_shared<model::Project>());
             }
             if (ImGui::MenuItem("Open", "Ctrl+O")) {
                 std::string outPath = gApp->getPath("lsproj", false);
@@ -188,7 +188,7 @@ void ProjectWindow::resize(int width, int height) {
     viewportHeight = height;
 }
 
-void ProjectWindow::open(const std::shared_ptr<project::Project> &_proj) {
+void ProjectWindow::open(const std::shared_ptr<model::Project> &_proj) {
     proj = _proj;
 }
 

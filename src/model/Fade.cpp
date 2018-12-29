@@ -1,3 +1,3 @@
 #include "Fade.h"
 
-using namespace sm::project;
+using namespace sm::model;

@@ -44,8 +44,8 @@ void PropertyPanel::showProperties(SelectionManager &manager) {
     }
 }
 
-void PropertyPanel::showPropertiesOf(std::shared_ptr<project::Decoration> &layer) {
-    if (layer->type == project::LIGHT) {
+void PropertyPanel::showPropertiesOf(std::shared_ptr<model::Decoration> &layer) {
+    if (layer->type == model::LIGHT) {
         SliderFloat("size", &layer->size, 5, 50, "%.2f");
         ImColor c(layer->color);
         float values[] = {c.Value.x, c.Value.y, c.Value.z};
@@ -57,7 +57,7 @@ void PropertyPanel::showPropertiesOf(std::shared_ptr<project::Decoration> &layer
         }
 
     }
-    if (layer->type == project::IMAGE) {
+    if (layer->type == model::IMAGE) {
         if (layer->ratio < 0) {
             layer->ratio = layer->width / layer->height;
         }
@@ -70,7 +70,7 @@ void PropertyPanel::showPropertiesOf(std::shared_ptr<project::Decoration> &layer
     }
 }
 
-void PropertyPanel::showPropertiesOf(std::shared_ptr<project::Layer> &layer) {
+void PropertyPanel::showPropertiesOf(std::shared_ptr<model::Layer> &layer) {
     char buffer[200];
     strcpy_s(buffer, sizeof(buffer), layer->name.c_str());
     if (ImGui::InputText("Name", buffer, sizeof(buffer))) {
@@ -83,7 +83,7 @@ void PropertyPanel::showPropertiesOf(std::shared_ptr<project::Layer> &layer) {
     }
 }
 
-void PropertyPanel::showPropertiesOf(std::shared_ptr<project::KeyPoint> &keypoint) {
+void PropertyPanel::showPropertiesOf(std::shared_ptr<model::KeyPoint> &keypoint) {
     InputInt("Start", &keypoint->start);
     InputInt("Duration", &keypoint->duration);
     InputFloat("Max Weight", &keypoint->maxWeight);
@@ -98,7 +98,7 @@ void PropertyPanel::showPropertiesOf(std::shared_ptr<project::KeyPoint> &keypoin
     }
 }
 
-void PropertyPanel::showPropertiesOf(project::Fade &fade, const char *name, time_unit max) {
+void PropertyPanel::showPropertiesOf(model::Fade &fade, const char *name, time_unit max) {
     static const char *boxes[] = {"Linear", "Exponential", "Sin", "SinDouble"};
     int count = IM_ARRAYSIZE(boxes);
 
@@ -107,7 +107,7 @@ void PropertyPanel::showPropertiesOf(project::Fade &fade, const char *name, time
         Combo("Type", (int *) &fade.type, boxes, count);
         SliderInt("Time", &fade.duration, 0, max);
 
-        if (fade.type == project::EXPONENTIAL) {
+        if (fade.type == model::EXPONENTIAL) {
             InputFloat("Exponent", &fade.exponent);
         }
     }

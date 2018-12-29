@@ -10,11 +10,11 @@ class Editor {
 public:
     Editor();
 
-    void editorOf(project::Project *project);
+    void editorOf(model::Project *project);
 
 private:
     bool firstShow = true;
-    void editorComponent(project::Canvas &canvas);
+    void editorComponent(model::Canvas &canvas);
     void editorComponent(const char *label, time_unit &time);
 
     void parseTime(const char *buf, time_unit &time);

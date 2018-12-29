@@ -11,7 +11,7 @@ using namespace std;
 using namespace sm;
 using namespace sm::editor;
 using namespace sm::media;
-using namespace sm::project;
+using namespace sm::model;
 using namespace ImGui;
 
 TimelineEditor::TimelineEditor() : dragger(this), multiDragger(this) {
@@ -37,7 +37,7 @@ void TimelineEditor::reset() {
  *    +-------------------+----------------------------------------------+      *
  *
  */
-void TimelineEditor::editorOf(project::Canvas &canvas) {
+void TimelineEditor::editorOf(model::Canvas &canvas) {
     this->canvas = &canvas;
     auto isFocused = IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
     ImGuiStyle &style = GetStyle();
@@ -214,7 +214,7 @@ bool TimelineEditor::lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx) {
     return false;
 }
 
-void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
+void TimelineEditor::printContent(model::Canvas &canvas, const ImRect &rect) {
     auto &groups = canvas.groups;
     int groupSize = (int) groups.size();
     time_unit duration = canvas.duration;
@@ -267,7 +267,7 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
 
     bool foundKey = false;
 
-    std::shared_ptr<project::KeyPoint> hoverElement;
+    std::shared_ptr<model::KeyPoint> hoverElement;
     if (dragger.isDragging()) {
         foundKey = true;
     }
@@ -345,7 +345,7 @@ void TimelineEditor::printContent(project::Canvas &canvas, const ImRect &rect) {
                 auto &keypoints = gApp->getSelection().keypoints;
                 keypoints.reset();
                 for (int i = layerStart; i <= layerEnd; i++) {
-                    std::shared_ptr<project::Layer> &groups = canvas.groups[i];
+                    std::shared_ptr<model::Layer> &groups = canvas.groups[i];
                     size_t index1 = groups->findBefore(timeStart);
                     size_t index2 = groups->findIndex(timeEnd);
                     assert(index1 <= index2);
@@ -474,7 +474,7 @@ void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key,
     }
 }
 
-void TimelineEditor::printTimeline(const project::Canvas &canvas, ImRect rect) {
+void TimelineEditor::printTimeline(const model::Canvas &canvas, ImRect rect) {
     const ImU32 textColor = ColorConvertFloat4ToU32(COLOR_TEXT);
 
     time_unit duration = canvas.duration;
@@ -527,7 +527,7 @@ string TimelineEditor::timeLabel(time_unit time, bool withMills) {
     return buffer;
 }
 
-void TimelineEditor::printLayerList(const project::Canvas &canvas, ImRect rect) {
+void TimelineEditor::printLayerList(const model::Canvas &canvas, ImRect rect) {
     auto &groups = canvas.groups;
 
     ImVec2 oldPos = GetCursorScreenPos();
@@ -552,7 +552,7 @@ void TimelineEditor::printLayerList(const project::Canvas &canvas, ImRect rect) 
     SetCursorPos(oldPos);
 }
 
-void TimelineEditor::printLayer(shared_ptr<project::Layer> group, ImRect rect) {
+void TimelineEditor::printLayer(shared_ptr<model::Layer> group, ImRect rect) {
     ImGuiIO &io = GetIO();
     ImVec2 oldPos = GetCursorScreenPos();
     SetCursorScreenPos(rect.Min);
@@ -593,8 +593,8 @@ void TimelineEditor::printLayer(shared_ptr<project::Layer> group, ImRect rect) {
     }
 }
 
-void TimelineEditor::deleteTrack(const shared_ptr<project::Layer> &group) {
-    project::Canvas *canvas = this->canvas;
+void TimelineEditor::deleteTrack(const shared_ptr<model::Layer> &group) {
+    model::Canvas *canvas = this->canvas;
     gApp->asyncCommand(string("Delete ") + group->name, false, [canvas, group, this]() {
         canvas->deleteGroup(group);
         gApp->getSelection().layers.remove(group);
@@ -724,12 +724,12 @@ void TimelineEditor::orderLayers() {
     if (selection.empty()) {
         return;
     }
-    shared_ptr<project::Layer> selected = selection[0];
+    shared_ptr<model::Layer> selected = selection[0];
 
     auto &array = canvas->groups;
     auto it = array.begin();
     while (it != array.end()) {
-        shared_ptr<project::Layer> el = *it;
+        shared_ptr<model::Layer> el = *it;
         if (el == selected) {
             if (IsKeyPressed(GLFW_KEY_PAGE_UP) && it != array.begin()) {
                 it = array.erase(it);
@@ -743,7 +743,7 @@ void TimelineEditor::orderLayers() {
                 return;
             }
             if (IsKeyPressed(GLFW_KEY_INSERT) && GetIO().KeyAlt) {
-                auto layer = std::make_shared<project::Layer>();
+                auto layer = std::make_shared<model::Layer>();
                 layer->name = el->name;
                 layer->number = el->number;
                 layer->identifier = el->identifier;

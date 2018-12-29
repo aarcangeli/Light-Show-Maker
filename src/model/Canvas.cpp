@@ -1,7 +1,7 @@
 #include <algorithm>
 #include "Canvas.h"
 
-using namespace sm::project;
+using namespace sm::model;
 
 Canvas::Canvas(Project *project) : project(project) {
 }

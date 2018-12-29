@@ -17,7 +17,7 @@ namespace sm {
 namespace editor {
 
 class TimelineEditor {
-    using KeyChecker = std::function<bool(time_unit, std::shared_ptr<project::KeyPoint>)>;
+    using KeyChecker = std::function<bool(time_unit, std::shared_ptr<model::KeyPoint>)>;
 
     const char *POPUP_ADD_LAYER = "POPUP_ADD_LAYER";
     const char *MODAL_ADD_AUDIO = "Audio Track";
@@ -53,14 +53,14 @@ class TimelineEditor {
 public:
     explicit TimelineEditor();
     void reset();
-    void editorOf(project::Canvas &canvas);
+    void editorOf(model::Canvas &canvas);
 
 private:
     // for preview
     media::AudioLoader loader;
     ScrollablePane scroll{true, false};
 
-    project::Canvas *canvas;
+    model::Canvas *canvas;
 
     ImU32 setAlpha(ImU32 color, double alpha);
 
@@ -91,15 +91,15 @@ private:
     // scale and offset of timeline
     ImVec2 offset, scale;
 
-    void printContent(project::Canvas &canvas, const ImRect &rect);
-    void printLayerList(const project::Canvas &canvas, ImRect rect);
+    void printContent(model::Canvas &canvas, const ImRect &rect);
+    void printLayerList(const model::Canvas &canvas, ImRect rect);
 
-    void printLayer(std::shared_ptr<project::Layer> group, ImRect rect);
+    void printLayer(std::shared_ptr<model::Layer> group, ImRect rect);
     float getTimePosScreenPos(time_unit time);
-    void printTimeline(const project::Canvas &canvas, ImRect rect);
+    void printTimeline(const model::Canvas &canvas, ImRect rect);
     std::string timeLabel(time_unit time, bool withMills);
 
-    void deleteTrack(const std::shared_ptr<project::Layer> &group);
+    void deleteTrack(const std::shared_ptr<model::Layer> &group);
 
 public:
     bool lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
@@ -119,8 +119,8 @@ private:
     time_unit timeStart;
     int layerStart;
 
-    void drawKey(std::shared_ptr<project::Layer> group,
-                 std::shared_ptr<project::KeyPoint> &key,
+    void drawKey(std::shared_ptr<model::Layer> group,
+                 std::shared_ptr<model::KeyPoint> &key,
                  const ImRect &rect,
                  bool isHover);
 
@@ -129,7 +129,7 @@ private:
 public:
     bool findPlacableKeyPos(ImVec2 &pos, time_unit &start, time_unit duration, int32_t &layerIdx);
 
-    project::Canvas *getCanvas() {
+    model::Canvas *getCanvas() {
         assert(canvas);
         return canvas;
     }
@@ -143,7 +143,7 @@ public:
 private:
     bool findBestSnap(time_unit input, time_unit &best, time_unit &bestDest, const KeyChecker &checker) const;
 
-    void snapItem(time_unit dest, time_unit input, const std::shared_ptr<project::KeyPoint> &key,
+    void snapItem(time_unit dest, time_unit input, const std::shared_ptr<model::KeyPoint> &key,
                       time_unit &best, time_unit &bestDest, KeyChecker checker) const;
 
     void printWave(ImRect rect);

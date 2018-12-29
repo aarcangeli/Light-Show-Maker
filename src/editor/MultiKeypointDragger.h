@@ -25,8 +25,8 @@ private:
     bool dragging = false;
     float timeScale;
     time_unit lastDiff;
-    std::vector<std::shared_ptr<project::KeyPoint>> keys;
-    project::Canvas *owner;
+    std::vector<std::shared_ptr<model::KeyPoint>> keys;
+    model::Canvas *owner;
     ImVec2 originalMouse;
     bool dragConfirmed = false;
     int lastIndex;
@@ -36,8 +36,8 @@ private:
 public:
     void update();
 
-    void startDragging(const std::vector<std::shared_ptr<project::KeyPoint>> &key,
-                       project::Canvas *owner,
+    void startDragging(const std::vector<std::shared_ptr<model::KeyPoint>> &key,
+                       model::Canvas *owner,
                        DragType type,
                        float timeScale);
 

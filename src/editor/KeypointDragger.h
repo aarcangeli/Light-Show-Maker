@@ -30,8 +30,8 @@ private:
 
     bool dragging = false;
     float timeScale;
-    std::shared_ptr<project::KeyPoint> key;
-    std::shared_ptr<project::Layer> owner;
+    std::shared_ptr<model::KeyPoint> key;
+    std::shared_ptr<model::Layer> owner;
     sm::time_unit originalStart;
     sm::time_unit originalDuration;
     ImVec2 originalMouse;
@@ -42,14 +42,14 @@ private:
 public:
     void update();
 
-    void startDragging(const std::shared_ptr<project::KeyPoint> &key,
-                       const std::shared_ptr<project::Layer> &owner,
+    void startDragging(const std::shared_ptr<model::KeyPoint> &key,
+                       const std::shared_ptr<model::Layer> &owner,
                        DragType type,
                        float timeScale);
 
     bool isDragging() { return dragging; }
 
-    std::shared_ptr<project::KeyPoint> getElement() { return key; }
+    std::shared_ptr<model::KeyPoint> getElement() { return key; }
     DragType getType() { return type; }
     size_t getPrev(size_t idx) const;
     size_t getNext(size_t idx);

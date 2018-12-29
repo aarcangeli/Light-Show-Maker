@@ -82,7 +82,7 @@ bool Application::init() {
     // restore previous project
     load(autoSavePath);
     if (!proj) {
-        open(std::make_shared<project::Project>());
+        open(std::make_shared<model::Project>());
         proj->canvas.makeGroup();
     }
 
@@ -190,7 +190,7 @@ void Application::cleanUp() {
     glfwTerminate();
 }
 
-void Application::open(std::shared_ptr<project::Project> _proj) {
+void Application::open(std::shared_ptr<model::Project> _proj) {
     close();
     proj = std::move(_proj);
     projectWindow.open(proj);
@@ -258,7 +258,7 @@ bool Application::load(std::string filename) {
     if (!file.good()) return false;
     std::string data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
-    std::shared_ptr<project::Project> proj = deserializeObject<project::Project>(data);
+    std::shared_ptr<model::Project> proj = deserializeObject<model::Project>(data);
     open(proj);
     this->filename = filename;
     return true;
@@ -297,7 +297,7 @@ void Application::quit() {
 void Application::exportIno(std::string filename) {
     exportCommons(filename);
 
-    std::set<project::arduino_number> tabooList;
+    std::set<model::arduino_number> tabooList;
     for (auto &layer : proj->canvas.groups) {
         auto it = tabooList.find(layer->number);
         if (it == tabooList.end()) {
@@ -307,7 +307,7 @@ void Application::exportIno(std::string filename) {
     }
 }
 
-void Application::exportChunk(std::string filename, project::arduino_number number) const {
+void Application::exportChunk(std::string filename, model::arduino_number number) const {
     dirName(filename);
     std::string numberStr = std::to_string(number);
     filename += "/lsm_" + numberStr + ".h";

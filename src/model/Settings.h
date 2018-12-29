@@ -4,7 +4,7 @@
 #include "Serialization.h"
 
 namespace sm {
-namespace project {
+namespace model {
 
 class Settings {
 public:

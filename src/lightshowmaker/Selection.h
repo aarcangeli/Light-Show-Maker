@@ -115,9 +115,9 @@ public:
               keypoints(this, KEYPOINT) {};
 
     SELECTION_TYPE lastSelection;
-    Selection<project::Layer> layers;
-    Selection<project::Decoration> decorations;
-    Selection<project::KeyPoint> keypoints;
+    Selection<model::Layer> layers;
+    Selection<model::Decoration> decorations;
+    Selection<model::KeyPoint> keypoints;
 };
 
 template<typename T>

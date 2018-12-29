@@ -6,7 +6,7 @@
 #include "memory"
 
 namespace sm {
-namespace project {
+namespace model {
 
 enum DecorationType {
     LIGHT,

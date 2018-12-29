@@ -6,7 +6,7 @@
 #include "Serialization.h"
 
 namespace sm {
-namespace project {
+namespace model {
 class Layer;
 
 class KeyPoint {

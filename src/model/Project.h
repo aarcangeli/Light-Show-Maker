@@ -8,7 +8,7 @@
 #include "Serialization.h"
 
 namespace sm {
-namespace project {
+namespace model {
 
 /**
  * Main class, contains the entire project structure

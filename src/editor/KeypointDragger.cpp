@@ -7,7 +7,7 @@
 using namespace std;
 using namespace ImGui;
 using namespace sm;
-using namespace sm::project;
+using namespace sm::model;
 using namespace sm::editor;
 
 void KeypointDragger::startDragging(const std::shared_ptr<KeyPoint> &key_,
@@ -101,10 +101,10 @@ void KeypointDragger::update() {
                 if (io.KeyShift) {
                     time_unit dest1, dest2;
                     time_unit duration = end - start;
-                    dest1 = editor->moveSnapped(start, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
+                    dest1 = editor->moveSnapped(start, [=](time_unit dest, shared_ptr<model::KeyPoint> it) -> bool {
                         return dest >= minBound && dest <= end && it != key;
                     });
-                    dest2 = editor->moveSnapped(end, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
+                    dest2 = editor->moveSnapped(end, [=](time_unit dest, shared_ptr<model::KeyPoint> it) -> bool {
                         return dest >= minBound && dest <= end && it != key;
                     });
                     if (std::abs(dest2 - end) < std::abs(dest1 - start)) {
@@ -118,7 +118,7 @@ void KeypointDragger::update() {
             case DRAG_RESIZE_BEGIN:
                 start += diff;
                 if (io.KeyShift) {
-                    start = editor->moveSnapped(start, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
+                    start = editor->moveSnapped(start, [=](time_unit dest, shared_ptr<model::KeyPoint> it) -> bool {
                         return dest >= minBound && dest <= end && it != key;
                     });
                 }
@@ -128,7 +128,7 @@ void KeypointDragger::update() {
             case DRAG_RESIZE_END:
                 end += diff;
                 if (io.KeyShift) {
-                    end = editor->moveSnapped(end, [=](time_unit dest, shared_ptr<project::KeyPoint> it) -> bool {
+                    end = editor->moveSnapped(end, [=](time_unit dest, shared_ptr<model::KeyPoint> it) -> bool {
                         return dest >= start && dest <= maxBound && it != key;
                     });
                 }

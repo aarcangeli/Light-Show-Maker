@@ -8,14 +8,14 @@ namespace sm {
 namespace editor {
 
 class PropertyPanel {
-    using KeyRef = std::shared_ptr<project::KeyPoint>;
+    using KeyRef = std::shared_ptr<model::KeyPoint>;
 
 public:
     void showProperties(SelectionManager &manager);
-    void showPropertiesOf(std::shared_ptr<project::Layer> &layer);
-    void showPropertiesOf(std::shared_ptr<project::Decoration> &layer);
-    void showPropertiesOf(std::shared_ptr<project::KeyPoint> &keypoint);
-    void showPropertiesOf(project::Fade &keypoint, const char *name, time_unit max);
+    void showPropertiesOf(std::shared_ptr<model::Layer> &layer);
+    void showPropertiesOf(std::shared_ptr<model::Decoration> &layer);
+    void showPropertiesOf(std::shared_ptr<model::KeyPoint> &keypoint);
+    void showPropertiesOf(model::Fade &keypoint, const char *name, time_unit max);
 
     void multiKeypointEditor(SelectionManager &manager);
 
@@ -25,7 +25,7 @@ private:
                     std::function<T &(KeyRef)> getter,
                     std::function<T (KeyRef)> maxGetter);
 
-    project::Fade fade;
+    model::Fade fade;
     bool showSlider(const char *name, int max, int &item) const;
     bool showSlider(const char *name, float max, float &item) const;
 };

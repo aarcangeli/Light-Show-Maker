@@ -23,21 +23,21 @@ class OutputVideoEditor {
 public:
     OutputVideoEditor();
 
-    void editorOf(std::shared_ptr<project::Project> proj);
+    void editorOf(std::shared_ptr<model::Project> proj);
 
-    ImRect getDecorationRegion(const std::shared_ptr<project::Decoration> &dec);
+    ImRect getDecorationRegion(const std::shared_ptr<model::Decoration> &dec);
     ImVec2 getLogicalScale() const;
     bool isFocused() const { return windowFocused; };
 
-    void deleteDecoration(const std::shared_ptr <project::Decoration> &dec);
+    void deleteDecoration(const std::shared_ptr <model::Decoration> &dec);
 
 private:
-    void openImage(const std::shared_ptr<project::Project> &proj) const;
-    void topMenu(const std::shared_ptr<project::Project> &proj);
-    void drawContent(std::shared_ptr<project::Project> ptr);
-    void drawCanvas(project::Canvas &canvas);
-    void drawVector(float alpha, std::vector<std::shared_ptr<project::Decoration>> &array, bool b);
-    void printDecoration(float decAlpha, const std::shared_ptr<project::Decoration> &shared_ptr, bool b);
+    void openImage(const std::shared_ptr<model::Project> &proj) const;
+    void topMenu(const std::shared_ptr<model::Project> &proj);
+    void drawContent(std::shared_ptr<model::Project> ptr);
+    void drawCanvas(model::Canvas &canvas);
+    void drawVector(float alpha, std::vector<std::shared_ptr<model::Decoration>> &array, bool b);
+    void printDecoration(float decAlpha, const std::shared_ptr<model::Decoration> &shared_ptr, bool b);
 
     ImVec2 canvasScreenPos;
     ImVec2 canvasSize;
@@ -48,11 +48,11 @@ private:
     ImVec2 mousePos;
     ScrollablePane scrollablePane;
 
-    std::shared_ptr<project::Decoration> decorationHover;
-    std::shared_ptr<project::Decoration> lastDecorationHover;
-    std::shared_ptr<project::Decoration> decorationToDelete;
+    std::shared_ptr<model::Decoration> decorationHover;
+    std::shared_ptr<model::Decoration> lastDecorationHover;
+    std::shared_ptr<model::Decoration> decorationToDelete;
 
-    void append(const std::shared_ptr<project::Project> &proj, const std::shared_ptr<project::Decoration> &dec) const;
+    void append(const std::shared_ptr<model::Project> &proj, const std::shared_ptr<model::Decoration> &dec) const;
 };
 
 }

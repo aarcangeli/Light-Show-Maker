@@ -1,7 +1,7 @@
 #include "KeyPoint.h"
 #include "math.h"
 
-using namespace sm::project;
+using namespace sm::model;
 
 KeyPoint::KeyPoint() = default;
 

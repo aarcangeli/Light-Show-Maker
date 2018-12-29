@@ -18,7 +18,7 @@ class DecorationDragger {
 public:
     explicit DecorationDragger(OutputVideoEditor *editor) : editor(editor) {};
 
-    void startEditing(const std::shared_ptr<project::Decoration> &decoration);
+    void startEditing(const std::shared_ptr<model::Decoration> &decoration);
     void update();
 
     void drawPlaceBox(ImRect rect, bool isPlaceHolder = false);
@@ -29,7 +29,7 @@ private:
     ImVec2 originalMouseX;
     ImVec2 originalPos;
 
-    std::shared_ptr<project::Decoration> decoration;
+    std::shared_ptr<model::Decoration> decoration;
 };
 
 }

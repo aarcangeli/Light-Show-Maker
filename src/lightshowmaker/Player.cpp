@@ -5,7 +5,7 @@
 
 using namespace sm;
 
-void Player::update(project::Canvas &canvas) {
+void Player::update(model::Canvas &canvas) {
     double currentFrame = glfwGetTime();
     double delta = currentFrame - lastTime;
     lastTime = currentFrame;

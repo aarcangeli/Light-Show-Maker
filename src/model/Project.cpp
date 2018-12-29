@@ -1,5 +1,5 @@
 #include "Project.h"
 
-using namespace sm::project;
+using namespace sm::model;
 
 Project::Project() : canvas(this), name("new project") {}

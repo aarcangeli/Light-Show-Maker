@@ -45,9 +45,6 @@ endif ()
 # global parameters
 set(FFMPEG_RUNTIME_LIBRARY "${FFMPEG_RUNTIME_LIBRARY}" CACHE INTERNAL "" FORCE)
 set(FFMPEG_FOUND "${FFMPEG_FOUND}" CACHE INTERNAL "" FORCE)
-if (FFMPEG_FOUND)
-    target_compile_definitions(FFmpeg INTERFACE WITH_FFMPEG)
-endif ()
 
 macro(ffmpeg_install_runtimes target)
     if (FFMPEG_RUNTIME_LIBRARY)
