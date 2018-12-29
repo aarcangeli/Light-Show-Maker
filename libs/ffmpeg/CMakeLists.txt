@@ -33,7 +33,7 @@ if (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 endif ()
 
-# on other systems find if it is installed
+# standard way
 if (NOT FFMPEG_FOUND)
     find_package(FFmpeg)
     if (FFMPEG_FOUND)
@@ -42,9 +42,9 @@ if (NOT FFMPEG_FOUND)
     endif ()
 endif ()
 
-# global parameters
-set(FFMPEG_RUNTIME_LIBRARY "${FFMPEG_RUNTIME_LIBRARY}" CACHE INTERNAL "" FORCE)
-set(FFMPEG_FOUND "${FFMPEG_FOUND}" CACHE INTERNAL "" FORCE)
+if (NOT FFMPEG_FOUND)
+    message(FATAL_ERROR "ffmpeg not found")
+endif ()
 
 macro(ffmpeg_install_runtimes target)
     if (FFMPEG_RUNTIME_LIBRARY)
