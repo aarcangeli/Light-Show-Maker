@@ -19,8 +19,10 @@ before_build:
 - cmake --version
 - cmake -G %generator% .. -DCMAKE_BUILD_TYPE=Release "-DLSM_VERSION=%APPVEYOR_BUILD_VERSION%"
 
-build_script:
-- cmake --build . --target install --config Release
+build:
+  project: build\ChristmasLightShowMaker.sln
+  verbosity: minimal
+  parallel: true
 
 artifacts:
 - path: bin
