@@ -3,10 +3,10 @@ set(ROOT_DIRECTORY ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${ROOT_DIRECTORY}/cmake")
 
 IF (NOT LSM_VERSION)
-    set(LSM_VERSION "snapshot")
+    set(LSM_VERSION "Snapshot")
 ENDIF ()
 
-set(LSM_OUTPUT_DIRECTORY ${ROOT_DIRECTORY}/bin/lightshowmaker-${LSM_VERSION})
+set(LSM_OUTPUT_DIRECTORY ${ROOT_DIRECTORY}/bin/lightshowmaker-v${LSM_VERSION})
 
 if (MINGW)
     # remove dependencies to libstdc++-6.dll, libgcc_s_dw2-1.dll, libwinpthread-1.dll

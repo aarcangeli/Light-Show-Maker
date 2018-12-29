@@ -239,7 +239,7 @@ void Application::setAppHome(std::string path) {
 
     home = std::move(path);
     iniPath = home + ".ini";
-    autoSavePath = home + "-autosave.clsproj";
+    autoSavePath = home + "-autosave.lsproj";
 }
 
 bool Application::save(std::string filename) {
@@ -298,7 +298,7 @@ void Application::exportIno(std::string filename) {
     exportCommons(filename);
 
     std::set<project::arduino_number> tabooList;
-    for(auto &layer : proj->canvas.groups) {
+    for (auto &layer : proj->canvas.groups) {
         auto it = tabooList.find(layer->number);
         if (it == tabooList.end()) {
             tabooList.insert(layer->number);
@@ -309,16 +309,17 @@ void Application::exportIno(std::string filename) {
 
 void Application::exportChunk(std::string filename, project::arduino_number number) const {
     dirName(filename);
-    filename += "/lsm_" + std::to_string(number) + ".h";
+    std::string numberStr = std::to_string(number);
+    filename += "/lsm_" + numberStr + ".h";
     std::ofstream outputFile(filename);
 
     outputFile << std::string("// Auto-generated with ") + APPL_NAME + "\n";
     outputFile << "\n";
-    outputFile << "#ifndef __LSM_H\n";
-    outputFile << "#define __LSM_H\n\n";
+    outputFile << "#ifndef __LSM_" + numberStr + "_H\n";
+    outputFile << "#define __LSM_" + numberStr + "_H\n\n";
 
     int count = 0;
-    for(auto &layer : proj->canvas.groups) {
+    for (auto &layer : proj->canvas.groups) {
         if (layer->number == number) {
             count++;
         }
@@ -346,7 +347,7 @@ void Application::exportChunk(std::string filename, project::arduino_number numb
     }
     outputFile << "\n";
 
-    outputFile << "namespace CLS {\n\n";
+    outputFile << "namespace lsm {\n\n";
     outputFile << "const unsigned long LIGHT_COUNT = " << count << ";\n\n";
 
     i = 0;
@@ -431,10 +432,11 @@ void updateAlpha(time_unit position) {
 
 )";
 
-    outputFile << "} // namespace CLS\n\n";
+    outputFile << "} // namespace lsm\n\n";
 
-    outputFile << "#endif //__LSM_H\n";
+    outputFile << "#endif //__LSM_" + numberStr + "_H\n";
 }
+
 void Application::exportCommons(std::string filename) {
     dirName(filename);
     filename += "/lsm_common.h";
@@ -445,7 +447,7 @@ void Application::exportCommons(std::string filename) {
 #ifndef __LSM_COMMON_H
 #define __LSM_COMMON_H
 
-namespace CLS {
+namespace lsm {
 
 // 32 bit unsigned
 typedef unsigned long time_unit;
@@ -544,7 +546,7 @@ float computeEasing(Key &key, time_unit pos) {
 
 void updateAlpha(time_unit position);
 
-} // namespace __LSM_COMMON_H
+} // namespace lsm
 
 #endif //__LSM_H
 )";
