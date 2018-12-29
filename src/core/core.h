@@ -34,7 +34,7 @@ struct time_unwrapped {
 time_unwrapped time_unwrap(time_unit in);
 time_unit time_wrap(const time_unwrapped &in);
 
-static const char *APPL_NAME = "Christmas Light Show Maker v" LSM_VERSION;
+static const char *APPL_NAME = "Light Show Maker v" LSM_VERSION;
 
 }
 

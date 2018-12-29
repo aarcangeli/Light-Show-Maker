@@ -1,5 +1,5 @@
-#ifndef CHRISTMASLIGHTSHOWMAKER_SELECTION_H
-#define CHRISTMASLIGHTSHOWMAKER_SELECTION_H
+#ifndef SELECTION_H
+#define SELECTION_H
 
 #include "cassert"
 #include "memory"
@@ -128,4 +128,4 @@ void Selection<T>::setLastSelection() {
 }
 
 
-#endif //CHRISTMASLIGHTSHOWMAKER_SELECTION_H
+#endif //SELECTION_H

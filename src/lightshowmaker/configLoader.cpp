@@ -44,7 +44,7 @@ void loadFn(ImGuiContext *ctx, ImGuiSettingsHandler *handler, void *entry, const
 
 void installConfigLoader(ImGuiContext *ctx, Application *app) {
     ImGuiSettingsHandler handler;
-    handler.TypeName = "clsw";
+    handler.TypeName = "lsw";
     handler.TypeHash = ImHash(handler.TypeName, 0, 0);
     handler.WriteAllFn = &saveFn;
     handler.ReadOpenFn = &openFn;

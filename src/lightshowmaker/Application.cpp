@@ -309,13 +309,13 @@ void Application::exportIno(std::string filename) {
 
 void Application::exportChunk(std::string filename, project::arduino_number number) const {
     dirName(filename);
-    filename += "/clsm_" + std::to_string(number) + ".h";
+    filename += "/lsm_" + std::to_string(number) + ".h";
     std::ofstream outputFile(filename);
 
     outputFile << std::string("// Auto-generated with ") + APPL_NAME + "\n";
     outputFile << "\n";
-    outputFile << "#ifndef __CLSM_H\n";
-    outputFile << "#define __CLSM_H\n\n";
+    outputFile << "#ifndef __LSM_H\n";
+    outputFile << "#define __LSM_H\n\n";
 
     int count = 0;
     for(auto &layer : proj->canvas.groups) {
@@ -324,7 +324,7 @@ void Application::exportChunk(std::string filename, project::arduino_number numb
         }
     }
 
-    outputFile << "#include \"clsm_common.h\"\n\n";
+    outputFile << "#include \"lsm_common.h\"\n\n";
 
     size_t maxLetters = 0;
     for (auto &layer : proj->canvas.groups) {
@@ -433,17 +433,17 @@ void updateAlpha(time_unit position) {
 
     outputFile << "} // namespace CLS\n\n";
 
-    outputFile << "#endif //__CLSM_H\n";
+    outputFile << "#endif //__LSM_H\n";
 }
 void Application::exportCommons(std::string filename) {
     dirName(filename);
-    filename += "/clsm_common.h";
+    filename += "/lsm_common.h";
     std::ofstream outputFile(filename);
 
     outputFile << std::string("// Auto-generated with ") + APPL_NAME + "\n";
     outputFile << R"(
-#ifndef __CLSM_COMMON_H
-#define __CLSM_COMMON_H
+#ifndef __LSM_COMMON_H
+#define __LSM_COMMON_H
 
 namespace CLS {
 
@@ -544,10 +544,9 @@ float computeEasing(Key &key, time_unit pos) {
 
 void updateAlpha(time_unit position);
 
+} // namespace __LSM_COMMON_H
 
-} // namespace CLS
-
-#endif //__CLSM_H
+#endif //__LSM_H
 )";
 
 }

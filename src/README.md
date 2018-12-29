@@ -1,4 +1,4 @@
-## Christmas Light Show Maker source code
+## Light Show Maker source code
 
 ### Modules
  * core:
@@ -11,6 +11,6 @@
    - undo/redo managment
  * editor:
    - all gui stuff (layer editor, timeline editor, ecc)
- * showmaker:
+ * lightshowmaker:
    - main application
    - glue between modules
