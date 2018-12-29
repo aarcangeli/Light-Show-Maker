@@ -20,7 +20,7 @@ before_build:
 - cmake -G %generator% .. -DCMAKE_BUILD_TYPE=Release "-DLSM_VERSION=%APPVEYOR_BUILD_VERSION%"
 
 build:
-  project: build\ChristmasLightShowMaker.sln
+  project: build\LightShowMaker.sln
   verbosity: minimal
   parallel: true
 
