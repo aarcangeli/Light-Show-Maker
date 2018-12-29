@@ -32,4 +32,4 @@ deploy:
   auth_token:
     secure: bpeCseo8I1Z2Eq9ofzVpNvFQWI+D11TQAlZb1SIpWmzTxHEYhmlBbazeyW0WAazT
   on:
-    branch: master
+    APPVEYOR_REPO_TAG: true

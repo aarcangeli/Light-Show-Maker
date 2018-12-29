@@ -3,6 +3,8 @@ An arduino based light show maker
 
 ## Build
 
+With visual studio 2017:
+
 ```bat
 mkdir build && cd build
 cd build
