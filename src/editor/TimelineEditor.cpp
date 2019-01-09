@@ -329,7 +329,7 @@ void TimelineEditor::printContent(model::Canvas &canvas, const ImRect &rect) {
         int layerEnd;
         GetWindowDrawList()->AddRect(boxStart - offset, io.MousePos, 0xff0000ff);
         if (io.MouseDelta.x != 0 || io.MouseDelta.y != 0) {
-            if (lookUpAtPos(io.MousePos, &timeEnd, &layerEnd)) {
+            if (layerStart >= 0 && lookUpAtPos(io.MousePos, &timeEnd, &layerEnd)) {
                 auto timeStart = this->timeStart;
                 auto layerStart = this->layerStart;
                 if (layerEnd < layerStart) {

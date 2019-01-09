@@ -46,6 +46,9 @@ if (NOT FFMPEG_FOUND)
     message(FATAL_ERROR "ffmpeg not found")
 endif ()
 
+# global parameters
+set(FFMPEG_RUNTIME_LIBRARY "${FFMPEG_RUNTIME_LIBRARY}" CACHE INTERNAL "" FORCE)
+
 macro(ffmpeg_install_runtimes target)
     if (FFMPEG_RUNTIME_LIBRARY)
         add_custom_command(TARGET ${target} POST_BUILD

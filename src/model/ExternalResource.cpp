@@ -1,5 +1,7 @@
 #include "ExternalResource.h"
 
-std::vector<uint8_t> sm::model::ExternalResource::load() {
+using namespace sm::model;
+
+std::vector<uint8_t> ExternalResource::load() {
     return {};
 }
