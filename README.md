@@ -1,4 +1,4 @@
-# Light-Show-Maker [![Build status](https://ci.appveyor.com/api/projects/status/kaqtvyo9x6c0ym0u?svg=true)](https://ci.appveyor.com/project/aarcangeli/light-show-maker)
+# WIP Light-Show-Maker [![Build status](https://ci.appveyor.com/api/projects/status/kaqtvyo9x6c0ym0u?svg=true)](https://ci.appveyor.com/project/aarcangeli/light-show-maker)
 An arduino based light show maker
 
 ## Build
