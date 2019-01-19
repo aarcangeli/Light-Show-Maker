@@ -64,6 +64,12 @@ bool Application::init() {
     glfwMakeContextCurrent(mainWindow);
     glfwSwapInterval(1);
 
+    glfwSetWindowFocusCallback(mainWindow, [](GLFWwindow *mainWindow, int focused){
+        if (focused) {
+            gApp->resourceManager.recheckAllResources();
+        }
+    });
+
     // load opengl 3.0
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         printf("Cannot load OpenGL context\n");

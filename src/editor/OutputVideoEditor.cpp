@@ -172,8 +172,7 @@ void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<mo
     if (dec->type == model::IMAGE) {
         ImTextureID &id = dec->textureId;
 
-        // todo: better texture managment
-        if (!id) {
+        if (!id || gApp->getResourceManager().needToBeUpdated(dec->resource)) {
             GLuint texture = 0;
             glGenTextures(1, &texture);
             glBindTexture(GL_TEXTURE_2D, texture);

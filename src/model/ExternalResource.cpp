@@ -18,7 +18,7 @@ std::shared_ptr<media::Image> ExternalResource::loadAsImage() {
     return media::decodeImage(loadAsBinary());
 }
 
-bool ExternalResource::needToBeUpdated() {
+bool ExternalResource::needToBeUpdated() const {
     return lastLoadedFilename != filename
            || filename.mtime() != modificationTime;
 }

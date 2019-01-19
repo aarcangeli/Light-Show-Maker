@@ -12,6 +12,7 @@
 #include "Player.h"
 #include "GlobalHotKey.h"
 #include "Selection.h"
+#include "ResourceManager.h"
 #include <path.hpp>
 
 namespace sm {
@@ -61,6 +62,7 @@ private:
     editor::ProjectWindow projectWindow;
     media::AudioDevice device;
     Player player;
+    ResourceManager resourceManager;
     GlobalHotKey hotKey;
 
     ImFont *loadFont(const char *start, const char *end, float size, bool fontAwesome) const;
@@ -80,6 +82,7 @@ public:
     bool load(std::string filename, bool quiet = false);
 
     Player &getPlayer() { return player; };
+    ResourceManager &getResourceManager() { return resourceManager; };
     GlobalHotKey &getHotKey() { return hotKey; };
     SelectionManager &getSelection() { return selection; };
     media::AudioLoader &getAudio() { return audio; };

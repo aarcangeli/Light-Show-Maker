@@ -15,6 +15,7 @@ namespace model {
 class ExternalResource {
 public:
     Pathie::Path filename;
+    double lastCheck = -1;
 
     std::vector<uint8_t> loadAsBinary();
     std::shared_ptr<media::Image> loadAsImage();
@@ -33,7 +34,7 @@ public:
         }
     }
 
-    bool needToBeUpdated();
+    bool needToBeUpdated() const;
 
 private:
     bool needToBeRefreshed = true;
