@@ -12,6 +12,7 @@
 #include "Player.h"
 #include "GlobalHotKey.h"
 #include "Selection.h"
+#include <path.hpp>
 
 namespace sm {
 
@@ -37,8 +38,6 @@ public:
     void endCommand();
     void stopMerging();
     void asyncCommand(const std::string &name, bool mergeable, const std::function<void()> &fn);
-
-    void setAppHome(std::string home);
 
     std::string getPath(const std::string &pathes, bool isSave);
     void saveLastDirectory(std::string path);
@@ -69,15 +68,16 @@ private:
     void applyTheme();
 
     SelectionManager selection;
-    std::string home;
-    std::string iniPath;
-    std::string autoSavePath;
+    Pathie::Path home;
+    Pathie::Path iniPath;
+    Pathie::Path autoSavePath;
+    std::string iniPathStr;
 
 public:
     void error(const std::string &errorMsg) { projectWindow.showError(errorMsg); }
 
-    bool save(std::string filename);
-    bool load(std::string filename);
+    bool save(std::string filename, bool quiet = false);
+    bool load(std::string filename, bool quiet = false);
 
     Player &getPlayer() { return player; };
     GlobalHotKey &getHotKey() { return hotKey; };

@@ -7,6 +7,7 @@
 #include <limits>
 #include <cassert>
 #include <sstream>
+#include <path.hpp>
 #include "utility"
 #include "json/json.h"
 #include "base64.h"
@@ -24,8 +25,9 @@ template<SERIALIZATION_TYPE type>
 class Serializer;
 
 class SerializationContext {
-    std::vector<void*> objects;
-    std::map<void*, size_t> objToId;
+public:
+    std::vector<void *> objects;
+    std::map<void *, size_t> objToId;
 
     bool findShared(void *obj, size_t &idx) {
         auto it = objToId.find(obj);
@@ -55,19 +57,38 @@ class SerializationContext {
         objToId[obj] = idx;
     }
 
-    template<SERIALIZATION_TYPE type>
-    friend class Serializer;
+    Pathie::Path basePath;
 };
 
-template<>
-class Serializer<SER_JSON> {
+class SerializationCommons {
+protected:
     bool ownedCtx = false;
     SerializationContext *ctx;
     Json::Value jsonValue;
 
-    Serializer(SerializationContext *ctx, Json::ValueType type = Json::nullValue) :
-            ctx(ctx),
-            jsonValue(type) {}
+public:
+
+    ~SerializationCommons() {
+        if (ownedCtx) {
+            delete ctx;
+        }
+    }
+
+    void setBasePath(const Pathie::Path &basePath) {
+        ctx->basePath = basePath;
+    }
+
+    const Pathie::Path &getBasePath() {
+        return ctx->basePath;
+    }
+};
+
+template<>
+class Serializer<SER_JSON> : public SerializationCommons {
+    Serializer(SerializationContext *_ctx, Json::ValueType _jsonValue = Json::nullValue) {
+        ctx = _ctx;
+        jsonValue = _jsonValue;
+    }
 
 public:
     const bool SERIALIZING = true;
@@ -76,11 +97,6 @@ public:
     Serializer() {
         ctx = new SerializationContext();
         ownedCtx = true;
-    }
-    ~Serializer() {
-        if (ownedCtx) {
-            delete ctx;
-        }
     }
 
     std::string toString() {
@@ -173,17 +189,19 @@ public:
         }
     }
 
+    bool hasKey(const char *name) {
+        return jsonValue.isMember(name);
+    }
+
 };
 
 template<>
-class Serializer<DESER_JSON> {
-    bool ownedCtx = false;
-    SerializationContext *ctx;
-    Json::Value jsonValue;
+class Serializer<DESER_JSON> : public SerializationCommons {
 
-    Serializer(SerializationContext *ctx, const Json::Value &jsonValue) :
-            ctx(ctx),
-            jsonValue(jsonValue) {}
+    Serializer(SerializationContext *_ctx, const Json::Value &_jsonValue) {
+        ctx = _ctx;
+        jsonValue = _jsonValue;
+    }
 
 public:
     const bool SERIALIZING = false;
@@ -194,12 +212,6 @@ public:
         ownedCtx = true;
         std::stringstream sstr(data);
         sstr >> jsonValue;
-    }
-
-    ~Serializer() {
-        if (ownedCtx) {
-            delete ctx;
-        }
     }
 
 
@@ -297,18 +309,24 @@ public:
         Serializer<DESER_JSON> sub(ctx, jsonValue[name]);
         sub.deserializeHere(value);
     }
+
+    bool hasKey(const char *name) {
+        return jsonValue.isMember(name);
+    }
 };
 
 template<typename T>
-std::string serializeObject(const T obj) {
+std::string serializeObject(const T obj, const std::string &filename) {
     Serializer<SER_JSON> serializer;
+    serializer.setBasePath(Pathie::Path(filename).parent());
     obj->serialize(serializer);
     return serializer.toString();
 }
 
 template<typename T>
-std::shared_ptr<T> deserializeObject(const std::string& str) {
+std::shared_ptr<T> deserializeObject(const std::string &str, const std::string &filename) {
     Serializer<DESER_JSON> serializer(str);
+    serializer.setBasePath(Pathie::Path(filename).parent());
     std::shared_ptr<T> obj = std::make_shared<T>();
     obj->serialize(serializer);
     return obj;

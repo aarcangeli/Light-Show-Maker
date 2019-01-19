@@ -2,7 +2,8 @@
 #define DECORATION_H
 
 #include "Serialization.h"
-#include "ImageLoader.h"
+#include "ExternalResource.h"
+#include "fstream"
 #include "memory"
 
 namespace sm {
@@ -18,12 +19,12 @@ public:
     Decoration();
 
     DecorationType type;
+    ExternalResource resource;
 
     // box
     float posX, posY;
 
     // image
-    std::shared_ptr<media::Image> image;
     float width, height;
     float ratio = -1;
 
@@ -32,7 +33,7 @@ public:
     float size;
 
     // volatile - hold texture
-    void* textureId = nullptr;
+    void *textureId = nullptr;
 
     // volatile
     bool isSelected = false;
@@ -45,27 +46,36 @@ public:
         ser.serialize("height", height);
         ser.serialize("ratio", ratio);
 
-        if (type == IMAGE) {
+        // legacy image serializer
+        if (type == IMAGE && ser.DESERIALIZING && ser.hasKey("png")) {
             std::vector<uint8_t> bytes;
-            if (ser.SERIALIZING) {
-                if (!image) image = std::make_shared<media::Image>();
-                bytes = media::encodeImage(image);
-                if (bytes.empty()) {
-                    throw "Cannot encode image";
-                }
-            }
             ser.serializeBinary("png", bytes);
-            if (ser.DESERIALIZING) {
-                image = media::decodeImage(bytes);
-                if (!image) {
-                    throw "Cannot decode image";
-                }
-            }
+//            std::shared_ptr<media::Image> image = media::decodeImage(bytes);
+//            if (!image) {
+//                throw "Cannot decode image";
+//            }
+            // save on disk
+            Pathie::Path assetDir = ser.getBasePath().join("assets");
+            Pathie::Path outputPath;
+            int i = 0;
+            do {
+                outputPath = assetDir.join("decoration-" + std::to_string(i) + ".png");
+                i++;
+            } while (outputPath.exists());
+            resource.filename = outputPath;
+            outputPath.parent().mktree();
+            std::ofstream file;
+            file.open(outputPath.str(), std::ios_base::binary);
+            file.write((char *) bytes.data(), bytes.size());
+            file.close();
         }
+
         if (type == LIGHT) {
             ser.serialize("color", color);
             ser.serialize("size", size);
         }
+
+        ser.serialize("resource", resource);
     }
 };
 

@@ -13,3 +13,6 @@
 [submodule "libs/jsoncpp"]
 	path = libs/jsoncpp
 	url = https://github.com/open-source-parsers/jsoncpp.git
+[submodule "libs/pathie-cpp"]
+	path = libs/pathie-cpp
+	url = https://github.com/Quintus/pathie-cpp.git

@@ -3,6 +3,9 @@
 
 #include <string>
 #include <algorithm>
+#include <codecvt>
+#include <string>
+#include <locale>
 
 namespace sm {
 
@@ -26,6 +29,18 @@ static void removeExtension(std::string &path) {
     size_t posDot = path.rfind('.');
     size_t posSlash = path.rfind('/');
     if (posSlash > 0 && posDot > posSlash) path.resize(posDot);
+}
+
+// convert UTF-8 string to wstring
+static std::wstring utf8_to_wstring(const std::string &str) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
+    return conv1.from_bytes(str);
+}
+
+// convert wstring to UTF-8 string
+static std::string wstring_to_utf8(const std::wstring &str) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
+    return conv1.to_bytes(str);
 }
 
 }

@@ -92,7 +92,7 @@ void OutputVideoEditor::openImage(const shared_ptr<model::Project> &proj) const 
             dec->height = image->height;
             dec->posX = 0;
             dec->posY = 0;
-            dec->image = image;
+            dec->resource.filename = outPath;
             append(proj, dec);
         } else {
             gApp->error("Unable to open image '" + outPath + "'");
@@ -179,9 +179,11 @@ void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<mo
             glBindTexture(GL_TEXTURE_2D, texture);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            shared_ptr<media::Image> &im = dec->image;
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, im->width, im->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                         im->pixels.data());
+            shared_ptr<media::Image> im = dec->resource.loadAsImage();
+            if (im) {
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, im->width, im->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+                             im->pixels.data());
+            }
             id = (ImTextureID) (size_t) texture;
         }
 

@@ -14,7 +14,7 @@ struct Pixel {
 };
 
 struct Image {
-    uint32_t width, height;
+    uint32_t width = 0, height = 0;
     std::vector<Pixel> pixels;
 };
 

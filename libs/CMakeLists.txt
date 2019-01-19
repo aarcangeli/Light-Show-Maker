@@ -52,6 +52,10 @@ set(JSONCPP_WITH_CMAKE_PACKAGE OFF CACHE BOOL "" FORCE)
 set(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF CACHE BOOL "" FORCE)
 add_subdirectory(jsoncpp)
 
+set(CMAKE_BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+add_subdirectory(pathie-cpp)
+target_include_directories(pathie PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/pathie-cpp/include")
+
 add_subdirectory(glad)
 add_subdirectory(ffmpeg)
 add_subdirectory(nativefiledialog)

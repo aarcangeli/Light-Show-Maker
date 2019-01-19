@@ -104,7 +104,10 @@ shared_ptr<Image> ImageLoader::decodeImage(const vector<uint8_t> &vector) {
 
     fmt_ctx = avformat_alloc_context();
     fmt_ctx->pb = btc;
-    avformat_open_input(&fmt_ctx, "dummyFilename", nullptr, nullptr);
+    if (avformat_open_input(&fmt_ctx, "dummyFilename", nullptr, nullptr) < 0) {
+        printf("Warning: Cannot open format a codec for stream '%s'\n", filename.c_str());
+        return nullptr;
+    }
 
     shared_ptr<Image> ptr = readFromCtx();
 

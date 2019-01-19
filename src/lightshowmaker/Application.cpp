@@ -32,12 +32,17 @@ Application::Application() {
 
 bool Application::init() {
 
+    home = Pathie::Path::exe().parent();
+    iniPath = home / (Pathie::Path::exe().sub_ext(".ini").basename().str());
+    iniPathStr = iniPath.str();
+    autoSavePath = home / "autosave/autosave.lsmproj";
+
     // Initialize imgui
     IMGUI_CHECKVERSION();
     ctx = ImGui::CreateContext();
     loader::installConfigLoader(ctx, this);
     ImGuiIO &io = ImGui::GetIO();
-    io.IniFilename = iniPath.c_str();
+    io.IniFilename = iniPathStr.c_str();
     ImGui::LoadIniSettingsFromDisk(io.IniFilename);
     if (windowWidth <= 100) windowWidth = 1280;
     if (windowHeight <= 100) windowHeight = 720;
@@ -80,7 +85,7 @@ bool Application::init() {
     glClearDepth(1);
 
     // restore previous project
-    load(autoSavePath);
+    load(autoSavePath.str(), true);
     if (!proj) {
         open(std::make_shared<model::Project>());
         proj->canvas.makeGroup();
@@ -171,7 +176,7 @@ int Application::runLoop() {
         player.update(proj->canvas);
     }
 
-    //save(autoSavePath);
+    save(autoSavePath.str(), true);
 
     return 0;
 }
@@ -234,34 +239,48 @@ void Application::asyncCommand(const std::string &name, bool mergeable, const st
     commands.push_back(AppCommand{name, mergeable, fn});
 }
 
-void Application::setAppHome(std::string path) {
-    removeExtension(path);
-
-    home = std::move(path);
-    iniPath = home + ".ini";
-    autoSavePath = home + "-autosave.lsproj";
-}
-
-bool Application::save(std::string filename) {
-    if (proj) {
-        std::string data = serializeObject(proj);
-        std::ofstream file(filename);
-        file << data;
-        exportIno(filename);
-        return true;
+bool Application::save(std::string filename, bool quiet) {
+    try {
+        printf("Saving %s\n", filename.c_str());
+        if (proj) {
+            std::ofstream file(filename);
+            if (!file.good()) return false;
+            std::string data = serializeObject(proj, filename);
+            file << data;
+            exportIno(filename);
+            return true;
+        }
+        return false;
+    } catch (const char *errorStr) {
+        if (!quiet) error("Cannot open '" + filename + "'\nCause: " + errorStr);
+        return false;
+    } catch (...) {
+        if (!quiet) error("Cannot open '" + filename + "'");
+        return false;
     }
-    return false;
 }
 
-bool Application::load(std::string filename) {
-    std::ifstream file(filename);
-    if (!file.good()) return false;
-    std::string data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+bool Application::load(std::string filename, bool quiet) {
+    try {
+        printf("Loading %s\n", filename.c_str());
+        std::ifstream file(filename);
+        if (!file.good()) {
+            if (!quiet) error("Cannot open '" + filename + "'\nCause: " + strerror(errno));
+            return false;
+        }
+        std::string data((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
-    std::shared_ptr<model::Project> proj = deserializeObject<model::Project>(data);
-    open(proj);
-    this->filename = filename;
-    return true;
+        std::shared_ptr<model::Project> proj = deserializeObject<model::Project>(data, filename);
+        open(proj);
+        this->filename = filename;
+        return true;
+    } catch (const char *errorStr) {
+        if (!quiet) error("Cannot open '" + filename + "'\nCause: " + errorStr);
+        return false;
+    } catch (...) {
+        if (!quiet) error("Cannot open '" + filename + "'");
+        return false;
+    }
 }
 
 std::string Application::getPath(const std::string &pathes, bool isSave) {

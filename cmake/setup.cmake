@@ -7,6 +7,7 @@ IF (NOT LSM_VERSION)
 ENDIF ()
 
 set(LSM_OUTPUT_DIRECTORY ${ROOT_DIRECTORY}/bin/lightshowmaker-v${LSM_VERSION})
+set(CMAKE_INSTALL_PREFIX ${ROOT_DIRECTORY}/intermediates)
 
 if (MINGW)
     # remove dependencies to libstdc++-6.dll, libgcc_s_dw2-1.dll, libwinpthread-1.dll

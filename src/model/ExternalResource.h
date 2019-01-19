@@ -1,8 +1,11 @@
 #ifndef EXTERNALRESOURCE_H
 #define EXTERNALRESOURCE_H
 
+#include <path.hpp>
 #include "string"
 #include "vector"
+#include "Serialization.h"
+#include "ImageLoader.h"
 
 namespace sm {
 namespace model {
@@ -11,9 +14,33 @@ namespace model {
 // a resource will never be saved by LSM
 class ExternalResource {
 public:
-    std::string absoluteFilename;
+    Pathie::Path filename;
 
-    std::vector<uint8_t> load();
+    std::vector<uint8_t> loadAsBinary();
+    std::shared_ptr<media::Image> loadAsImage();
+
+    SERIALIZATION_START {
+        Pathie::Path projectPath = ser.getBasePath();
+        if (ser.DESERIALIZING) {
+            std::string relativeFilename;
+            ser.serialize("filename", relativeFilename);
+            filename = projectPath.join(relativeFilename).prune();
+        }
+        if (ser.SERIALIZING && filename.str() != ".") {
+            // make relative
+            std::string relativeStr = makeRelative(filename, projectPath).str();
+            ser.serialize("filename", relativeStr);
+        }
+    }
+
+    bool needToBeUpdated();
+
+private:
+    bool needToBeRefreshed = true;
+    time_t modificationTime;
+    Pathie::Path lastLoadedFilename;
+
+    Pathie::Path makeRelative(Pathie::Path filename, Pathie::Path baseDir);
 };
 
 }

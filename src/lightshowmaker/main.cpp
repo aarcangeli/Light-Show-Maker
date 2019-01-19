@@ -12,8 +12,6 @@ int main(int argc, char **argv) {
 
     Application &app = *new Application;
 
-    app.setAppHome(argv[0]);
-
     // todo: parse command line
 
     if (!app.init()) {

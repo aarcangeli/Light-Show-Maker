@@ -6,5 +6,9 @@ TODO:
   - Multi document window
   - Replace ffmpeg with a better media loader
 
-LSM 0.1, 2018-12-27
+SNAPSHOT:
+  - Changed output namespace from CLS to lsm
+  - Changed document's extension from '.clsproj' to '.lsmproj'
+
+LSM 0.1 (2018-12-27)
   - Initial release

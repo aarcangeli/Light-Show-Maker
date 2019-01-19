@@ -112,7 +112,7 @@ void ProjectWindow::showMenu() {
                 gApp->open(std::make_shared<model::Project>());
             }
             if (ImGui::MenuItem("Open", "Ctrl+O")) {
-                std::string outPath = gApp->getPath("lsproj", false);
+                std::string outPath = gApp->getPath("lsmproj", false);
                 if (!outPath.empty()) {
                     if (gApp->load(outPath)) {
                         gApp->saveLastDirectory(outPath);
@@ -172,10 +172,10 @@ void ProjectWindow::showMenu() {
 }
 
 void ProjectWindow::saveAs() const {
-    std::string outPath = gApp->getPath("lsproj", true);
+    std::string outPath = gApp->getPath("lsmproj", true);
     if (!outPath.empty()) {
-        if (!endsWith(outPath, ".lsproj")) {
-            outPath += ".lsproj";
+        if (!endsWith(outPath, ".lsmproj")) {
+            outPath += ".lsmproj";
         }
         if (gApp->save(outPath)) {
             gApp->saveLastDirectory(outPath);
