@@ -11,6 +11,7 @@
 #include "utility"
 #include "json/json.h"
 #include "base64.h"
+#include "str-utils.h"
 
 #define SERIALIZATION_START template<SERIALIZATION_TYPE __type> void serialize(sm::Serializer<__type> &ser)
 #define SERIALIZATION_START_DECL(name) template<SERIALIZATION_TYPE __type> void name(sm::Serializer<__type> &ser)
@@ -200,6 +201,13 @@ public:
         serialize(name, string);
     }
 
+    void serialize(const char *name, Pathie::Path &path) {
+        if (path.str() != ".") {
+            std::string relativeStr = makeRelative(path, getBasePath()).str();
+            serialize(name, relativeStr);
+        }
+    }
+
     // any other type
     template<typename C>
     void serialize(const char *name, C &value) {
@@ -335,6 +343,13 @@ public:
         std::string decoded = base64_decode(string);
         value.resize(decoded.size());
         memcpy(value.data(), decoded.data(), decoded.size());
+    }
+
+    void serialize(const char *name, Pathie::Path &path) {
+        if (!jsonValue.isMember(name)) return;
+        std::string relativeFilename;
+        serialize(name, relativeFilename);
+        path = getBasePath().join(relativeFilename).prune();
     }
 
     // any other type

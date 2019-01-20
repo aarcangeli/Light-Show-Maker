@@ -30,6 +30,7 @@ class Selection {
     SelectionManager *manager;
     array_type currentSelection;
     friend class SelectionManager;
+    void setLastSelection();
 
     int64_t nextId = 0;
     std::shared_ptr<model::Project> proj;
@@ -146,10 +147,13 @@ public:
         return currentSelection;
     }
 
+    std::shared_ptr<T> getLastSelected() {
+        return currentSelection.empty() ? nullptr : currentSelection.back();
+    }
+
     inline const_iterator begin() const noexcept { return currentSelection.cbegin(); }
     inline const_iterator end() const noexcept { return currentSelection.cend(); }
 
-    void setLastSelection();
     void stopMerging();
 
     SERIALIZATION_START {
@@ -169,7 +173,6 @@ public:
             unrollSelection(selection);
         }
     };
-    std::map<int64_t, size_t> buildMap(const std::vector<int64_t> &selection) const;
 };
 
 class SelectionManager {

@@ -93,9 +93,9 @@ private:
     ImVec2 offset, scale;
 
     void printContent(model::Canvas &canvas, const ImRect &rect);
-    void printLayerList(const model::Canvas &canvas, ImRect rect);
+    void printLayerList(ImRect rect);
 
-    void printLayer(std::shared_ptr<model::Layer> group, ImRect rect);
+    void printLayer(int i, std::shared_ptr<model::Layer> group, ImRect rect);
     float getTimePosScreenPos(time_unit time);
     void printTimeline(const model::Canvas &canvas, ImRect rect);
     std::string timeLabel(time_unit time, bool withMills);
@@ -114,7 +114,9 @@ private:
 
     // box selection
     bool boxSelecting = false;
+    bool boxSubtract = false;
     ImVec2 boxStart;
+    std::vector<std::shared_ptr<model::KeyPoint>> boxOldSelection;
     time_unit timeStart;
     int layerStart;
 

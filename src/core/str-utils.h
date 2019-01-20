@@ -6,6 +6,7 @@
 #include <codecvt>
 #include <string>
 #include <locale>
+#include <path.hpp>
 
 namespace sm {
 
@@ -41,6 +42,45 @@ static std::wstring utf8_to_wstring(const std::string &str) {
 static std::string wstring_to_utf8(const std::wstring &str) {
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv1;
     return conv1.to_bytes(str);
+}
+
+static Pathie::Path makeRelative(Pathie::Path filename, Pathie::Path baseDir) {
+    filename = filename.absolute();
+    baseDir = baseDir.absolute();
+
+#ifdef _WIN32
+    {
+        // different drive
+        std::string filenameStr = filename.str();
+        std::string baseDirStr = baseDir.str();
+        if (filenameStr.length() && baseDirStr.length() && filenameStr[0] != baseDirStr[0]) {
+            return filename;
+        }
+    }
+#endif
+
+    size_t pos = 0;
+    size_t countFilename = filename.component_count();
+    size_t countBaseDir = baseDir.component_count();
+
+    // skip common pathes
+    while (pos < countFilename && pos < countBaseDir && filename[pos] == baseDir[pos]) {
+        pos++;
+    }
+
+    Pathie::Path result;
+
+    size_t countParent = countBaseDir - pos;
+    for (size_t i = 0; i < countParent; ++i) {
+        result = result.join("..");
+    }
+
+    while (pos < countFilename) {
+        result = result.join(filename[pos]);
+        pos++;
+    }
+
+    return result.prune();
 }
 
 }

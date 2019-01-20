@@ -99,7 +99,7 @@ void TimelineEditor::editorOf(model::Canvas &canvas) {
 
     printMediaControls(mediaControlsRect);
     printContent(canvas, contentRect);
-    printLayerList(canvas, layersRect);
+    printLayerList(layersRect);
     printTimeline(canvas, timelineRect);
     printWave(waveRect);
 
@@ -332,6 +332,14 @@ void TimelineEditor::printContent(model::Canvas &canvas, const ImRect &rect) {
         time_unit duration = TIME_UNITS;
         int32_t layer;
         if (lookUpAtPos(io.MousePos, &timeStart, &layerStart)) {
+            boxSubtract = false;
+            if (GetIO().KeyCtrl) {
+                if (GetIO().KeyShift) boxSubtract = true;
+                boxOldSelection = gApp->getSelection().keypoints.getVector();
+            } else {
+                boxOldSelection.resize(0);
+                gApp->getSelection().keypoints.reset();
+            }
             boxSelecting = true;
             boxStart = io.MousePos + offset;
         }
@@ -345,6 +353,7 @@ void TimelineEditor::printContent(model::Canvas &canvas, const ImRect &rect) {
     if (boxSelecting) {
         time_unit timeEnd;
         int layerEnd;
+        GetWindowDrawList()->AddRectFilled(boxStart - offset, io.MousePos, COLOR_KEY);
         GetWindowDrawList()->AddRect(boxStart - offset, io.MousePos, 0xff0000ff);
         if (io.MouseDelta.x != 0 || io.MouseDelta.y != 0) {
             if (layerStart >= 0 && lookUpAtPos(io.MousePos, &timeEnd, &layerEnd)) {
@@ -362,6 +371,9 @@ void TimelineEditor::printContent(model::Canvas &canvas, const ImRect &rect) {
                 }
                 auto &keypoints = gApp->getSelection().keypoints;
                 keypoints.reset();
+                for (auto &it : boxOldSelection) {
+                    keypoints.add(it);
+                }
                 for (int i = layerStart; i <= layerEnd; i++) {
                     std::shared_ptr<model::Layer> &groups = canvas.groups[i];
                     size_t index1 = groups->findBefore(timeStart);
@@ -369,7 +381,11 @@ void TimelineEditor::printContent(model::Canvas &canvas, const ImRect &rect) {
                     assert(index1 <= index2);
                     assert(index2 <= groups->keys.size());
                     for (size_t j = index1; j < index2; ++j) {
-                        keypoints.add(groups->keys[j]);
+                        if (boxSubtract) {
+                            keypoints.remove(groups->keys[j]);
+                        } else {
+                            keypoints.add(groups->keys[j]);
+                        }
                     }
                 }
             }
@@ -545,8 +561,8 @@ string TimelineEditor::timeLabel(time_unit time, bool withMills) {
     return buffer;
 }
 
-void TimelineEditor::printLayerList(const model::Canvas &canvas, ImRect rect) {
-    auto &groups = canvas.groups;
+void TimelineEditor::printLayerList(ImRect rect) {
+    auto &groups = canvas->groups;
 
     ImVec2 oldPos = GetCursorScreenPos();
     SetCursorScreenPos(rect.Min);
@@ -563,30 +579,53 @@ void TimelineEditor::printLayerList(const model::Canvas &canvas, ImRect rect) {
     for (int i = firstIndex; i < indexMax; i++) {
         ImVec2 pos = rect.Min + ImVec2(0, i * layerHeight - offset.y);
         ImRect labelRect = {pos, ImVec2(rect.Max.x - delim1, pos.y + layerHeight - lineDim)};
-        printLayer(groups[i], labelRect);
+        printLayer(i, groups[i], labelRect);
     }
 
     EndChild();
     SetCursorPos(oldPos);
 }
 
-void TimelineEditor::printLayer(shared_ptr<model::Layer> group, ImRect rect) {
+void TimelineEditor::printLayer(int position, shared_ptr<Layer> group, ImRect rect) {
+    auto &groups = canvas->groups;
     ImGuiIO &io = GetIO();
     ImVec2 oldPos = GetCursorScreenPos();
     SetCursorScreenPos(rect.Min);
 
     BeginChild(GetCurrentWindow()->GetID(group.get()), rect.Max - rect.Min, false, ImGuiWindowFlags_NoScrollbar);
-    bool isHovered = IsWindowHovered(0);
+    bool isHovered = rect.Contains(io.MousePos);
     bool isSelected = group->isSelected;
     ImDrawList *drawList = GetWindowDrawList();
 
     if (isHovered && io.MouseClicked[0]) {
         isSelected = true;
         auto &layers = gApp->getSelection().layers;
-        if (io.KeyCtrl) {
-            layers.toggle(group);
+        if (io.KeyShift && !layers.empty()) {
+            shared_ptr<Layer> selectFrom = layers.getLastSelected();
+            const auto &it = std::find(groups.begin(), groups.end(), selectFrom);
+            if (it != groups.end()) {
+                int posStart = int(it - groups.begin());
+                int posEnd = position;
+                if (posEnd < posStart) {
+                    int temp = posStart;
+                    posStart = posEnd;
+                    posEnd = temp;
+                }
+                if (!io.KeyCtrl) layers.reset();
+                for (int i = posStart; i <= posEnd; i++) {
+                    layers.remove(groups[i]);
+                    layers.add(groups[i]);
+                }
+                // must remain the last element
+                layers.remove(selectFrom);
+                layers.add(selectFrom);
+            }
         } else {
-            layers.set(group);
+            if (io.KeyCtrl) {
+                layers.toggle(group);
+            } else {
+                layers.set(group);
+            }
         }
     }
 

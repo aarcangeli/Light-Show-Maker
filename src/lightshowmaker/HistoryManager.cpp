@@ -79,7 +79,6 @@ void HistoryManager::endCommand() {
 }
 
 void HistoryManager::stopMerging() {
-    assert(!inCommand);
     isMerging = false;
 }
 

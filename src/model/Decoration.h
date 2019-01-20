@@ -2,7 +2,6 @@
 #define DECORATION_H
 
 #include "Serialization.h"
-#include "ExternalResource.h"
 #include "SelectableItem.h"
 #include "fstream"
 #include "memory"
@@ -20,12 +19,12 @@ public:
     Decoration();
 
     DecorationType type;
-    ExternalResource resource;
 
     // box
     float posX, posY;
 
     // image
+    Pathie::Path image;
     float width, height;
     float ratio = -1;
 
@@ -58,7 +57,7 @@ public:
                 outputPath = assetDir.join("decoration-" + std::to_string(i) + ".png");
                 i++;
             } while (outputPath.exists());
-            resource.filename = outputPath;
+            image = outputPath;
             outputPath.parent().mktree();
             std::ofstream file;
             file.open(outputPath.str(), std::ios_base::binary);
@@ -66,12 +65,12 @@ public:
             file.close();
         }
 
+        ser.serialize("image", image);
+
         if (type == LIGHT) {
             ser.serialize("color", color);
             ser.serialize("size", size);
         }
-
-        ser.serialize("resource", resource);
     }
 };
 

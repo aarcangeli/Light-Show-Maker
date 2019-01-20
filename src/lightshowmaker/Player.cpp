@@ -13,7 +13,7 @@ void Player::update(model::Canvas &canvas) {
 
     if (justPlayed) {
         if (!audio.isOpen()) {
-            audio.open(canvas.audioFile);
+            audio.open(canvas.audioFile.str());
             if (audio.isOpen()) {
                 device.open(audio.sampleRate, 1, 16);
             }

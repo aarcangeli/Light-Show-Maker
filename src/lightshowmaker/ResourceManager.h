@@ -1,9 +1,11 @@
 #ifndef RESOURCEMANAGER_H
 #define RESOURCEMANAGER_H
 
-#include "ExternalResource.h"
+#include "vector"
 #include "map"
 #include "pathie.hpp"
+#include "Serialization.h"
+#include "ImageLoader.h"
 
 namespace sm {
 

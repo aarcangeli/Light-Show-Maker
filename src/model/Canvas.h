@@ -8,6 +8,7 @@
 #include "Layer.h"
 #include "Decoration.h"
 #include "Serialization.h"
+#include <path.hpp>
 
 namespace sm {
 namespace model {
@@ -23,7 +24,7 @@ public:
     time_unit duration = 210 * TIME_UNITS;
     std::vector<std::shared_ptr<Decoration>> decorations;
     std::vector<std::shared_ptr<Layer>> groups;
-    std::string audioFile;
+    Pathie::Path audioFile;
 
     std::shared_ptr<Layer> makeGroup();
 
