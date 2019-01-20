@@ -165,26 +165,13 @@ void OutputVideoEditor::drawVector(float alpha, std::vector<std::shared_ptr<mode
 }
 
 void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<model::Decoration> &dec, bool isSelected) {
+    PROFILE_BLOCK("OutputVideoEditor::printDecoration", 0.05);
     ImVec2 pos = canvasScreenPos + (OFFSET + ImVec2(dec->posX, dec->posY)) * getLogicalScale();
     ImRect region = getDecorationRegion(dec);
 
     ImDrawList *drawList = GetWindowDrawList();
     if (dec->type == model::IMAGE) {
-        ImTextureID &id = dec->textureId;
-
-        if (!id || gApp->getResourceManager().needToBeUpdated(dec->resource)) {
-            GLuint texture = 0;
-            glGenTextures(1, &texture);
-            glBindTexture(GL_TEXTURE_2D, texture);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            shared_ptr<media::Image> im = dec->resource.loadAsImage();
-            if (im) {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, im->width, im->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                             im->pixels.data());
-            }
-            id = (ImTextureID) (size_t) texture;
-        }
+        ImTextureID id = (ImTextureID) (size_t) gApp->getResourceManager().loadTexture(dec->resource.filename);
 
         ImVec2 dim = ImVec2(dec->width, dec->height) * getLogicalScale();
         ImVec2 max = pos + dim;

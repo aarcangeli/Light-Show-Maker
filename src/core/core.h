@@ -1,3 +1,5 @@
+#include <utility>
+
 #ifndef CORE_H
 #define CORE_H
 
@@ -41,5 +43,37 @@ static const char *APPL_NAME = "Light Show Maker v" LSM_VERSION;
 // I love visual studio
 #define _USE_MATH_DEFINES
 #include <cmath>
+
+// todo: move in a proper class
+#include "chrono"
+#include "iostream"
+#define PROFILE_BLOCK(...) profiler _pfinstance(__VA_ARGS__)
+class profiler {
+public:
+    std::string name;
+    std::chrono::high_resolution_clock::time_point p;
+    double min = 0;
+    static int indent;
+    explicit profiler(std::string n, double min = 0) :
+            name(std::move(n)),
+            p(std::chrono::high_resolution_clock::now()),
+            min(min) {
+        indent++;
+    }
+
+
+    ~profiler() {
+        indent--;
+        using dura = std::chrono::duration<double>;
+        auto d = std::chrono::high_resolution_clock::now() - p;
+        double time = std::chrono::duration_cast<dura>(d).count();
+        if (time > min) {
+            for (int i = 0; i < indent; ++i) {
+                std::cout << "  ";
+            }
+            std::cout << name << ": " << time << std::endl;
+        }
+    }
+};
 
 #endif //CORE_H

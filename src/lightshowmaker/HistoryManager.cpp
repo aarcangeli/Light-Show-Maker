@@ -79,7 +79,6 @@ void HistoryManager::endCommand() {
 
 void HistoryManager::stopMerging() {
     assert(!inCommand);
-    assert(historyPos > 0);
     if (isMerging) {
         isMerging = false;
     }
@@ -100,6 +99,7 @@ void HistoryManager::update() {
 }
 
 void HistoryManager::undo() {
+    PROFILE_BLOCK("HistoryManager::undo", 0.03);
     if (!canUndo()) return;
 
     if (historyPos == checkpoints.size()) {
@@ -114,6 +114,7 @@ void HistoryManager::undo() {
 }
 
 void HistoryManager::redo() {
+    PROFILE_BLOCK("HistoryManager::redo", 0.03);
     if (!canRedo()) return;
 
     historyPos++;

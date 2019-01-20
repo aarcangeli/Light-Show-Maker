@@ -4,25 +4,6 @@
 using namespace sm;
 using namespace sm::model;
 
-std::vector<uint8_t> ExternalResource::loadAsBinary() {
-    modificationTime = filename.mtime();
-    lastLoadedFilename = filename;
-
-    std::ifstream file;
-    file.open(filename.str(), std::ios_base::binary);
-    std::vector<uint8_t> buffer(std::istreambuf_iterator<char>(file), {});
-    return buffer;
-}
-
-std::shared_ptr<media::Image> ExternalResource::loadAsImage() {
-    return media::decodeImage(loadAsBinary());
-}
-
-bool ExternalResource::needToBeUpdated() const {
-    return lastLoadedFilename != filename
-           || filename.mtime() != modificationTime;
-}
-
 Pathie::Path ExternalResource::makeRelative(Pathie::Path filename, Pathie::Path baseDir) {
     filename = filename.absolute();
     baseDir = baseDir.absolute();

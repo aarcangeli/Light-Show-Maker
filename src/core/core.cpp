@@ -26,3 +26,5 @@ time_unit sm::time_wrap(const time_unwrapped &in) {
     ret += in.mills;
     return ret;
 }
+
+int profiler::indent = 0;

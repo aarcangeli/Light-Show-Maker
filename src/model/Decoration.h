@@ -32,9 +32,6 @@ public:
     uint32_t color;
     float size;
 
-    // volatile - hold texture
-    void *textureId = nullptr;
-
     // volatile
     bool isSelected = false;
 

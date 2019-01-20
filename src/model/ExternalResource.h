@@ -15,10 +15,6 @@ namespace model {
 class ExternalResource {
 public:
     Pathie::Path filename;
-    double lastCheck = -1;
-
-    std::vector<uint8_t> loadAsBinary();
-    std::shared_ptr<media::Image> loadAsImage();
 
     SERIALIZATION_START {
         Pathie::Path projectPath = ser.getBasePath();
@@ -34,13 +30,7 @@ public:
         }
     }
 
-    bool needToBeUpdated() const;
-
 private:
-    bool needToBeRefreshed = true;
-    time_t modificationTime;
-    Pathie::Path lastLoadedFilename;
-
     Pathie::Path makeRelative(Pathie::Path filename, Pathie::Path baseDir);
 };
 
