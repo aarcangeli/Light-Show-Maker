@@ -13,6 +13,8 @@
 #include "GlobalHotKey.h"
 #include "Selection.h"
 #include "ResourceManager.h"
+#include "ProjectExporter.h"
+#include "HistoryManager.h"
 #include <path.hpp>
 
 namespace sm {
@@ -35,7 +37,8 @@ public:
     int windowHeight = 720;
     std::string filename;
 
-    void beginCommand(const std::string &name, bool mergeable = false);
+    // history delegate
+    bool beginCommand(const std::string &name, bool mergeable = false);
     void endCommand();
     void stopMerging();
     void asyncCommand(const std::string &name, bool mergeable, const std::function<void()> &fn);
@@ -44,13 +47,6 @@ public:
     void saveLastDirectory(std::string path);
 
 private:
-    struct AppCommand {
-        std::string name;
-        bool mergeable;
-        std::function<void()> fn;
-    };
-
-    std::vector<AppCommand> commands;
 
     GLFWwindow *mainWindow = nullptr;
     ImGuiContext *ctx = nullptr;
@@ -64,6 +60,8 @@ private:
     Player player;
     ResourceManager resourceManager;
     GlobalHotKey hotKey;
+    ProjectExporter exporter;
+    HistoryManager history;
 
     ImFont *loadFont(const char *start, const char *end, float size, bool fontAwesome) const;
 
@@ -86,13 +84,10 @@ public:
     GlobalHotKey &getHotKey() { return hotKey; };
     SelectionManager &getSelection() { return selection; };
     media::AudioLoader &getAudio() { return audio; };
+    HistoryManager &getHistory() { return history; };
+    editor::ProjectWindow &getWindow() { return projectWindow; };
 
     void quit();
-
-    void exportIno(std::string filename);
-
-    void exportChunk(std::string filename, model::arduino_number number) const;
-    void exportCommons(std::string basic_string);
 };
 
 }

@@ -64,9 +64,9 @@ class SerializationCommons {
 protected:
     bool ownedCtx = false;
     SerializationContext *ctx;
-    Json::Value jsonValue;
 
 public:
+    Json::Value jsonValue;
 
     ~SerializationCommons() {
         if (ownedCtx) {
@@ -97,12 +97,6 @@ public:
     Serializer() {
         ctx = new SerializationContext();
         ownedCtx = true;
-    }
-
-    std::string toString() {
-        Json::StreamWriterBuilder builder;
-        builder.settings_["indentation"] = "  ";
-        return Json::writeString(builder, jsonValue);
     }
 
 private:
@@ -316,11 +310,17 @@ public:
 };
 
 template<typename T>
-std::string serializeObject(const T obj, const std::string &filename) {
+std::string serializeObject(const T obj, const std::string &filename, bool undo) {
     Serializer<SER_JSON> serializer;
-    serializer.setBasePath(Pathie::Path(filename).parent());
+    if (!undo) {
+        serializer.setBasePath(Pathie::Path(filename).parent());
+    }
     obj->serialize(serializer);
-    return serializer.toString();
+    std::string result;
+    Json::StreamWriterBuilder builder;
+    if (!undo) builder.settings_["indentation"] = "  ";
+    result = writeString(builder, serializer.jsonValue);
+    return result;
 }
 
 template<typename T>

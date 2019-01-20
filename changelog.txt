@@ -1,7 +1,6 @@
 TODO:
   - History (undo, redo)
   - Copy/Paste
-  - Better external resource loader
   - Multi canvas project
   - Multi document window
   - Replace ffmpeg with a better media loader

@@ -14,7 +14,7 @@ namespace editor {
 class OutputVideoEditor {
     const float TOPBAR_HEIGHT = 40;
     const float CONTENT_PADDING = 10;
-    const ImVec2 logicalSize = {1920 * 2, 1080};
+    const ImVec2 logicalSize = {1920, 1080};
     const float RATIO = logicalSize.x / logicalSize.y;
     const ImVec2 OFFSET = {800, 0};
 

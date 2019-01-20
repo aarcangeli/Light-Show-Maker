@@ -72,8 +72,6 @@ void ProjectWindow::leftPanelWindow() {
 
     for (auto &c : proj->canvas.groups) {
         if (TreeNode(c->name.c_str())) {
-            if (Selectable("test")) {
-            }
             TreePop();
         }
     }
@@ -144,11 +142,11 @@ void ProjectWindow::showMenu() {
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Edit")) {
-            if (ImGui::MenuItem("Undo", "CTRL+Z")) {
-                // todo
+            if (ImGui::MenuItem(("Undo " + gApp->getHistory().undoMsg()).c_str(), "CTRL+Z", false, gApp->getHistory().canUndo())) {
+                gApp->getHistory().undo();
             }
-            if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {
-                // todo
+            if (ImGui::MenuItem(("Redo " + gApp->getHistory().redoMsg()).c_str(), "CTRL+Y", false, gApp->getHistory().canRedo())) {
+                gApp->getHistory().redo();
             }
             ImGui::Separator();
             if (ImGui::MenuItem("Cut", "CTRL+X")) {
