@@ -3,6 +3,7 @@
 
 #include "Serialization.h"
 #include "ExternalResource.h"
+#include "SelectableItem.h"
 #include "fstream"
 #include "memory"
 
@@ -14,7 +15,7 @@ enum DecorationType {
     IMAGE,
 };
 
-class Decoration {
+class Decoration : public SelectableItem<Decoration> {
 public:
     Decoration();
 
@@ -32,10 +33,8 @@ public:
     uint32_t color;
     float size;
 
-    // volatile
-    bool isSelected = false;
-
     SERIALIZATION_START {
+        SelectableItem::serializeBase(ser);
         ser.serializeEnum("type", type);
         ser.serialize("posX", posX);
         ser.serialize("posY", posY);

@@ -12,6 +12,7 @@
 #include <AudioLoader.h>
 #include <ScrollablePane.h>
 #include <AudioDevice.h>
+#include <Serialization.h>
 
 namespace sm {
 namespace editor {
@@ -127,6 +128,17 @@ private:
     float getTimeScaleX() const;
 
 public:
+    SERIALIZATION_START {
+        ser.serialize("offset.x", offset.x);
+        ser.serialize("offset.y", offset.y);
+        ser.serialize("scale.x", scale.x);
+        ser.serialize("scale.y", scale.y);
+        if (ser.DESERIALIZING) {
+            scroll.setOffset(offset);
+            scroll.setScale(scale);
+        }
+    };
+
     bool findPlacableKeyPos(ImVec2 &pos, time_unit &start, time_unit duration, int32_t &layerIdx);
 
     model::Canvas *getCanvas() {

@@ -11,6 +11,7 @@
 #include "TimelineEditor.h"
 #include "OutputVideoEditor.h"
 #include "PropertyPanel.h"
+#include "Serialization.h"
 
 namespace sm {
 namespace editor {
@@ -37,6 +38,10 @@ public:
     void resize(int width, int height);
 
     void showFrame();
+
+    SERIALIZATION_START {
+        ser.serialize("timeline", timelineEditor);
+    };
 
 private:
     std::shared_ptr<model::Project> proj;

@@ -8,13 +8,14 @@
 #include "core.h"
 #include "KeyPoint.h"
 #include "Serialization.h"
+#include "SelectableItem.h"
 
 namespace sm {
 namespace model {
 
 typedef int arduino_number;
 
-class Layer {
+class Layer : public SelectableItem<Layer> {
 public:
     Layer();
     ~Layer();
@@ -24,8 +25,6 @@ public:
     std::vector<std::shared_ptr<KeyPoint>> keys;
     arduino_number number = 0;
     std::string identifier;
-    // volatile
-    bool isSelected = false;
 
     std::shared_ptr<KeyPoint> addKey(time_unit start, time_unit duration);
     void addKey(const std::shared_ptr<KeyPoint> &key);
@@ -45,6 +44,7 @@ public:
     void sortKeys();
 
     SERIALIZATION_START {
+        SelectableItem::serializeBase(ser);
         ser.serialize("name", name);
         ser.serialize("decorations", decorations);
         ser.serialize("keys", keys);

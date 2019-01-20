@@ -18,9 +18,7 @@ class Project;
  */
 class Canvas {
 public:
-    explicit Canvas(Project *parent);
-
-    Project *getProject() { return project; }
+    Canvas();
 
     time_unit duration = 210 * TIME_UNITS;
     std::vector<std::shared_ptr<Decoration>> decorations;
@@ -39,8 +37,6 @@ public:
         ser.serialize("audioFile", audioFile);
     }
 
-private:
-    Project *project;
 };
 
 }

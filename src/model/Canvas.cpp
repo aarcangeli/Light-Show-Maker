@@ -3,8 +3,7 @@
 
 using namespace sm::model;
 
-Canvas::Canvas(Project *project) : project(project) {
-}
+Canvas::Canvas() = default;
 
 std::shared_ptr<Layer> Canvas::makeGroup() {
     groups.emplace_back(new Layer());

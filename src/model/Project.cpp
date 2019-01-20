@@ -2,4 +2,4 @@
 
 using namespace sm::model;
 
-Project::Project() : canvas(this), name("new project") {}
+Project::Project() : name("new project") {}

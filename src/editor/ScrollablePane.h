@@ -11,11 +11,13 @@ class ScrollablePane {
 public:
     ScrollablePane(bool zoomableX, bool zoomableY) : zoomableX(zoomableX), zoomableY(zoomableY) {};
 
-    void scrollPaneBegin(const ImRect &bounds, const ImVec2 &content);
+    void scrollPaneBegin(bool isHovered, const ImRect &bounds, const ImVec2 &content);
     void scrollPaneEnd();
 
     ImVec2 getOffset() const;
     const ImVec2 &getScale() const;
+    void setOffset(const ImVec2 &scroll);
+    void setScale(const ImVec2 &scale);
 
 private:
     ImVec2 oldPos;
@@ -23,6 +25,7 @@ private:
     bool isDragging = false;
     bool zoomableX;
     bool zoomableY;
+    bool changeScroll = false;
 
     ImVec2 zoom = {1, 1};
     ImVec2 zoomTarget = {1, 1};

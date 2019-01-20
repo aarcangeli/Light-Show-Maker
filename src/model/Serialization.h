@@ -13,6 +13,7 @@
 #include "base64.h"
 
 #define SERIALIZATION_START template<SERIALIZATION_TYPE __type> void serialize(sm::Serializer<__type> &ser)
+#define SERIALIZATION_START_DECL(name) template<SERIALIZATION_TYPE __type> void name(sm::Serializer<__type> &ser)
 
 namespace sm {
 
@@ -58,6 +59,7 @@ public:
     }
 
     Pathie::Path basePath;
+    bool undoRedo = false;
 };
 
 class SerializationCommons {
@@ -80,6 +82,14 @@ public:
 
     const Pathie::Path &getBasePath() {
         return ctx->basePath;
+    }
+
+    bool isUndoRedo() {
+        return ctx->undoRedo;
+    }
+
+    void setUndoRedo(bool undoRedo) {
+        ctx->undoRedo = undoRedo;
     }
 };
 
@@ -155,6 +165,23 @@ public:
                 if (sub.jsonValue.size()) {
                     array[i] = sub.jsonValue;
                 }
+                i++;
+            }
+            if (array.size()) {
+                jsonValue[name] = array;
+            }
+        }
+    }
+
+    void serialize(const char *name, std::vector<int64_t> &value) {
+        Json::Value array(Json::arrayValue);
+        uint64_t size = value.size();
+        if (size) {
+            if ((uint32_t) size != size) throw "BIG NUMBER";
+            array.resize(static_cast<uint32_t>(size));
+            uint32_t i = 0;
+            for (int64_t it : value) {
+                array[i] = (Json::Value) {it};
                 i++;
             }
             if (array.size()) {
@@ -282,6 +309,20 @@ public:
         }
     }
 
+    void serialize(const char *name, std::vector<int64_t> &value) {
+        if (!jsonValue.isMember(name)) return;
+        Json::Value &array = jsonValue[name];
+        uint32_t size = array.size();
+        if (size) {
+            value.resize(size);
+            uint32_t i = 0;
+            for (auto &it : value) {
+                value[i] = array[i].asInt64();
+                i++;
+            }
+        }
+    }
+
     template<typename C>
     void serializeEnum(const char *name, C &value) {
         if (!jsonValue.isMember(name)) return;
@@ -310,11 +351,12 @@ public:
 };
 
 template<typename T>
-std::string serializeObject(const T obj, const std::string &filename, bool undo) {
+std::string serializeObject(const T obj, const std::string &filename, bool undo = false) {
     Serializer<SER_JSON> serializer;
     if (!undo) {
         serializer.setBasePath(Pathie::Path(filename).parent());
     }
+    serializer.setUndoRedo(undo);
     obj->serialize(serializer);
     std::string result;
     Json::StreamWriterBuilder builder;

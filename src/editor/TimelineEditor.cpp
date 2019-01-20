@@ -215,6 +215,8 @@ bool TimelineEditor::lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx) {
 }
 
 void TimelineEditor::printContent(model::Canvas &canvas, const ImRect &rect) {
+    bool isHovered = IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
+
     auto &groups = canvas.groups;
     int groupSize = (int) groups.size();
     time_unit duration = canvas.duration;
@@ -226,7 +228,7 @@ void TimelineEditor::printContent(model::Canvas &canvas, const ImRect &rect) {
     isContentFocused = IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
 
     scroll.scrollPaneBegin(
-            rect,
+            isHovered, rect,
             ImVec2(duration * TIME_WIDTH / TIME_UNITS * scale.x + (rect.Max.x - rect.Min.x) * 0.5f,
                    groupSize * layerHeight + headerBotHeight)
     );

@@ -4,25 +4,25 @@
 #include "core.h"
 #include "Fade.h"
 #include "Serialization.h"
+#include "SelectableItem.h"
 
 namespace sm {
 namespace model {
 class Layer;
 
-class KeyPoint {
+class KeyPoint : public SelectableItem<KeyPoint> {
 public:
     explicit KeyPoint();
 
     time_unit start;
     time_unit duration;
     Fade fadeStart, fadeEnd;
-    // volatile
-    bool isSelected = false;
     float maxWeight = 1;
 
     float computeEasing(time_unit time);
 
     SERIALIZATION_START {
+        SelectableItem::serializeBase(ser);
         ser.serialize("start", start);
         ser.serialize("duration", duration);
         ser.serialize("fadeStart", fadeStart);

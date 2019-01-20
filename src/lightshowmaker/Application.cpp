@@ -201,6 +201,7 @@ void Application::open(std::shared_ptr<model::Project> _proj) {
     proj = std::move(_proj);
     projectWindow.open(proj);
     history.init(proj);
+    selection.init(proj);
 }
 
 void Application::close() {

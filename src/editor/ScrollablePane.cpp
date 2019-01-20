@@ -8,7 +8,7 @@ using namespace sm;
 using namespace sm::editor;
 using namespace ImGui;
 
-void ScrollablePane::scrollPaneBegin(const ImRect &bounds, const ImVec2 &content) {
+void ScrollablePane::scrollPaneBegin(bool isHovered, const ImRect &bounds, const ImVec2 &content) {
     ImGuiStyle &style = GetStyle();
     ImGuiIO &io = GetIO();
     ImGuiWindow *window = GetCurrentWindow();
@@ -16,12 +16,14 @@ void ScrollablePane::scrollPaneBegin(const ImRect &bounds, const ImVec2 &content
     oldPos = GetCursorScreenPos();
     SetCursorScreenPos(bounds.Min);
 
-    bool isHovered = IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
     BeginChild(window->GetID(this), bounds.Max - bounds.Min, false,
                ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     bool isContentHovered = IsWindowHovered(ImGuiHoveredFlags_ChildWindows);
-    scrollX = GetScrollX();
-    scrollY = GetScrollY();
+    if (!changeScroll) {
+        scrollX = GetScrollX();
+        scrollY = GetScrollY();
+        changeScroll = false;
+    }
     Dummy(content);
 
     if (isHovered && io.MouseWheel != 0) {
@@ -50,10 +52,12 @@ void ScrollablePane::scrollPaneBegin(const ImRect &bounds, const ImVec2 &content
         isDragging = false;
     }
 
-    float center = io.MousePos.x - bounds.Min.x;
     float oldZoom = zoom.x;
     zoom = ImLerp(zoom, zoomTarget, 0.33f);
-    scrollX = (scrollX + center) * (zoom.x / oldZoom) - center;
+    if (io.MousePos.x != -FLT_MAX) {
+        float center = io.MousePos.x - bounds.Min.x;
+        scrollX = (scrollX + center) * (zoom.x / oldZoom) - center;
+    }
 
     float maxValueX = content.x - (bounds.Max.x - bounds.Min.x);
     if (scrollX > maxValueX) scrollX = maxValueX;
@@ -77,4 +81,14 @@ ImVec2 ScrollablePane::getOffset() const {
 
 const ImVec2 &ScrollablePane::getScale() const {
     return zoom;
+}
+
+void ScrollablePane::setOffset(const ImVec2 &scroll) {
+    scrollX = scroll.x;
+    scrollY = scroll.y;
+    changeScroll = true;
+}
+
+void ScrollablePane::setScale(const ImVec2 &scale) {
+    zoom = zoomTarget = scale;
 }

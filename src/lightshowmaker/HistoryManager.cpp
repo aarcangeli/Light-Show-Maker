@@ -41,19 +41,19 @@ bool HistoryManager::beginCommand(const std::string &name, bool mergeable) {
         // nothing special to do
 
     } else {
-        // serialize state
-        HistoryCheckpoint cmd;
-        cmd.name = name;
-        cmd.state = takeSnapshot();
-        cmd.preState = snapshotGui();
-        checkpoints.push_back(cmd);
-        historyPos = checkpoints.size();
-
 #ifndef NDEBUG
-        if (currentStage != cmd.state) {
+        if (currentStage != takeSnapshot()) {
             printf("Warning: project changed outside command\n");
         }
 #endif
+
+        // serialize state
+        HistoryCheckpoint cmd;
+        cmd.name = name;
+        cmd.preState = snapshotGui(); // can change id of objects
+        cmd.state = takeSnapshot();
+        checkpoints.push_back(cmd);
+        historyPos = checkpoints.size();
 
     }
 
@@ -138,16 +138,13 @@ std::string HistoryManager::takeSnapshot() const {
     return output;
 }
 
-std::string HistoryManager::snapshotGui() const {
-    return "";
-}
-
 void HistoryManager::unrollState(std::string state) {
 #ifndef NDEBUG
     auto start_time = std::chrono::_V2::system_clock::now();
 #endif
 
     Serializer<DESER_JSON> serializer(state);
+    serializer.setUndoRedo(true);
     proj->serialize(serializer);
 
 #ifndef NDEBUG
@@ -157,5 +154,17 @@ void HistoryManager::unrollState(std::string state) {
 #endif
 }
 
+std::string HistoryManager::snapshotGui() const {
+    Serializer<SER_JSON> serializer;
+    serializer.setUndoRedo(true);
+    serializer.serialize("window", gApp->getWindow());
+    serializer.serialize("selection", gApp->getSelection());
+    return serializer.jsonValue.toStyledString();
+}
+
 void HistoryManager::unrollGui(std::string guiState) {
+    Serializer<DESER_JSON> serializer(guiState);
+    serializer.setUndoRedo(true);
+    serializer.serialize("window", gApp->getWindow());
+    serializer.serialize("selection", gApp->getSelection());
 }
