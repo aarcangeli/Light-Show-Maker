@@ -45,6 +45,7 @@ void TimelineEditor::editorOf(model::Canvas &canvas) {
     ImGuiIO &io = GetIO();
     ImFont *font = GetDefaultFont();
     float fontSize = font->FontSize;
+    layerToDelete.resize(0);
 
     auto &groups = canvas.groups;
     int groupSize = (int) groups.size();
@@ -146,26 +147,41 @@ void TimelineEditor::editorOf(model::Canvas &canvas) {
     deleteKeypoints();
 
     EndGroup();
+
+    if (!layerToDelete.empty()) {
+        string name = layerToDelete.size() == 1 ? layerToDelete[0]->name : to_string(layerToDelete.size()) + " layers";
+        if (gApp->beginCommand(name)) {
+            for (auto &layer : layerToDelete) {
+                canvas.deleteGroup(layer);
+                gApp->getSelection().layers.remove(layer);
+            }
+            gApp->endCommand();
+        }
+    }
+
     this->canvas = nullptr;
 }
 
 void TimelineEditor::deleteKeypoints() {
     Selection<KeyPoint> &selectedkeypoints = gApp->getSelection().keypoints;
     if (isContentFocused && !selectedkeypoints.empty() && IsKeyPressed(GLFW_KEY_DELETE, false)) {
-        gApp->beginCommand(string("Delete" + to_string(selectedkeypoints.size()) + " keys"));
-        for (auto &group : canvas->groups) {
-            auto &keys = group->keys;
-            auto it = keys.begin();
-            while(it != keys.end()) {
-                if ((*it)->isSelected) {
-                    selectedkeypoints.remove(*it);
-                    it = keys.erase(it);
-                    continue;
+        size_t size = selectedkeypoints.size();
+        const string &name = "Delete " + to_string(size) + (size != 1 ? " keys" : " key");
+        if (gApp->beginCommand(name)) {
+            for (auto &group : canvas->groups) {
+                auto &keys = group->keys;
+                auto it = keys.begin();
+                while (it != keys.end()) {
+                    if ((*it)->isSelected) {
+                        selectedkeypoints.remove(*it);
+                        it = keys.erase(it);
+                        continue;
+                    }
+                    it++;
                 }
-                it++;
             }
+            gApp->endCommand();
         }
-        gApp->endCommand();
     }
 }
 
@@ -457,7 +473,7 @@ void TimelineEditor::drawKey(shared_ptr<Layer> group, shared_ptr<KeyPoint> &key,
                     if (io.KeyAlt) {
                         gApp->asyncCommand("Duplicate bulk", false, [=, &keypoints]() {
                             keypoints.reset();
-                            for(auto &k : vector) {
+                            for (auto &k : vector) {
                                 shared_ptr<Layer> owner = pCanvas->findGroupWith(k);
                                 if (owner) {
                                     shared_ptr<KeyPoint> duplicated = std::make_shared<KeyPoint>(*k);
@@ -591,16 +607,8 @@ void TimelineEditor::printLayer(shared_ptr<model::Layer> group, ImRect rect) {
     SetCursorPos(oldPos);
 
     if (isLayerListFocused && isSelected && IsKeyPressed(GLFW_KEY_DELETE, false)) {
-        deleteTrack(group);
+        layerToDelete.push_back(group);
     }
-}
-
-void TimelineEditor::deleteTrack(const shared_ptr<model::Layer> &group) {
-    model::Canvas *canvas = this->canvas;
-    gApp->asyncCommand(string("Delete ") + group->name, false, [canvas, group, this]() {
-        canvas->deleteGroup(group);
-        gApp->getSelection().layers.remove(group);
-    });
 }
 
 bool TimelineEditor::findPlacableKeyPos(ImVec2 &pos, time_unit &start, time_unit duration, int32_t &layerIdx) {

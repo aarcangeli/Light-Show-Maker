@@ -5,6 +5,7 @@ TODO:
   - Multi document window
   - Replace ffmpeg with a better media loader
   - [minor] serialize path
+  - before release: remove printf
 
 SNAPSHOT:
   - Changed output namespace from CLS to lsm

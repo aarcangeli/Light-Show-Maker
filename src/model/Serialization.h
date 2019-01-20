@@ -181,7 +181,7 @@ public:
             array.resize(static_cast<uint32_t>(size));
             uint32_t i = 0;
             for (int64_t it : value) {
-                array[i] = (Json::Value) {it};
+                array[i] = Json::Value(it);
                 i++;
             }
             if (array.size()) {

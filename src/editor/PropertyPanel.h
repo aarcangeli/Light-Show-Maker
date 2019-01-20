@@ -23,11 +23,20 @@ private:
     template<typename T>
     void bulkEditor(const char *name, SelectionManager &manager,
                     std::function<T &(KeyRef)> getter,
-                    std::function<T (KeyRef)> maxGetter);
+                    std::function<T(KeyRef)> maxGetter);
 
     model::Fade fade;
-    bool showSlider(const char *name, int max, int &item) const;
-    bool showSlider(const char *name, float max, float &item) const;
+
+    // wrapper of Imgui with beginCommand/endCommand
+    bool showSlider(const char *name, int &item, int min, int max);
+    bool showSlider(const char *name, float &item, float min, float max, const char* format = "%.3f");
+    bool showInputInt(const char *name, int &item);
+    bool showInputFloat(const char *name, float &item);
+    bool showCombo(const char *name, int *item, const char **items, int items_count);
+    bool showInputText(const char *name, std::string &value);
+    bool showColorEdit3(const char *name, uint32_t &value);
+    bool somethingChanged = false;
+    void startChanging(const char *name = "Change property");
 };
 
 }

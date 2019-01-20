@@ -15,6 +15,10 @@ void SelectionManager::init(std::shared_ptr<model::Project> _proj) {
     keypoints.init(proj);
 }
 
+void SelectionManager::stopMerging() {
+    gApp->stopMerging();
+}
+
 
 template<>
 void Selection<Layer>::unrollSelection(const std::vector<int64_t> &selection) {

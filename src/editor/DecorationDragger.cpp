@@ -29,10 +29,11 @@ void DecorationDragger::update() {
     if (isMoving) {
         if (io.MouseDelta.x != 0 || io.MouseDelta.y != 0) {
             ImVec2 delta = originalPos + (GetMousePos() - originalMouseX) / editor->getLogicalScale();
-            gApp->beginCommand("Move decoration", true);
-            decoration->posX = delta.x;
-            decoration->posY = delta.y;
-            gApp->endCommand();
+            if (gApp->beginCommand("Move decoration", true)) {
+                decoration->posX = delta.x;
+                decoration->posY = delta.y;
+                gApp->endCommand();
+            }
         }
         if (!IsMouseDown(0)) {
             isMoving = false;

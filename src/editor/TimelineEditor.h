@@ -100,8 +100,6 @@ private:
     void printTimeline(const model::Canvas &canvas, ImRect rect);
     std::string timeLabel(time_unit time, bool withMills);
 
-    void deleteTrack(const std::shared_ptr<model::Layer> &group);
-
 public:
     bool lookUpAtPos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
     bool lookMousePos(ImVec2 pos, time_unit *time, int *layerIdx = nullptr);
@@ -151,12 +149,13 @@ public:
     float getTimeOffsetX() const;
 
     time_unit moveSnapped(time_unit input, KeyChecker checker);
+    std::vector<std::shared_ptr<model::Layer>> layerToDelete;
 
 private:
     bool findBestSnap(time_unit input, time_unit &best, time_unit &bestDest, const KeyChecker &checker) const;
 
     void snapItem(time_unit dest, time_unit input, const std::shared_ptr<model::KeyPoint> &key,
-                      time_unit &best, time_unit &bestDest, KeyChecker checker) const;
+                  time_unit &best, time_unit &bestDest, KeyChecker checker) const;
 
     void printWave(ImRect rect);
 

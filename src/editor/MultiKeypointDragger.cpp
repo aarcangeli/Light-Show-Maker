@@ -56,11 +56,12 @@ void MultiKeypointDragger::update() {
             dragConfirmed = true;
         }
         if (!dragConfirmed) return;
+        if (!gApp->beginCommand("Move/Resize multiple key point", true)) return;
+
         time_unit mouseMoved = static_cast<time_unit>(delta.x / timeScale);
         time_unit deltaTime = mouseMoved - lastDiff;
         auto last = keys[keys.size() - 1];
 
-        gApp->beginCommand("Move/Resize multiple key point", true);
 
         int32_t layerIdx;
         size_t groupSize = owner->groups.size();

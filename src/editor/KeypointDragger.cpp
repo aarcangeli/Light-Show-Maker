@@ -64,10 +64,11 @@ void KeypointDragger::update() {
         if (!dragConfirmed) return;
         time_unit diff = static_cast<time_unit>(delta.x / timeScale);
 
+        if (!gApp->beginCommand("Move/Resize key point", true))
+            return;
+
         time_unit start = originalStart;
         time_unit end = originalStart + originalDuration;
-
-        gApp->beginCommand("Move/Resize key point", true);
 
         time_unit reposedStart;
         time_unit reposedDuration = end - start;

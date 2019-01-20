@@ -21,13 +21,14 @@ void HistoryManager::init(std::shared_ptr<model::Project> _proj) {
 
 bool HistoryManager::beginCommand(const std::string &name, bool mergeable) {
     if (!proj) return false;
-    if (isMerging && (!mergeable || mergingCommand != name)) stopMerging();
 
     if (inCommand) {
         // Unended command
         assert(false);
         return false;
     }
+
+    if (isMerging && (!mergeable || mergingCommand != name)) stopMerging();
 
     // clear redo history
     if (historyPos < checkpoints.size()) {
@@ -79,9 +80,7 @@ void HistoryManager::endCommand() {
 
 void HistoryManager::stopMerging() {
     assert(!inCommand);
-    if (isMerging) {
-        isMerging = false;
-    }
+    isMerging = false;
 }
 
 void HistoryManager::asyncCommand(const std::string &name, bool mergeable, const std::function<void()> &fn) {
@@ -108,6 +107,7 @@ void HistoryManager::undo() {
         checkpoints.push_back(cmd);
     }
 
+    stopMerging();
     historyPos--;
     unrollState(checkpoints[historyPos].state);
     unrollGui(checkpoints[historyPos].preState);
@@ -117,6 +117,7 @@ void HistoryManager::redo() {
     PROFILE_BLOCK("HistoryManager::redo", 0.03);
     if (!canRedo()) return;
 
+    stopMerging();
     historyPos++;
     unrollState(checkpoints[historyPos].state);
     unrollGui(checkpoints[historyPos - 1].preState);

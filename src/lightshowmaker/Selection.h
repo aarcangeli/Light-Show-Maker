@@ -72,6 +72,7 @@ public:
 
     void set(std::shared_ptr<T> item) {
         assert(item);
+        stopMerging();
         reset();
         currentSelection.resize(1);
         currentSelection[0] = item;
@@ -81,6 +82,7 @@ public:
 
     void toggle(std::shared_ptr<T> item) {
         assert(item);
+        stopMerging();
         if (!remove(item)) {
             currentSelection.push_back(item);
             item->isSelected = true;
@@ -90,6 +92,7 @@ public:
 
     void add(std::shared_ptr<T> item) {
         assert(item);
+        stopMerging();
         if (!item->isSelected) {
             currentSelection.push_back(item);
             item->isSelected = true;
@@ -99,6 +102,7 @@ public:
 
     bool remove(std::shared_ptr<T> item) {
         assert(item);
+        stopMerging();
         if (item->isSelected) {
             auto it = std::find(currentSelection.begin(), currentSelection.end(), item);
             if (it != currentSelection.end()) {
@@ -114,13 +118,14 @@ public:
      * Remove all items from selection
      */
     inline void reset() {
+        stopMerging();
         for (auto &it : currentSelection) {
             it->isSelected = false;
         }
         currentSelection.resize(0);
     }
 
-    inline size_t size() {
+    inline size_t size() const {
         return currentSelection.size();
     }
 
@@ -136,7 +141,8 @@ public:
         return currentSelection.empty();
     }
 
-    array_type getVector() {
+    array_type getVector() const {
+        // copy
         return currentSelection;
     }
 
@@ -144,6 +150,7 @@ public:
     inline const_iterator end() const noexcept { return currentSelection.cend(); }
 
     void setLastSelection();
+    void stopMerging();
 
     SERIALIZATION_START {
         std::vector<int64_t> selection;
@@ -193,11 +200,18 @@ public:
     };
 
     std::shared_ptr<model::Project> proj;
+
+    void stopMerging();
 };
 
 template<typename T>
 void Selection<T>::setLastSelection() {
     manager->lastSelection = type;
+}
+
+template<typename T>
+void Selection<T>::stopMerging() {
+    manager->stopMerging();
 }
 
 }
