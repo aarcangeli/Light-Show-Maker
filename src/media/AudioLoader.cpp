@@ -99,13 +99,18 @@ void AudioLoader::close() {
     mIsOpen = false;
 }
 
-void AudioLoader::readAllSamples() {
+void AudioLoader::read(double timeout) {
+    loop();
+}
+
+void AudioLoader::readAll() {
     while (mIsOpen && !eof) {
         loop();
     }
 }
 
 void AudioLoader::loop() {
+    if (eof) return;
     int ret;
     AVPacket packet;
 

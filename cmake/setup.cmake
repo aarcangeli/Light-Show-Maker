@@ -1,3 +1,4 @@
+include(CheckCXXSourceRuns)
 set(CMAKE_CXX_STANDARD 11)
 set(ROOT_DIRECTORY ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${ROOT_DIRECTORY}/cmake")
@@ -22,3 +23,20 @@ message(STATUS "LSM_VERSION: ${LSM_VERSION}")
 message(STATUS "LSM_OUTPUT_DIRECTORY: ${LSM_OUTPUT_DIRECTORY}")
 
 add_definitions("-DLSM_VERSION=\"${LSM_VERSION}\"")
+
+CHECK_CXX_SOURCE_RUNS("
+    #include <thread>
+    int returnValue = 1;
+    void work() {
+        returnValue = 0;
+    }
+    int main() {
+        std::thread test(&work);
+        test.join();
+        return returnValue;
+    }
+" WITH_THREAD)
+
+if (NOT WITH_THREAD)
+    message(FATAL_ERROR "Unable to compile: this compiler doesn't support C++11 std::thread")
+endif ()

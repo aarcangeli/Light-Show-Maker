@@ -1,5 +1,4 @@
 TODO:
-  - History (undo, redo)
   - Copy/Paste
   - Multi canvas project
   - Multi document window
@@ -8,6 +7,7 @@ TODO:
   - before release: remove printf
 
 SNAPSHOT:
+  - History (undo, redo)
   - Changed output namespace from CLS to lsm
   - Changed document's extension from '.clsproj' to '.lsmproj'
 

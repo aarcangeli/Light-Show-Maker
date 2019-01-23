@@ -37,6 +37,10 @@ private:
     bool showColorEdit3(const char *name, uint32_t &value);
     bool somethingChanged = false;
     void startChanging(const char *name = "Change property");
+
+    void editorComponent(const char *label, time_unit &time);
+    bool parseTime(const char *buf, time_unit &time);
+    inline void skipWhitespace(std::string &buf);
 };
 
 }

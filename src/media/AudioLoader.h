@@ -35,7 +35,8 @@ public:
     void open(std::string filename);
     void close();
     bool isOpen();
-    void readAllSamples();
+    void read(double timeout);
+    void readAll();
 
     std::vector<StreamInfo> streams;
 

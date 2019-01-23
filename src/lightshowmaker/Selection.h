@@ -16,6 +16,7 @@ enum SELECTION_TYPE {
     LAYER,
     DECORATION,
     KEYPOINT,
+    PROJECT,
 };
 
 class SelectionManager;

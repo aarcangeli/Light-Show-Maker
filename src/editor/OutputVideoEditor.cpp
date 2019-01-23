@@ -18,13 +18,17 @@ using namespace ImGui;
 OutputVideoEditor::OutputVideoEditor() : dragger(this), scrollablePane(true, true) {
 }
 
-void OutputVideoEditor::editorOf(shared_ptr<model::Project> proj) {
+void OutputVideoEditor::init(const std::shared_ptr<model::Project> &_proj) {
+    proj = _proj;
+}
+
+void OutputVideoEditor::showEditor() {
     mouseClicked = IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseClicked(0);
     windowFocused = IsWindowFocused(ImGuiHoveredFlags_ChildWindows);
     mousePos = GetMousePos();
     decorationHover.reset();
-    topMenu(proj);
-    drawContent(proj);
+    topMenu();
+    drawContent();
     if (mouseClicked) {
         dragger.startEditing(decorationHover);
         if (decorationHover) {
@@ -37,7 +41,10 @@ void OutputVideoEditor::editorOf(shared_ptr<model::Project> proj) {
     dragger.update();
 }
 
-void OutputVideoEditor::drawContent(std::shared_ptr<model::Project> proj) {
+void OutputVideoEditor::drawContent() {
+    model::Settings &settings = proj->settings;
+    const float RATIO = (float) settings.width / settings.height;
+
     // compute size and position
     float padding = CONTENT_PADDING * dpi;
     const ImVec2 &avail = ImFloor(GetContentRegionAvail()) - ImVec2(padding * 2, padding * 2);
@@ -57,7 +64,8 @@ void OutputVideoEditor::drawContent(std::shared_ptr<model::Project> proj) {
     drawCanvas(proj->canvas);
 }
 
-void OutputVideoEditor::topMenu(const shared_ptr<model::Project> &proj) {
+void OutputVideoEditor::topMenu() {
+    model::Settings &settings = proj->settings;
     ImVec2 oldPos = GetCursorScreenPos();
     float height = dpi * TOPBAR_HEIGHT;
     ImVec2 rect = ImVec2(ImFloor(GetContentRegionAvail().x), height);
@@ -68,8 +76,8 @@ void OutputVideoEditor::topMenu(const shared_ptr<model::Project> &proj) {
     if (Button(ICON_FA_LIGHTBULB_O, ImVec2(height, height))) {
         auto dec = make_shared<model::Decoration>();
         dec->type = model::LIGHT;
-        dec->posX = logicalSize.x / 2;
-        dec->posY = logicalSize.y / 2;
+        dec->posX = settings.width / 2.f;
+        dec->posY = settings.height / 2.f;
         dec->size = 30;
         dec->color = 0xffffffff; // white
         append(proj, dec);
@@ -92,7 +100,7 @@ void OutputVideoEditor::openImage(const shared_ptr<model::Project> &proj) const 
             dec->height = image->height;
             dec->posX = 0;
             dec->posY = 0;
-            dec->resource.filename = outPath;
+            dec->image = outPath;
             append(proj, dec);
         } else {
             gApp->error("Unable to open image '" + outPath + "'");
@@ -103,7 +111,7 @@ void OutputVideoEditor::openImage(const shared_ptr<model::Project> &proj) const 
 void
 OutputVideoEditor::append(const shared_ptr<model::Project> &proj, const shared_ptr<model::Decoration> &dec) const {
     auto &selected = gApp->getSelection().layers;
-    if (selected.size()) {
+    if (!selected.empty()) {
         selected[0]->decorations.push_back(dec);
     } else {
         proj->canvas.decorations.push_back(dec);
@@ -171,7 +179,7 @@ void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<mo
 
     ImDrawList *drawList = GetWindowDrawList();
     if (dec->type == model::IMAGE) {
-        ImTextureID id = (ImTextureID) (size_t) gApp->getResourceManager().loadTexture(dec->resource.filename);
+        ImTextureID id = (ImTextureID) (size_t) gApp->getResourceManager().loadTexture(dec->image);
 
         ImVec2 dim = ImVec2(dec->width, dec->height) * getLogicalScale();
         ImVec2 max = pos + dim;
@@ -189,7 +197,7 @@ void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<mo
         color &= 0xffffff;
         alpha = uint32_t(alpha * decAlpha);
         color |= alpha << 24;
-        drawList->AddCircleFilled(pos, dec->size / logicalSize.y * canvasSize.y, color);
+        drawList->AddCircleFilled(pos, dec->size / proj->settings.height * canvasSize.y, color);
     }
 
     if (isSelected && region.Contains(mousePos)) {
@@ -201,16 +209,19 @@ void OutputVideoEditor::printDecoration(float decAlpha, const std::shared_ptr<mo
     }
 }
 
-ImVec2 OutputVideoEditor::getLogicalScale() const { return canvasSize / logicalSize; }
+ImVec2 OutputVideoEditor::getLogicalScale() const {
+    return canvasSize / ImVec2(proj->settings.width, proj->settings.height);
+}
 
 ImRect OutputVideoEditor::getDecorationRegion(const std::shared_ptr<model::Decoration> &dec) {
+    model::Settings &settings = proj->settings;
     ImVec2 pos = canvasScreenPos + (OFFSET + ImVec2(dec->posX, dec->posY)) * getLogicalScale();
     ImVec2 dim;
     if (dec->type == model::IMAGE) {
         dim = ImVec2(dec->width, dec->height) * getLogicalScale();
     }
     if (dec->type == model::LIGHT) {
-        float size = dec->size / logicalSize.y * canvasSize.y;
+        float size = dec->size / settings.height * canvasSize.y;
         dim = ImVec2(size, size) * 2;
         pos -= dim / 2;
     }

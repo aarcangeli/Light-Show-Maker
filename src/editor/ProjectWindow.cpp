@@ -57,7 +57,7 @@ void ProjectWindow::outputWindow() {
     Begin("Output", nullptr, FLAGS | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     PopStyleVar(1);
 
-    outputPreview.editorOf(proj);
+    outputPreview.showEditor();
 
     End();
     PopStyleVar(1);
@@ -70,10 +70,15 @@ void ProjectWindow::leftPanelWindow() {
     SetNextWindowSize(ImVec2{leftPanelWidth - spacing, centerHeight});
     Begin("Project", nullptr, FLAGS);
 
-    for (auto &c : proj->canvas.groups) {
-        if (TreeNode(c->name.c_str())) {
-            TreePop();
-        }
+    SELECTION_TYPE &lastSelection = gApp->getSelection().lastSelection;
+
+    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    if (lastSelection == PROJECT) {
+        flags |= ImGuiTreeNodeFlags_Selected;
+    }
+    TreeNodeEx(proj->name.c_str(), flags);
+    if (IsItemClicked()) {
+        lastSelection = PROJECT;
     }
 
     End();
@@ -82,7 +87,7 @@ void ProjectWindow::leftPanelWindow() {
 void ProjectWindow::rightPanelWindow() {
     SetNextWindowPos(ImVec2{viewportWidth - rightPanelWidth + spacing, menuHeight});
     SetNextWindowSize(ImVec2{rightPanelWidth - spacing, centerHeight});
-    Begin("Right", nullptr, FLAGS);
+    Begin("Properties", nullptr, FLAGS);
 
     propertyPanel.showProperties(gApp->getSelection());
 
@@ -188,6 +193,7 @@ void ProjectWindow::resize(int width, int height) {
 
 void ProjectWindow::open(const std::shared_ptr<model::Project> &_proj) {
     proj = _proj;
+    outputPreview.init(proj);
 }
 
 void ProjectWindow::close() {

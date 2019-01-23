@@ -5,11 +5,14 @@
 #include "AudioDevice.h"
 #include "Canvas.h"
 #include "AudioDevice.h"
+#include <chrono>
+#include <thread>
 
 namespace sm {
 
 class Player {
 public:
+    Player();
     void update(model::Canvas &canvas);
 
     void togglePlay();
@@ -17,6 +20,7 @@ public:
     void pause();
     void stop();
     void seek(time_unit time);
+    void setSeeking(bool seeking);
     void setPlaying(bool playing);
     void goBack();
     void reloadMedia();
@@ -25,15 +29,18 @@ public:
     bool playing();
 
 private:
-    double lastTime = 0;
     bool isPlaying = false;
     float position = 0;
     float backPosition = 0;
-    bool justPlayed = false;
+    bool isSeeking = false;
     bool afterSeek = false;
-    size_t sampleTarget;
-    size_t samplePosition;
+    bool reopenDevice = false;
     media::AudioDevice device;
+
+    std::thread playerThread;
+
+    std::mutex workMutex;
+    void worker();
 };
 
 }

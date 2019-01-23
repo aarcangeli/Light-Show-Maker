@@ -15,6 +15,8 @@ class ResourceManager {
 public:
     void recheckAllResources();
     size_t loadTexture(Pathie::Path &filename);
+    bool needToBeUpdated(Pathie::Path &filename);
+    void markAsLoaded(Pathie::Path &filename);
 
 private:
     struct ResCtx {

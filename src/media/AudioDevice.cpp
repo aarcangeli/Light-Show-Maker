@@ -15,13 +15,16 @@ AudioDevice::~AudioDevice() {
 };
 
 void AudioDevice::open(int sampleRate, int channels, int bits) {
+    if (msIsOpen && sformat.channels == channels && sformat.rate == sampleRate && sformat.bits == bits) {
+        return;
+    }
+
     int driver = ao_default_driver_id();
     if (driver < 0) {
         printf("Cannot find a live driver\n");
         return;
     }
 
-    ao_sample_format sformat;
     sformat.channels = channels;
     sformat.rate = sampleRate;
     sformat.byte_format = AO_FMT_NATIVE;

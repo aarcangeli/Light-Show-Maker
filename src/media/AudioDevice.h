@@ -23,6 +23,8 @@ public:
 private:
     static int numberOfInstances;
     ao_device *adevice;
+    ao_sample_format sformat;
+    bool msIsOpen = false;
 };
 
 }

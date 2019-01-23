@@ -4,7 +4,6 @@
 #define PROJECTWINDOW_H
 
 #include "core.h"
-#include "Editor.h"
 #include "memory"
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -19,7 +18,7 @@ namespace editor {
 class ProjectWindow {
     const char *MODAL_ERROR = "Error!";
     const float TIMELINE_HEIGHT_RATIO = 0.7;
-    const float TIMELINE_PANELS_WIDTH_RATIO = 0.15;
+    const float TIMELINE_PANELS_WIDTH_RATIO = 0.2;
 
     const int FLAGS = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse;
 
@@ -45,7 +44,6 @@ public:
 
 private:
     std::shared_ptr<model::Project> proj;
-    Editor myEditor;
     TimelineEditor timelineEditor;
     OutputVideoEditor outputPreview;
     PropertyPanel propertyPanel;

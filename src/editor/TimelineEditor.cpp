@@ -47,10 +47,6 @@ void TimelineEditor::editorOf(model::Canvas &canvas) {
     float fontSize = font->FontSize;
     layerToDelete.resize(0);
 
-    auto &groups = canvas.groups;
-    int groupSize = (int) groups.size();
-    time_unit duration = canvas.duration;
-
     btnActive = ColorConvertFloat4ToU32(style.Colors[ImGuiCol_ButtonActive]);
     btnHover = ColorConvertFloat4ToU32(style.Colors[ImGuiCol_ButtonHovered]);
     const ImU32 background = ColorConvertFloat4ToU32(style.Colors[ImGuiCol_Text]);
@@ -134,9 +130,11 @@ void TimelineEditor::editorOf(model::Canvas &canvas) {
 
     if (isDraggingPosition) {
         float seek = (GetIO().MousePos.x - getTimeOffsetX()) / getTimeScaleX();
+        gApp->getPlayer().setSeeking(true);
         gApp->getPlayer().seek((time_unit) seek);
         if (!IsMouseDown(0)) {
             isDraggingPosition = false;
+            gApp->getPlayer().setSeeking(false);
         }
     }
 

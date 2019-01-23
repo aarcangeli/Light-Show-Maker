@@ -10,6 +10,16 @@ void ResourceManager::recheckAllResources() {
     recheckResourcesBefore = glfwGetTime();
 }
 
+bool ResourceManager::needToBeUpdated(Pathie::Path &filename) {
+    return needToBeUpdated(filename, ctxs[filename]);
+}
+
+void ResourceManager::markAsLoaded(Pathie::Path &filename) {
+    ResCtx &ctx = ctxs[filename];
+    ctx.modificationTime = filename.mtime();
+    ctx.lastLoadedFilename = filename;
+}
+
 size_t ResourceManager::loadTexture(Pathie::Path &filename) {
     ResCtx &ctx = ctxs[filename];
     auto &id = ctx.textureId;
@@ -24,6 +34,7 @@ size_t ResourceManager::loadTexture(Pathie::Path &filename) {
         }
         std::shared_ptr<media::Image> im = loadAsImage(filename, ctx);
         if (im) {
+            glBindTexture(GL_TEXTURE_2D, (GLuint) id);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, im->width, im->height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                          im->pixels.data());
         }
