@@ -7,7 +7,11 @@
 using namespace sm;
 using namespace std;
 
-Player::Player() : playerThread(&Player::worker, this) {}
+Player::Player() = default;
+
+void Player::init() {
+    playerThread = std::thread(&Player::worker, this);
+}
 
 void Player::update(model::Canvas &canvas) {
 

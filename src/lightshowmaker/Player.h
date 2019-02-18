@@ -15,6 +15,7 @@ public:
     Player();
     void update(model::Canvas &canvas);
 
+    void init();
     void togglePlay();
     void play();
     void pause();

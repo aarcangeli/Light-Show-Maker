@@ -97,6 +97,8 @@ bool Application::init() {
         proj->canvas.makeGroup();
     }
 
+    player.init();
+
     return true;
 }
 
