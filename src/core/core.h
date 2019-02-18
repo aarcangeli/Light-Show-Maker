@@ -61,7 +61,6 @@ public:
         indent++;
     }
 
-
     ~profiler() {
         indent--;
         using dura = std::chrono::duration<double>;

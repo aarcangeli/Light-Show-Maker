@@ -123,25 +123,16 @@ void HistoryManager::redo() {
 }
 
 std::string HistoryManager::takeSnapshot() const {
-#ifndef NDEBUG
-    auto start_time = std::chrono::_V2::system_clock::now();
-#endif
+    PROFILE_BLOCK("HistoryManager::takeSnapshot", 0.00);
 
     std::string output = serializeObject(proj, "", true);
     size_t size = output.size();
-
-#ifndef NDEBUG
-    auto time = std::chrono::_V2::system_clock::now() - start_time;
-    std::cout << "SNAPSHOT. Size:  " << size << "; time: " << time / std::chrono::milliseconds(1) << "ms\n";
-#endif
 
     return output;
 }
 
 void HistoryManager::unrollState(std::string state) {
-#ifndef NDEBUG
-    auto start_time = std::chrono::_V2::system_clock::now();
-#endif
+    PROFILE_BLOCK("HistoryManager::unrollState", 0.00);
 
     Serializer<DESER_JSON> serializer(state);
     serializer.setUndoRedo(true);
@@ -149,8 +140,6 @@ void HistoryManager::unrollState(std::string state) {
 
 #ifndef NDEBUG
     currentStage = state;
-    auto time = std::chrono::_V2::system_clock::now() - start_time;
-    std::cout << "SNAPSHOT restored. time: " << time / std::chrono::milliseconds(1) << "ms\n";
 #endif
 }
 

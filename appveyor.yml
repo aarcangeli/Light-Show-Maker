@@ -1,4 +1,4 @@
-version: 0.2_{build}
+version: 0.2.0_{build}
 image: Visual Studio 2017
 configuration: Release
 platform: x64
@@ -27,11 +27,3 @@ build:
 artifacts:
   - path: bin
     name: lightshowmaker-v$(APPVEYOR_BUILD_VERSION)
-
-deploy:
-  - release: $(APPVEYOR_REPO_TAG_NAME)
-    provider: GitHub
-    auth_token:
-      secure: bpeCseo8I1Z2Eq9ofzVpNvFQWI+D11TQAlZb1SIpWmzTxHEYhmlBbazeyW0WAazT
-    on:
-      APPVEYOR_REPO_TAG: true

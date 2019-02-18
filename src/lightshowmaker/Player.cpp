@@ -2,7 +2,6 @@
 #include "Application.h"
 #include <GLFW/glfw3.h>
 #include <imgui.h>
-#include <unistd.h>
 #include <AudioLoader.h>
 
 using namespace sm;
