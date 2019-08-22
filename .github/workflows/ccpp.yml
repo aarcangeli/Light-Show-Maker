@@ -1,0 +1,17 @@
+name: C/C++ CI
+
+#on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: update submodules
+      run: git submodule update --init --recursive
+    - name: print cmake version
+      run: cmake --version
+    - name: make
+      run: mkdir build && cd build && && cmake -G "Visual Studio 15 2017 Win64" .. -DCMAKE_BUILD_TYPE=Release
